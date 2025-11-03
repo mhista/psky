@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../utils/constants/image_strings.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/constants/text_strings.dart';
+import '../../../../../core/utils/constants/image_strings.dart';
+import '../../../../../core/utils/constants/sizes.dart';
+import '../../../../../core/utils/constants/text_strings.dart';
 
 class PLoginHeader extends StatelessWidget {
   const PLoginHeader({
@@ -19,7 +19,7 @@ class PLoginHeader extends StatelessWidget {
           image: AssetImage(
             PImages.appLogo,
           ),
-        ),
+        ), 
         Text(
           PTexts.loginTitle,
           style: Theme.of(context).textTheme.headlineMedium,

@@ -2,9 +2,8 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:ahiaa_web/utils/constants/enums.dart';
 
-import '../../../utils/formatters/formatter.dart';
+import '../../../core/utils/formatters/formatter.dart';
 
 class UserModel {
   final String? id;

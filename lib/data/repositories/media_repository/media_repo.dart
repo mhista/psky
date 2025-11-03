@@ -7,9 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:universal_html/html.dart' as html;
 
-import '../../../utils/exceptions/firebase_exceptions.dart';
-import '../../../utils/exceptions/format_eceptions.dart';
-import '../../../utils/exceptions/platform_exceptions.dart';
+import '../../../core/utils/exceptions/firebase_exceptions.dart';
+import '../../../core/utils/exceptions/platform_exceptions.dart';
 
 class MediaRepository extends GetxController {
   static MediaRepository get instance => Get.find();

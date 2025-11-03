@@ -1,24 +1,23 @@
 import 'dart:typed_data';
 
-import 'package:ahiaa_web/common/loaders/loaders.dart';
+import 'package:ahiaa_web/core/common/loaders/loaders.dart';
 import 'package:ahiaa_web/data/repositories/media_repository/media_repo.dart';
-import 'package:ahiaa_web/utils/constants/enums.dart';
-import 'package:ahiaa_web/utils/constants/image_strings.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
-import 'package:ahiaa_web/utils/constants/text_strings.dart';
-import 'package:ahiaa_web/utils/popups/dialog.dart';
-import 'package:ahiaa_web/utils/popups/fullscreen_loader.dart';
+import 'package:ahiaa_web/core/utils/enums/enums.dart';
+import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
+import 'package:ahiaa_web/core/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/utils/constants/text_strings.dart';
+import 'package:ahiaa_web/core/utils/popups/dialog.dart';
+import 'package:ahiaa_web/core/utils/popups/fullscreen_loader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dropzone/flutter_dropzone.dart';
+// import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:get/get.dart';
 import 'package:universal_html/html.dart' as html;
-import 'package:path_provider/path_provider.dart';
 
 import '../models/image_model.dart';
 
 class MediaController extends GetxController {
   static MediaController get instance => Get.find();
-  late DropzoneViewController dropzoneController;
+  // late DropzoneViewController dropzoneController;
   final Rx<MediaCategory> selectedPath = MediaCategory.folders.obs;
   final RxBool showImagesUploaderSection = false.obs;
   final RxList<ImageModel> selectedImagesToUpload = <ImageModel>[].obs;
@@ -34,27 +33,27 @@ class MediaController extends GetxController {
   final MediaRepository mediaRepository = Get.put(MediaRepository());
 
   Future<void> selectLocalImages() async {
-    final files = await dropzoneController
-        .pickFiles(multiple: true, mime: ["image/jpeg", "image/png"]);
+    // final files = await dropzoneController
+    //     .pickFiles(multiple: true, mime: ["image/jpeg", "image/png"]);
 
-    if (files.isNotEmpty) {
-      for (var file in files) {
-        //  debugPrint('onDropFile one : ${file.name}');
-        final mimeType = await dropzoneController.getFileMIME(file);
-        final bytes = await dropzoneController.getFileData(file);
-        debugPrint('${file.name}, $mimeType');
+    // if (files.isNotEmpty) {
+    //   for (var file in files) {
+    //     //  debugPrint('onDropFile one : ${file.name}');
+    //     final mimeType = await dropzoneController.getFileMIME(file);
+    //     final bytes = await dropzoneController.getFileData(file);
+    //     debugPrint('${file.name}, $mimeType');
 
-        final filee = uint8ListToFile(bytes, file.name, mimeType);
-        final image = ImageModel(
-            url: '',
-            folder: '',
-            filename: file.name,
-            localImageToDisplay: Uint8List.fromList(bytes),
-            file: filee);
+    //     final filee = uint8ListToFile(bytes, file.name, mimeType);
+    //     final image = ImageModel(
+    //         url: '',
+    //         folder: '',
+    //         filename: file.name,
+    //         localImageToDisplay: Uint8List.fromList(bytes),
+    //         file: filee);
 
-        selectedImagesToUpload.add(image);
-      }
-    }
+    //     selectedImagesToUpload.add(image);
+    //   }
+    // }
   }
 
   // convert to uInt8List to FILE

@@ -1,11 +1,8 @@
-import 'package:ahiaa_web/common/layout/templates/form_template.dart';
-import 'package:ahiaa_web/utils/constants/colors.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/common/layout/templates/form_template.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../common/styles/spacing_styles.dart';
-import '../../../../../common/widgets/signup_login/form_divider.dart';
-import '../../../../../utils/constants/text_strings.dart';
+import '../../../../../core/common/widgets/signup_login/form_divider.dart';
+import '../../../../../core/utils/constants/text_strings.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
 
@@ -22,7 +19,7 @@ class LoginDesktopTabletScreen extends StatelessWidget {
           PLoginHeader(),
 
           // Form
-          PLoginForm(),
+          // PLoginForm(),
 
           // Divider
           PFormeDivider(

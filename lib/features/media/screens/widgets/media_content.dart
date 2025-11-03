@@ -1,13 +1,13 @@
-import 'package:ahiaa_web/common/widgets/custom_shapes/containers/rounded_container.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
+import 'package:ahiaa_web/core/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
-import '../../../../common/widgets/images/edge_rounded_images.dart';
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
+import '../../../../core/common/widgets/images/edge_rounded_images.dart';
+import '../../../../core/utils/constants/colors.dart';
+import '../../../../core/utils/enums/enums.dart';
+import '../../../../core/utils/constants/image_strings.dart';
 import '../../controller/media_controller.dart';
 import 'folder_dropdown.dart';
 
@@ -58,7 +58,7 @@ class MediaContent extends StatelessWidget {
             runSpacing: PSizes.spaceBtwItems / 2,
             children: [
               PRoundedImage(
-                imageType: ImageType.asset,
+                imageType: ImagesType.asset,
                 image: PImages.google,
                 width: 90,
                 height: 90,
@@ -67,7 +67,7 @@ class MediaContent extends StatelessWidget {
                 backgroundColor: PColors.primaryBackground,
               ),
               PRoundedImage(
-                imageType: ImageType.asset,
+                imageType: ImagesType.asset,
                 image: PImages.google,
                 width: 90,
                 height: 90,

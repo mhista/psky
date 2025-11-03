@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'common/widgets/custom_shapes/containers/rounded_container.dart';
+import 'core/common/widgets/custom_shapes/containers/rounded_container.dart';
 
 class ResponsiveDesign extends StatelessWidget {
   const ResponsiveDesign({super.key});
@@ -51,7 +51,7 @@ class DesktopScaffold extends StatelessWidget {
               child: TRoundedContainer(
                 height: 450,
                 // backgroundColor: Colors.blue.withOpacity(0.2),
-                child: const Center(
+                child: Center(
                   child: Text('Box 1'),
                 ),
               ),

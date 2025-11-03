@@ -1,12 +1,12 @@
-import 'package:ahiaa_web/common/layout/templates/form_template.dart';
+import 'package:ahiaa_web/core/common/layout/templates/form_template.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../../../../routes/routes.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/constants/text_strings.dart';
-import '../../../../../utils/validators/validation.dart';
+import '../../../../../core/routes/routes.dart';
+import '../../../../../core/utils/constants/sizes.dart';
+import '../../../../../core/utils/constants/text_strings.dart';
+import '../../../../../core/utils/validators/validation.dart';
 
 class ForgetPasswordDesktopTablet extends StatelessWidget {
   const ForgetPasswordDesktopTablet({super.key});
@@ -58,9 +58,10 @@ class ForgetPasswordDesktopTablet extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-                onPressed: () => Get.toNamed(
-                      KRoutes.resetPassword,
-                    ),
+                onPressed: () {},
+                // => Get.toNamed(
+                //       // KRoutes.resetPassword,
+                //     ),
                 // onPressed: () {},
                 // onPressed: () => controller.sendPasswordResetEmail(),
                 child: const Text(PTexts.submit)),

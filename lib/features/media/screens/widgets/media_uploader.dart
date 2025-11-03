@@ -1,19 +1,16 @@
-import 'dart:typed_data';
 
-import 'package:ahiaa_web/common/widgets/custom_shapes/containers/rounded_container.dart';
+import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
 import 'package:ahiaa_web/features/media/controller/media_controller.dart';
 import 'package:ahiaa_web/features/media/screens/widgets/folder_dropdown.dart';
-import 'package:ahiaa_web/utils/constants/colors.dart';
-import 'package:ahiaa_web/utils/constants/enums.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/utils/constants/colors.dart';
+import 'package:ahiaa_web/core/utils/enums/enums.dart';
+import 'package:ahiaa_web/core/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dropzone/flutter_dropzone.dart';
+// import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:universal_html/html.dart' as html;
-import '../../../../common/widgets/images/edge_rounded_images.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../models/image_model.dart';
+import '../../../../core/common/widgets/images/edge_rounded_images.dart';
+import '../../../../core/utils/constants/image_strings.dart';
 
 class MediaUploader extends StatelessWidget {
   const MediaUploader({super.key});
@@ -40,51 +37,51 @@ class MediaUploader extends StatelessWidget {
                           child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          DropzoneView(
-                            mime: const ['image/jpeg', 'image/png'],
-                            cursor: CursorType.Default,
-                            operation: DragOperation.copy,
-                            onLoaded: () {
-                              debugPrint('Zone Loaded');
-                            },
-                            onError: (er) {
-                              debugPrint('Zone error: $er');
-                            },
-                            onHover: () {
-                              debugPrint('Zone hovered');
-                            },
-                            onLeave: () {
-                              debugPrint('Zone left');
-                            },
-                            onCreated: (ctrl) =>
-                                controller.dropzoneController = ctrl,
-                            onDropFile: (filee) async {
-                              debugPrint('onDropFile one : ${filee.name}');
-                              final mimeType = await controller
-                                  .dropzoneController
-                                  .getFileMIME(filee);
-                              final bytes = await controller.dropzoneController
-                                  .getFileData(filee);
-                              debugPrint(' ${filee.name}, $mimeType');
+                          // DropzoneView(
+                          //   mime: const ['image/jpeg', 'image/png'],
+                          //   cursor: CursorType.Default,
+                          //   operation: DragOperation.copy,
+                          //   onLoaded: () {
+                          //     debugPrint('Zone Loaded');
+                          //   },
+                          //   onError: (er) {
+                          //     debugPrint('Zone error: $er');
+                          //   },
+                          //   onHover: () {
+                          //     debugPrint('Zone hovered');
+                          //   },
+                          //   onLeave: () {
+                          //     debugPrint('Zone left');
+                          //   },
+                          //   onCreated: (ctrl) =>
+                          //       controller.dropzoneController = ctrl,
+                          //   onDropFile: (filee) async {
+                          //     debugPrint('onDropFile one : ${filee.name}');
+                          //     final mimeType = await controller
+                          //         .dropzoneController
+                          //         .getFileMIME(filee);
+                          //     final bytes = await controller.dropzoneController
+                          //         .getFileData(filee);
+                          //     debugPrint(' ${filee.name}, $mimeType');
 
-                              final file = controller.uint8ListToFile(
-                                  bytes, filee.name, mimeType);
-                              final image = ImageModel(
-                                  url: '',
-                                  folder: '',
-                                  filename: filee.name,
-                                  localImageToDisplay:
-                                      Uint8List.fromList(bytes),
-                                  file: file);
+                          //     final file = controller.uint8ListToFile(
+                          //         bytes, filee.name, mimeType);
+                          //     final image = ImageModel(
+                          //         url: '',
+                          //         folder: '',
+                          //         filename: filee.name,
+                          //         localImageToDisplay:
+                          //             Uint8List.fromList(bytes),
+                          //         file: file);
 
-                              controller.selectedImagesToUpload.add(image);
-                            },
-                            onDropInvalid: (er) {},
-                            onDropFiles: (files) {
-                              debugPrint(
-                                  'onDropFiles multiplication : ${files?.first.name}');
-                            },
-                          ),
+                          //     controller.selectedImagesToUpload.add(image);
+                          //   },
+                          //   onDropInvalid: (er) {},
+                          //   onDropFiles: (files) {
+                          //     debugPrint(
+                          //         'onDropFiles multiplication : ${files?.first.name}');
+                          //   },
+                          // ),
                           Column(
                             children: [
                               Image.asset(PImages.defaultMultiImageIcon),
@@ -184,7 +181,7 @@ class MediaUploader extends StatelessWidget {
                                     image.localImageToDisplay != null)
                                 .map(
                                   (image) => PRoundedImage(
-                                    imageType: ImageType.memory,
+                                    imageType: ImagesType.memory,
                                     memoryImage: image.localImageToDisplay,
                                     width: 90,
                                     height: 90,

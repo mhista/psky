@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ahiaa_web/utils/constants/enums.dart';
+import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,14 +8,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ahiaa_web/data/repositories/user/user_repository.dart';
 import 'package:ahiaa_web/features/authentication/models/user_model.dart';
 import 'package:ahiaa_web/features/authentication/screens/login/login.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/utils/constants/sizes.dart';
 
-import '../../../common/loaders/loaders.dart';
-import '../../../data/repositories/auth_repo/authentication_repository.dart';
-import '../../../utils/constants/image_strings.dart';
-import '../../../utils/helpers/network_manager.dart';
-import '../../../utils/popups/fullscreen_loader.dart';
-import '../../authentication/models/user_model.dart';
+import '../../../core/common/loaders/loaders.dart';
+import '../../../core/utils/constants/image_strings.dart';
+import '../../../core/utils/helpers/network_manager.dart';
+import '../../../core/utils/popups/fullscreen_loader.dart';
 
 class UserController extends GetxController {
   static UserController get instance => Get.find();
@@ -43,9 +41,9 @@ class UserController extends GetxController {
     try {
       profileLoading.value = true;
 
-      final user = await userRepository.fetchUserData();
-      this.user(user);
-      return user;
+      // final user = await userRepository.fetchUserData();
+      // this.user(user);
+      return UserModel.empty();
     } catch (e) {
       user(UserModel.empty());
       return UserModel.empty();
@@ -81,7 +79,7 @@ class UserController extends GetxController {
             createdAt: DateTime.now(),
           );
 
-          await userRepository.saveUser(user);
+          // await userRepository.saveUser(user);
         }
       }
     } catch (e) {
@@ -129,11 +127,11 @@ class UserController extends GetxController {
         return;
       }
 
-      await AuthenticationRepository.instance
-          .reAuthenticateWithEmailAndPassword(
-              verifyEmail.text.trim(), verifyPassword.text.trim());
+      // await AuthenticationRepository.instance
+      //     .reAuthenticateWithEmailAndPassword(
+      //         verifyEmail.text.trim(), verifyPassword.text.trim());
       debugPrint('reauthenticated');
-      await AuthenticationRepository.instance.deleteAccount();
+      // await AuthenticationRepository.instance.deleteAccount();
       PFullScreenLoader.stopLoading();
       Get.offAll(() => const LoginScreen());
     } catch (e) {
@@ -148,21 +146,21 @@ class UserController extends GetxController {
   void deleteUserAccount() async {
     try {
       // FIRST REAUTHENTICATE USER
-      final auth = AuthenticationRepository.instance;
-      final provider =
-          auth.authUser!.providerData.map((e) => e.providerId).first;
-      if (provider.isNotEmpty) {
-        if (provider == 'google.com') {
-          // REVERIFY AUTH EMAIL
-          await auth.signInWithGoogle();
-          await auth.deleteAccount();
-          PFullScreenLoader.stopLoading();
-          Get.offAll(() => const LoginScreen());
-        } else if (provider == 'password') {
-          PFullScreenLoader.stopLoading();
-          // Get.offAll(() => const ReAuthUserScreen());
-        }
-      }
+      // final auth = AuthenticationRepository.instance;
+      // final provider =
+      //     auth.authUser!.providerData.map((e) => e.providerId).first;
+      // if (provider.isNotEmpty) {
+      //   if (provider == 'google.com') {
+      //     // REVERIFY AUTH EMAIL
+      //     // await auth.signInWithGoogle();
+      //     // await auth.deleteAccount();
+      //     PFullScreenLoader.stopLoading();
+      //     Get.offAll(() => const LoginScreen());
+      //   } else if (provider == 'password') {
+      //     PFullScreenLoader.stopLoading();
+      //     // Get.offAll(() => const ReAuthUserScreen());
+      //   }
+      // }
     } catch (e) {
       PFullScreenLoader.stopLoading();
 
@@ -182,13 +180,13 @@ class UserController extends GetxController {
       if (image != null) {
         imageUploading.value = true;
         final imageUrl =
-            await userRepository.uploadImage('Users/Images/Profile', image);
+            // await userRepository.uploadImage('Users/Images/Profile', image);
 
         // UPDATE USER IMAGE IN FIRESTORE
-        Map<String, dynamic> map = {'profilePicture': imageUrl};
-        await userRepository.updateSingleField(map);
+        // Map<String, dynamic> map = {'profilePicture': imageUrl};
+        // await userRepository.updateSingleField(map);
 
-        user.value.profilePicture = imageUrl;
+        // user.value.profilePicture = imageUrl;
         PLoaders.successSnackBar(
             title: 'Update successfull',
             message: 'Your profile image has been updated');

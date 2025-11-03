@@ -1,10 +1,8 @@
-import 'package:ahiaa_web/common/widgets/breadcrumbs/breadcrumb_with_heading.dart';
-import 'package:ahiaa_web/utils/constants/sizes.dart';
+import 'package:ahiaa_web/core/common/widgets/breadcrumbs/breadcrumb_with_heading.dart';
+import 'package:ahiaa_web/core/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../controller/media_controller.dart';
 import '../widgets/media_content.dart';
 import '../widgets/media_uploader.dart';
 
@@ -13,7 +11,7 @@ class MediaDesktopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(MediaController());
+    // final controller = Get.put(MediaController());
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -36,7 +34,8 @@ class MediaDesktopScreen extends StatelessWidget {
                   SizedBox(
                     width: PSizes.buttonWidth * 1.5,
                     child: ElevatedButton.icon(
-                      onPressed: ()=>controller.showImagesUploaderSection.value=!controller.showImagesUploaderSection.value,
+                      onPressed: (){},
+                      // =>controller.showImagesUploaderSection.value=!controller.showImagesUploaderSection.value,
                       label: const Text('Upload Images'),
                       icon: const Icon(Iconsax.cloud_add), 
                     ),

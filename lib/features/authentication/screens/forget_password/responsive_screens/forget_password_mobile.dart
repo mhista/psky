@@ -1,12 +1,12 @@
-import 'package:ahiaa_web/routes/routes.dart';
+import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../../../../common/styles/spacing_styles.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/constants/text_strings.dart';
-import '../../../../../utils/validators/validation.dart';
+import '../../../../../core/common/styles/spacing_styles.dart';
+import '../../../../../core/utils/constants/sizes.dart';
+import '../../../../../core/utils/constants/text_strings.dart';
+import '../../../../../core/utils/validators/validation.dart';
 
 class ForgetPasswordMobile extends StatelessWidget {
   const ForgetPasswordMobile({super.key});
@@ -59,8 +59,8 @@ class ForgetPasswordMobile extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  onPressed: () => Get.toNamed(KRoutes.resetPassword,
-                      parameters: {'email': 'diweesomchi@gmail.com'}),
+                  onPressed: (){},// => Get.toNamed(KRoutes.resetPassword,
+                      // parameters: {'email': 'diweesomchi@gmail.com'}),
                   // onPressed: () => controller.sendPasswordResetEmail(),
                   child: const Text(PTexts.submit)),
             )

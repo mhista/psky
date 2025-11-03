@@ -1,9 +1,8 @@
 import 'package:ahiaa_web/features/media/controller/media_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 
-import '../../../../utils/constants/enums.dart';
+import '../../../../core/utils/enums/enums.dart';
 
 class MediaFolderDropdown extends StatelessWidget {
   const MediaFolderDropdown({super.key, this.onChanged});
@@ -20,7 +19,7 @@ class MediaFolderDropdown extends StatelessWidget {
         width: 140,
         child: DropdownButtonFormField(
           isExpanded: false,
-          value: controller.selectedPath.value,
+          initialValue: controller.selectedPath.value,
           items: MediaCategory.values
               .map((category) => DropdownMenuItem(
                   value: category,

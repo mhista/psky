@@ -1,4 +1,4 @@
-import 'package:ahiaa_web/common/layout/templates/app_layout.dart';
+import 'package:ahiaa_web/core/common/layout/templates/app_layout.dart';
 import 'package:ahiaa_web/features/media/screens/responsive_screens/desktop_media.dart';
 import 'package:flutter/material.dart';
 
