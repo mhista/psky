@@ -7,7 +7,7 @@ import 'package:ahiaa_web/features/settings/presentation/screens/delete_account.
 import 'package:ahiaa_web/features/settings/presentation/screens/edit_profile.dart';
 import 'package:ahiaa_web/features/settings/presentation/screens/notification_settings.dart';
 import 'package:ahiaa_web/features/settings/presentation/screens/password.dart';
-import 'package:ahiaa_web/injection_container.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconsax/iconsax.dart';

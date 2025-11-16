@@ -10,10 +10,12 @@ class AiInsightWidget extends StatelessWidget {
   const AiInsightWidget({
     super.key,
     this.extra,
-    this.bgColor=PColors.tertiary
+    this.bgColor=PColors.tertiary,
+    this.aiText
   });
   final Widget? extra;
   final Color bgColor;
+  final String? aiText;
   @override
   Widget build(BuildContext context) {
     return  TRoundedContainer(
@@ -34,7 +36,7 @@ class AiInsightWidget extends StatelessWidget {
               const ResponsiveText('AI Insights for You').withSize(8).bold.withColor(PColors.primary5).withLetterSpacing(1)
             ],
           ),
-              const ResponsiveText('No new insights right now. Complete a test to unlock personalised tips.').withSize(10).withColor(PColors.black),
+               ResponsiveText(aiText?? 'No new insights right now. Complete a test to unlock personalised tips.').withSize(10).withColor(PColors.black),
          if(extra != null) extra!
         ],
       ),

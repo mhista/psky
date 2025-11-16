@@ -18,21 +18,378 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PSKY - Practice like the real WAEC with AI-powered mock exams">
 
   <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="ahiaa_web">
+  <meta name="apple-mobile-web-app-title" content="PSKY">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>ahiaa_web</title>
+  <title>PSKY</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, white 0%, rgb(226, 221, 221) 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .loader-container {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            opacity: 0;
+            color: black;
+            animation: fadeInUp 0.8s ease forwards 0.2s;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            color: black;
+            animation: fadeInUp 0.8s ease forwards 0.4s;
+        }
+
+        .loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+        }
+
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid black;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .progress-container {
+            width: 280px;
+            max-width: 90%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #000000, #141313);
+            border-radius: 2px;
+            width: 0%;
+            animation: progressAnimation 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            color: #000000;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+            color: #000;
+        }
+
+        /* Floating particles animation */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 0.5s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 1s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1.5s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 2s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 2.5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 3s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 3.5s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 4s; }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes progressAnimation {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.8;
+            }
+        }
+
+        /* Hide loader when Flutter is ready */
+        .flutter-ready .loader-container {
+            transform: scale(0.8);
+            transition: all 0.5s ease;
+        }
+
+        /* Modern glassmorphism effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            min-height: auto;
+            overflow: hidden;
+            transform: translateZ(0);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .loader-container {
+                padding: 1rem;
+                max-width: 350px;
+                width: 95%;
+            }
+            
+            .glass-card {
+                padding: 2rem 1.5rem;
+                border-radius: 15px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .progress-container {
+                width: 240px;
+                max-width: 90%;
+            }
+            
+            .loader {
+                width: 60px;
+                height: 60px;
+                margin: 0 auto 1.5rem;
+            }
+            
+            .loading-text {
+                font-size: 0.85rem;
+            }
+            
+            /* Fix the flutter-ready transition for mobile */
+            .flutter-ready .loader-container {
+                transform: scale(0.9);
+                transition: all 0.3s ease;
+            }
+            
+            .glass-card {
+                transform: none;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .loader-container {
+                max-width: 320px;
+                width: 90%;
+                padding: 0.5rem;
+            }
+            
+            .glass-card {
+                padding: 1.5rem 1rem;
+                border-radius: 12px;
+            }
+            
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .tagline {
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .progress-container {
+                width: 200px;
+            }
+            
+            .loader {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
 </head>
 <body>
+  <!-- Floating particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="loader-container">
+        <div class="glass-card">
+            <div class="logo">PSKY</div>
+            <div class="tagline">Practice like the real WAEC</div>
+            
+            <div class="loader">
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            
+            <div class="loading-text">
+                <span class="loading-dots">Charging up your confidence ⚡</span>
+            </div>
+        </div>
+    </div>
+     <script>
+        // Hide loader when Flutter is ready
+        // window.addEventListener('flutter-first-frame', function() {
+        //     document.body.classList.add('flutter-ready');
+        //     setTimeout(() => {
+        //         document.querySelector('.loader-container').style.display = 'none';
+        //     }, 500);
+        // });
+
+        // Alternative: Hide loader after a timeout (fallback)
+        // setTimeout(() => {
+        //     if (!document.body.classList.contains('flutter-ready')) {
+        //         document.body.classList.add('flutter-ready');
+        //         setTimeout(() => {
+        //             document.querySelector('.loader-container').style.display = 'none';
+        //         }, 500);
+        //     }
+        // }, 5000); // 5 second fallback
+
+        // Update loading text dynamically
+        const loadingMessages = [
+            'Warming up your computer 💻',
+            'Getting your screen ready 🖥️',
+            'Loading your questions 📝',
+            'Connecting everything together 🔗',
+            'Preparing your workspace ✨',
+            'Waking up your brain cells 🧠',
+            'Getting you in the zone 🎯',
+            'Charging up your confidence ⚡',
+            'Setting up for success 🌟',
+            'Ready to show what you know! 🚀'
+        ];
+
+        let messageIndex = 0;
+        const loadingText = document.querySelector('.loading-dots');
+        
+        setInterval(() => {
+            if (!document.body.classList.contains('flutter-ready')) {
+                messageIndex = (messageIndex + 1) % loadingMessages.length;
+                loadingText.textContent = loadingMessages[messageIndex];
+            }
+        }, 1000);
+    </script> 
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import 'package:ahiaa_web/core/common/loaders/loaders.dart';
 import 'package:ahiaa_web/data/repositories/user/user_repository.dart';
-import 'package:ahiaa_web/features/authentication/models/user_model.dart';
+import 'package:ahiaa_web/features/authentication/data/models/user_model.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:ahiaa_web/core/utils/helpers/network_manager.dart';
 import 'package:ahiaa_web/core/utils/popups/fullscreen_loader.dart';

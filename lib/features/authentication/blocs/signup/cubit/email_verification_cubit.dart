@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ahiaa_web/core/common/loaders/loaders.dart';
-import 'package:ahiaa_web/features/authentication/repository/auth_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,7 +38,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
   // SEND EMAIL VERIFICATION LINK
   Future<void> verifyUserEmail() async {
     try {
-      await AuthenticationRepository.instance.verifyUserEmail();
+      // await AuthenticationRepository.instance.verifyUserEmail();
       PLoaders.successSnackBar(
           title: 'Account created successfully',
           message:

@@ -2,7 +2,7 @@ import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_c
 import 'package:ahiaa_web/core/routes/app_router2.dart';
 import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/features/personalization/presentation/screens/widgets/user_avater.dart';
-import 'package:ahiaa_web/injection_container.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:flutter/material.dart' hide Colors, Form, FormField, TextField;
 import 'package:shadcn_flutter/shadcn_flutter.dart'

@@ -13,7 +13,7 @@ import 'package:ahiaa_web/features/notifications/presentation/cubit/notification
 import 'package:ahiaa_web/features/notifications/presentation/screens/notification_detail.dart';
 import 'package:ahiaa_web/features/notifications/presentation/screens/notifications.dart';
 import 'package:ahiaa_web/features/notifications/presentation/screens/widgets/notifications_item.dart';
-import 'package:ahiaa_web/injection_container.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide TextButton;

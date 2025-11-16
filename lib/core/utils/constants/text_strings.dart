@@ -1,4 +1,6 @@
 class PTexts {
+
+  static const int examTotalCounts = 10;
 //   Global Texts
   static const String skip = "Skip";
   static const String and = "and";

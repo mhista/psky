@@ -1,12 +1,16 @@
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
 import 'package:ahiaa_web/core/common/widgets/images/edge_rounded_images.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
+import 'package:ahiaa_web/core/services/streak_service.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
+import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 class FireStreakWidget extends StatelessWidget {
-  final int streakDays;
   final Color backgroundColor;
   final Color fireColor;
   final Color textColor;
@@ -19,7 +23,6 @@ class FireStreakWidget extends StatelessWidget {
 
   const FireStreakWidget({
     super.key,
-    required this.streakDays,
     this.backgroundColor = const Color(0xFF6B4FA0),
     this.fireColor = const Color(0xFF4A3470),
     this.textColor = Colors.white,
@@ -33,10 +36,80 @@ class FireStreakWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasStreak = streakDays > 0;
-    final displayColor = hasStreak ? backgroundColor.withValues(alpha: 0.9) : const Color(0xFFD1C4D9);
+    final examCubit = context.read<ExamCubit>();
+
+    return BlocBuilder<ExamCubit, ExamState>(
+      builder: (context, state) {
+        // Check if we have exam sessions
+        final hasExamSessions = state.maybeWhen(
+          orElse: () => false,
+          hasData: (_, __, examSessions, ___) => examSessions.isNotEmpty,
+          completed: (examSessions, _) => examSessions.isNotEmpty,
+        );
+
+        // If no sessions, show "no streak" immediately
+        if (!hasExamSessions) {
+          return _buildStreakCard(
+            hasStreak: false,
+            streakDays: 0,
+          );
+        }
+
+        // If we have sessions, fetch streak data
+        return FutureBuilder<StreakData>(
+          future: examCubit.getStreakData(),
+          builder: (context, snapshot) {
+            // While loading, show the card with current state
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildStreakCard(
+                hasStreak: false,
+                streakDays: 0,
+                isLoading: true,
+              );
+            }
+
+            // If error, show no streak
+            if (snapshot.hasError) {
+              print('Error loading streak data: ${snapshot.error}');
+              return _buildStreakCard(
+                hasStreak: false,
+                streakDays: 0,
+              );
+            }
+
+            // If we have data, show the streak
+            if (snapshot.hasData) {
+              final streakData = snapshot.data!;
+              final hasStreak = streakData.currentStreak > 0;
+
+              return _buildStreakCard(
+                hasStreak: hasStreak,
+                streakDays: streakData.currentStreak,
+              );
+            }
+
+            // Fallback
+            return _buildStreakCard(
+              hasStreak: false,
+              streakDays: 0,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildStreakCard({
+    required bool hasStreak,
+    required int streakDays,
+    bool isLoading = false,
+  }) {
+    final displayColor = hasStreak
+        ? backgroundColor.withValues(alpha: 0.9)
+        : const Color(0xFFD1C4D9);
     final displayFireColor = hasStreak ? fireColor : const Color(0xFFA8A8A8);
     final displayTextColor = hasStreak ? textColor : const Color(0xFF888888);
+
     return TRoundedContainer(
       width: 178,
       height: 128,
@@ -45,47 +118,56 @@ class FireStreakWidget extends StatelessWidget {
       radius: 12,
       child: Stack(
         children: [
-          // Fire shape in background
-          if (hasStreak)
+          // Fire shape in background (active streak)
+          if (hasStreak) ...[
             const Positioned(
-                right: 0,
-                child: PRoundedImage(
-                    imageType: ImagesType.asset,
-                    image: PImages.sfb,
-                    width: 100,
-                    height: 130,
-                    fit: BoxFit.cover)),
-          if (hasStreak)
+              right: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sfb,
+                width: 100,
+                height: 130,
+                fit: BoxFit.cover,
+              ),
+            ),
             const Positioned(
               right: -10,
               bottom: 0,
               child: PRoundedImage(
-                  imageType: ImagesType.asset,
-                  image: PImages.sfs,
-                  width: 90,
-                  height: 120,
-                  fit: BoxFit.contain),
+                imageType: ImagesType.asset,
+                image: PImages.sfs,
+                width: 90,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
             ),
-          if (!hasStreak)
+          ],
+
+          // Inactive fire shape (no streak)
+          if (!hasStreak) ...[
             const Positioned(
-                right: 0,
-                child: PRoundedImage(
-                    imageType: ImagesType.asset,
-                    image: PImages.sdb,
-                    width: 100,
-                    height: 130,
-                    fit: BoxFit.cover)),
-          if (!hasStreak)
+              right: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sdb,
+                width: 100,
+                height: 130,
+                fit: BoxFit.cover,
+              ),
+            ),
             const Positioned(
               right: -10,
               bottom: 0,
               child: PRoundedImage(
-                  imageType: ImagesType.asset,
-                  image: PImages.sds,
-                  width: 90,
-                  height: 120,
-                  fit: BoxFit.contain),
+                imageType: ImagesType.asset,
+                image: PImages.sds,
+                width: 90,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
             ),
+          ],
+
           // Content
           Positioned(
             left: 15,
@@ -98,6 +180,216 @@ class FireStreakWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Loading indicator
+                    if (isLoading)
+                      SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(displayTextColor),
+                        ),
+                      )
+                    else
+                      Text(
+                        hasStreak ? '$streakDays' : '00',
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: displayTextColor,
+                          height: 1,
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasStreak ? title : 'No streak yet',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: displayTextColor,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      hasStreak
+                          ? subtitle
+                          : 'Try a 10-minute drill to start one',
+                      style: TextStyle(
+                        fontSize: 6,
+                        color:
+                            displayTextColor.withOpacity(hasStreak ? 0.8 : 0.7),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// ALTERNATIVE: Optimized Version with Caching
+// ============================================================================
+
+/// Optimized version that caches streak data to avoid repeated fetches
+class FireStreakWidgetOptimized extends StatefulWidget {
+  final Color backgroundColor;
+  final Color fireColor;
+  final Color textColor;
+  final String title;
+  final String subtitle;
+
+  const FireStreakWidgetOptimized({
+    super.key,
+    this.backgroundColor = const Color(0xFF6B4FA0),
+    this.fireColor = const Color(0xFF4A3470),
+    this.textColor = Colors.white,
+    this.title = 'Day Streak',
+    this.subtitle = "Keep the streak going - don't break it.",
+  });
+
+  @override
+  State<FireStreakWidgetOptimized> createState() =>
+      _FireStreakWidgetOptimizedState();
+}
+
+class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
+  StreakData? _cachedStreakData;
+  bool _isLoading = true;
+  final examCubit = getIt<ExamCubit>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStreakData();
+  }
+
+  Future<void> _loadStreakData() async {
+    try {
+      final streakData = await examCubit.getStreakData();
+
+      if (mounted) {
+        setState(() {
+          _cachedStreakData = streakData;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading streak data: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<ExamCubit, ExamState>(
+      bloc: examCubit,
+      listener: (context, state) {
+        // Refresh streak data when exam is completed
+        state.maybeWhen(
+          completed: (_, __) => _loadStreakData(),
+          orElse: () {},
+        );
+      },
+      child: _buildStreakCard(),
+    );
+  }
+
+  Widget _buildStreakCard() {
+    final hasStreak = (_cachedStreakData?.currentStreak ?? 0) > 0;
+    final streakDays = _cachedStreakData?.currentStreak ?? 0;
+
+    final displayColor = hasStreak
+        ? widget.backgroundColor.withValues(alpha: 0.9)
+        : const Color(0xFFD1C4D9);
+    final displayTextColor =
+        hasStreak ? widget.textColor : const Color(0xFF888888);
+
+    return TRoundedContainer(
+      width: 178,
+      height: 128,
+      backgroundColor: displayColor,
+      padding: const EdgeInsets.all(0),
+      radius: 12,
+      child: Stack(
+        children: [
+          // Background images
+          if (hasStreak) ...[
+            const Positioned(
+              right: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sfb,
+                width: 100,
+                height: 130,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const Positioned(
+              right: -10,
+              bottom: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sfs,
+                width: 90,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ],
+          if (!hasStreak) ...[
+            const Positioned(
+              right: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sdb,
+                width: 100,
+                height: 130,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const Positioned(
+              right: -10,
+              bottom: 0,
+              child: PRoundedImage(
+                imageType: ImagesType.asset,
+                image: PImages.sds,
+                width: 90,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ],
+
+          // Content
+          Positioned(
+            left: 15,
+            top: 15,
+            child: SizedBox(
+              width: 80,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isLoading)
+                    SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(displayTextColor),
+                      ),
+                    )
+                  else
                     Text(
                       hasStreak ? '$streakDays' : '00',
                       style: TextStyle(
@@ -107,36 +399,28 @@ class FireStreakWidget extends StatelessWidget {
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hasStreak ? title : 'No streak yet',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: displayTextColor,
-                        letterSpacing: 1
-                      ),
+                  const SizedBox(height: 4),
+                  Text(
+                    hasStreak ? widget.title : 'No streak yet',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: displayTextColor,
+                      letterSpacing: 1,
                     ),
-                    if (hasStreak)
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 6,
-                          color: displayTextColor.withOpacity(0.8),
-                          height: 1.3,
-                        ),
-                      )
-                    else
-                      Text(
-                        'Try a 10-minute drill to start one',
-                        style: TextStyle(
-                          fontSize: 6,
-                          color: displayTextColor.withOpacity(0.7),
-                          height: 1.3,
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    hasStreak
+                        ? widget.subtitle
+                        : 'Try a 10-minute drill to start one',
+                    style: TextStyle(
+                      fontSize: 6,
+                      color:
+                          displayTextColor.withOpacity(hasStreak ? 0.8 : 0.7),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -325,119 +609,5 @@ class FirePainter extends CustomPainter {
   bool shouldRepaint(FirePainter oldDelegate) {
     return oldDelegate.animationValue != animationValue ||
         oldDelegate.color != color;
-  }
-}
-
-// Demo page
-class FireStreakDemo extends StatefulWidget {
-  const FireStreakDemo({Key? key}) : super(key: key);
-
-  @override
-  State<FireStreakDemo> createState() => _FireStreakDemoState();
-}
-
-class _FireStreakDemoState extends State<FireStreakDemo> {
-  int _streakDays = 14;
-  bool _animate = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Fire Streak Widget'),
-        backgroundColor: const Color(0xFF6B4FA0),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Active streak
-              FireStreakWidget(
-                streakDays: _streakDays,
-                animate: _animate,
-              ),
-              const SizedBox(height: 20),
-
-              // Empty state
-              const FireStreakWidget(
-                streakDays: 0,
-                animate: false,
-              ),
-              const SizedBox(height: 20),
-
-              // Custom colors
-              const FireStreakWidget(
-                streakDays: 7,
-                backgroundColor: Color(0xFFFF6B6B),
-                fireColor: Color(0xFFCC5555),
-                animate: true,
-              ),
-              const SizedBox(height: 20),
-
-              // Large version
-              const FireStreakWidget(
-                streakDays: 30,
-                width: 200,
-                height: 120,
-                animate: true,
-              ),
-              const SizedBox(height: 40),
-
-              // Controls
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Streak Days: $_streakDays',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Slider(
-                      value: _streakDays.toDouble(),
-                      min: 0,
-                      max: 100,
-                      divisions: 100,
-                      label: _streakDays.toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          _streakDays = value.toInt();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SwitchListTile(
-                      title: const Text('Animate Fire'),
-                      value: _animate,
-                      onChanged: (value) {
-                        setState(() {
-                          _animate = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

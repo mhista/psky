@@ -9,7 +9,7 @@ import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/core/utils/validators/validation.dart';
 import 'package:ahiaa_web/features/personalization/presentation/screens/widgets/user_avater.dart';
 import 'package:ahiaa_web/features/settings/presentation/screens/widgets/gender_radio.dart';
-import 'package:ahiaa_web/injection_container.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart' hide Form;
 import 'package:iconsax/iconsax.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'

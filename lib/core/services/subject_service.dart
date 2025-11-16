@@ -5,11 +5,19 @@
 // ============================================================================
 
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
-import 'package:ahiaa_web/features/practice_exam/data/models/subject.dart';
-import 'package:ahiaa_web/features/practice_exam/data/models/syllabus.dart';
-import 'package:ahiaa_web/features/practice_exam/data/models/topic.dart';
+import 'package:ahiaa_web/features/practice_exam/data/models/exam_data_models/subject.dart';
+import 'package:ahiaa_web/features/practice_exam/data/models/exam_data_models/syllabus.dart';
+import 'package:ahiaa_web/features/practice_exam/data/models/exam_data_models/topic.dart';
 import 'package:injectable/injectable.dart';
-@injectable
+
+
+// ============================================================================
+// UPDATED SUBJECT REPOSITORY
+// Now handles WAEC, NECO, and JAMB
+// ============================================================================
+
+
+@lazySingleton
 class SubjectRepository {
   final List<Subject> _subjects = [];
 
@@ -26,7 +34,12 @@ class SubjectRepository {
   // Get all subjects
   List<Subject> getAllSubjects() => List.unmodifiable(_subjects);
 
-  // Get subject by ID
+  // Get subjects by exam body
+  List<Subject> getSubjectsByExamBody(ExamBody examBody) {
+    return _subjects.where((s) => s.availableIn.contains(examBody)).toList();
+  }
+
+  // Get subject by ID (now includes exam body in ID)
   Subject? getSubjectById(String id) {
     try {
       return _subjects.firstWhere((s) => s.id == id);
@@ -35,7 +48,30 @@ class SubjectRepository {
     }
   }
 
-  // Get subject by code
+  // Get subject by code and exam body
+  Subject? getSubjectByCodeAndExamBody(String code, ExamBody examBody) {
+    try {
+      return _subjects.firstWhere(
+        (s) => s.code == code && s.availableIn.contains(examBody),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Get subject by name and exam body
+  Subject? getSubjectByNameAndExamBody(String name, ExamBody examBody) {
+    try {
+      return _subjects.firstWhere(
+        (s) => s.name.toLowerCase() == name.toLowerCase() && 
+               s.availableIn.contains(examBody),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Get subject by code (returns first match across all exam bodies)
   Subject? getSubjectByCode(String code) {
     try {
       return _subjects.firstWhere((s) => s.code == code);
@@ -44,7 +80,7 @@ class SubjectRepository {
     }
   }
 
-  // Get subject by name
+  // Get subject by name (returns first match across all exam bodies)
   Subject? getSubjectByName(String name) {
     try {
       return _subjects.firstWhere(
@@ -55,35 +91,55 @@ class SubjectRepository {
     }
   }
 
-  // Search subjects by name
-  List<Subject> searchSubjects(String query) {
+  // Search subjects across all exam bodies
+  List<Subject> searchSubjects(String query, {ExamBody? examBody}) {
     final lowerQuery = query.toLowerCase();
-    return _subjects.where((subject) {
-      return subject.name.toLowerCase().contains(lowerQuery) ||
+    var results = _subjects.where((subject) {
+      final matchesQuery = subject.name.toLowerCase().contains(lowerQuery) ||
           subject.code.toLowerCase().contains(lowerQuery) ||
           (subject.description?.toLowerCase().contains(lowerQuery) ?? false);
-    }).toList();
+      
+      if (examBody != null) {
+        return matchesQuery && subject.availableIn.contains(examBody);
+      }
+      return matchesQuery;
+    });
+    
+    return results.toList();
   }
 
-  // Get subjects by category
-  List<Subject> getSubjectsByCategory(SubjectCategory category) {
-    return _subjects.where((s) => s.category == category).toList();
+  // Get subjects by category and optionally filter by exam body
+  List<Subject> getSubjectsByCategory(SubjectCategory category, {ExamBody? examBody}) {
+    var results = _subjects.where((s) => s.category == category);
+    
+    if (examBody != null) {
+      results = results.where((s) => s.availableIn.contains(examBody));
+    }
+    
+    return results.toList();
   }
 
-  // Get compulsory subjects
-  List<Subject> getCompulsorySubjects() {
-    return _subjects.where((s) => s.isCompulsory).toList();
+  // Get compulsory subjects for a specific exam body
+  List<Subject> getCompulsorySubjects({ExamBody? examBody}) {
+    var results = _subjects.where((s) => s.isCompulsory);
+    
+    if (examBody != null) {
+      results = results.where((s) => s.availableIn.contains(examBody));
+    }
+    
+    return results.toList();
   }
 
-  // Get subjects available in specific exam body
-  List<Subject> getSubjectsByExamBody(ExamBody examBody) {
-    return _subjects.where((s) => s.availableIn.contains(examBody)).toList();
-  }
-
-  // Search topics across all subjects
-  Map<Subject, List<Topic>> searchTopicsAcrossSubjects(String query) {
+  // Search topics across all subjects (optionally filter by exam body)
+  Map<Subject, List<Topic>> searchTopicsAcrossSubjects(String query, {ExamBody? examBody}) {
     final results = <Subject, List<Topic>>{};
-    for (var subject in _subjects) {
+    
+    var subjectsToSearch = _subjects;
+    if (examBody != null) {
+      subjectsToSearch = _subjects.where((s) => s.availableIn.contains(examBody)).toList();
+    }
+    
+    for (var subject in subjectsToSearch) {
       final topics = subject.searchTopics(query);
       if (topics.isNotEmpty) {
         results[subject] = topics;
@@ -102,9 +158,65 @@ class SubjectRepository {
     return subject?.getSyllabus(examBody: examBody, year: year);
   }
 
+  // Get syllabus by subject name
+  Syllabus? getSyllabusByName({
+    required String subjectName,
+    required ExamBody examBody,
+    int? year,
+  }) {
+    final subject = getSubjectByNameAndExamBody(subjectName, examBody);
+    return subject?.getSyllabus(examBody: examBody, year: year);
+  }
+
   // Clear all subjects
   void clear() {
     _subjects.clear();
   }
-}
 
+  // Load from JSON array
+  void loadFromJson(List<dynamic> jsonArray) {
+    clear();
+    final subjects = jsonArray
+        .map((json) => Subject.fromJson(json as Map<String, dynamic>))
+        .toList();
+    addSubjects(subjects);
+  }
+
+  // Export to JSON array (optionally filter by exam body)
+  List<Map<String, dynamic>> exportToJson({ExamBody? examBody}) {
+    if (examBody != null) {
+      return getSubjectsByExamBody(examBody).map((s) => s.toJson()).toList();
+    }
+    return _subjects.map((s) => s.toJson()).toList();
+  }
+
+  // Get statistics by exam body
+  Map<String, dynamic> getStatisticsByExamBody(ExamBody examBody) {
+    final subjects = getSubjectsByExamBody(examBody);
+    int totalTopics = 0;
+    int totalSubtopics = 0;
+
+    for (var subject in subjects) {
+      for (var syllabus in subject.syllabuses) {
+        if (syllabus.examBody == examBody) {
+          totalTopics += syllabus.topics.length;
+          for (var topic in syllabus.topics) {
+            totalSubtopics += topic.subtopics.length;
+          }
+        }
+      }
+    }
+
+    return {
+      'examBody': examBody.name,
+      'totalSubjects': subjects.length,
+      'compulsorySubjects': subjects.where((s) => s.isCompulsory).length,
+      'totalTopics': totalTopics,
+      'totalSubtopics': totalSubtopics,
+      'categoryCounts': {
+        for (var category in SubjectCategory.values)
+          category.name: subjects.where((s) => s.category == category).length,
+      },
+    };
+  }
+}

@@ -2,6 +2,10 @@ import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_c
 import 'package:ahiaa_web/core/common/widgets/images/edge_rounded_images.dart';
 import 'package:ahiaa_web/core/common/widgets/shimmer/three_to_one_shimmer.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
+import 'package:ahiaa_web/core/routes/app_router2.dart';
+import 'package:ahiaa_web/core/routes/routes.dart' show KRoutes;
+import 'package:ahiaa_web/features/authentication/domain/entities/user.dart';
 import 'package:ahiaa_web/features/dashboard/presentation/screens/widgets/ai_insights.dart';
 import 'package:ahiaa_web/features/dashboard/presentation/screens/widgets/dashboard_big_info.dart';
 import 'package:ahiaa_web/features/dashboard/presentation/screens/widgets/days_active_widget.dart';
@@ -13,6 +17,7 @@ import 'package:ahiaa_web/features/dashboard/presentation/screens/widgets/test_c
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
+import 'package:ahiaa_web/features/personalization/presentation/cubit/cubit/user_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:iconsax/iconsax.dart';
@@ -28,14 +33,12 @@ class DashboardDesktop extends StatelessWidget {
   final bool isLoading, hasError, hasData, expand;
   @override
   Widget build(BuildContext context) {
+    final user = getIt<UserCubit>().user ?? UserEntity.empty();
     final subjects = [
-      SubjectScore(
-          name: 'Chemistry', score: 100, color: PColors.primary5),
-      SubjectScore(name: 'Biology', score: 100, color:  PColors.primary2),
-      SubjectScore(
-          name: 'Mathematics', score: 20, color: PColors.darkerGrey),
-      SubjectScore(
-          name: 'Chemistry', score: 20, color: PColors.white),
+      SubjectScore(name: 'Chemistry', score: 100, color: PColors.primary5),
+      SubjectScore(name: 'Biology', score: 100, color: PColors.primary2),
+      SubjectScore(name: 'Mathematics', score: 20, color: PColors.darkerGrey),
+      SubjectScore(name: 'Chemistry', score: 20, color: PColors.white),
     ];
     final totalAverage =
         (subjects!.fold(0.0, (sum, subject) => sum + subject.score)) /
@@ -90,11 +93,17 @@ class DashboardDesktop extends StatelessWidget {
                           spacing: 10,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Hi, Nana!').x4Large.black.animate().fadeIn(duration: 1000.ms),
+                            Text('Hi, ${user.firstName}!')
+                                .x4Large
+                                .black
+                                .animate()
+                                .fadeIn(duration: 1000.ms),
                             const Text('What are you learning today?')
                                 .x4Large
                                 .black
-                                .withOpacity(0.5).animate(delay: 500.ms).fadeIn(duration: 800.ms)
+                                .withOpacity(0.5)
+                                .animate(delay: 500.ms)
+                                .fadeIn(duration: 800.ms)
                           ],
                         ),
                       )
@@ -119,10 +128,14 @@ class DashboardDesktop extends StatelessWidget {
                       radius: 16,
                       height: 72,
                       errorColor: PColors.primary.withValues(alpha: 0.4),
+                      callBack: () => getIt<AppRouter>()
+                          .router
+                          .goNamed(KRoutes.practiceExam),
                       loadedWidget: const QuickStartWidget(
                           bgColor: PColors.primary5,
                           text: 'Start full mock exam',
-                          subtitle: 'Take a timed, WAEC-style mock to test your stamina and track your score across subjects.',
+                          subtitle:
+                              'Take a timed, WAEC-style mock to test your stamina and track your score across subjects.',
                           buttonText: 'Start mock',
                           icon: Iconsax.note_2)),
                 ),
@@ -136,10 +149,14 @@ class DashboardDesktop extends StatelessWidget {
                       radius: 16,
                       height: 72,
                       errorColor: PColors.tertiary.withValues(alpha: 0.5),
+                      callBack: () => getIt<AppRouter>()
+                          .router
+                          .goNamed(KRoutes.practiceExam),
                       loadedWidget: const QuickStartWidget(
                           bgColor: PColors.bg2,
                           text: 'Quick 10-Q/A drill',
-                          subtitle: 'Short, focused drills to target weak topics — perfect for study breaks and fast progress.',
+                          subtitle:
+                              'Short, focused drills to target weak topics — perfect for study breaks and fast progress.',
                           buttonText: 'Start drill',
                           icon: Iconsax.flash)),
                 ),
@@ -157,7 +174,8 @@ class DashboardDesktop extends StatelessWidget {
                           bgColor: PColors.primary3,
                           useAi: true,
                           text: 'Personalized AI plan',
-                          subtitle: 'Choose subjects, topics, and number of questions to create a set that matches your study needs.',
+                          subtitle:
+                              'Choose subjects, topics, and number of questions to create a set that matches your study needs.',
                           buttonText: 'Create test',
                           icon: Icons.arrow_drop_down_rounded)),
                 )
@@ -199,7 +217,8 @@ class DashboardDesktop extends StatelessWidget {
                                           PColors.bg4.withValues(alpha: 0.3),
                                       errorText:
                                           'Data unavailable, Please check your connection',
-                                      loadedWidget:const FireStreakWidget(streakDays: 20)),
+                                      loadedWidget:
+                                          const FireStreakWidgetOptimized()),
                                 ),
                                 Expanded(
                                   child: ThreeToOneShimmer(
@@ -215,8 +234,6 @@ class DashboardDesktop extends StatelessWidget {
                                       errorText:
                                           'Data unavailable, Please check your connection',
                                       loadedWidget: ScoreGaugeWidget(
-                                        totalAverage: totalAverage,
-                                        subjects: subjects,
                                         isExpanded: expand,
                                       )),
                                 ),
@@ -233,21 +250,13 @@ class DashboardDesktop extends StatelessWidget {
                                       errorText:
                                           'Data unavailable, Please check your connection',
                                       width: 178,
-                                      loadedWidget: TestTracker(isExpanded: expand,)),
+                                      loadedWidget: TestTracker(
+                                        isExpanded: expand,
+                                      )),
                                 ),
                               ],
                             ),
-                            ThreeToOneShimmer(
-                                isLoading: isLoading,
-                                hasError: hasError,
-                                hasData: hasData,
-                                radius: 16,
-                                height: 240,
-                                width: double.infinity,
-                                errorColor: PColors.bg4.withValues(alpha: 0.3),
-                                errorText:
-                                    "Couldn't load activity, Try again later",
-                                loadedWidget:const DaysActiveWidget())
+                          const DaysActiveWidget()
                           ],
                         ),
                       ),
@@ -265,17 +274,7 @@ class DashboardDesktop extends StatelessWidget {
                     ],
                   ),
                 ),
-                ThreeToOneShimmer(
-                    isLoading: isLoading,
-                    hasError: hasError,
-                    hasData: hasData,
-                    radius: 16,
-                    height: 478,
-                    errorColor: PColors.tertiary.withValues(alpha: 0.4),
-                    errorText:
-                        'Leaderboard unavailable, Please check back soon',
-                    width: expand ? 366 : 280,
-                    loadedWidget: LeaderBoardWidget(expand: expand))
+                LeaderBoardWidget(expand: expand)
               ],
             )
           ],
@@ -284,11 +283,3 @@ class DashboardDesktop extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-

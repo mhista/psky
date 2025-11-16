@@ -1,5 +1,5 @@
 import 'package:ahiaa_web/core/common/widgets/images/edge_rounded_images.dart';
-import 'package:ahiaa_web/injection_container.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/routes/app_router2.dart';
 import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';

@@ -1,62 +1,35 @@
+// ============================================================================
+// STATE
+// ============================================================================
 
-// ====================================================================
-// EXAM STATE
-// ====================================================================
 part of 'exam_cubit.dart';
 
-class ExamState extends Equatable {
-  final int currentQuestionIndex;
-  final int totalQuestions;
-  final Map<int, String> answers;
-  final Set<int> reviewLater;
-  final DateTime startTime;
-  final bool isSubmitting;
-  final bool isSaving;
-  final String? errorMessage;
+@freezed
+class ExamState with _$ExamState {
+  const factory ExamState.initial() = _Initial;
 
-  const ExamState({
-    required this.currentQuestionIndex,
-    required this.totalQuestions,
-    required this.answers,
-    required this.reviewLater,
-    required this.startTime,
-    this.isSubmitting = false,
-    this.isSaving = false,
-    this.errorMessage,
-  });
+  const factory ExamState.modeSelected({
+    required ExamMode examMode,
+    Map<String, List<String>>? selectedSubjectAndTopic,
+    String? selectedSubject, // Add this field
+    required List<String> selectedSubjectTopics,
+  }) = _ModeSelected;
 
-  ExamState copyWith({
-    int? currentQuestionIndex,
-    int? totalQuestions,
-    Map<int, String>? answers,
-    Set<int>? reviewLater,
-    DateTime? startTime,
-    bool? isSubmitting,
-    bool? isSaving,
-    String? errorMessage,
-  }) {
-    return ExamState(
-      currentQuestionIndex: currentQuestionIndex ?? this.currentQuestionIndex,
-      totalQuestions: totalQuestions ?? this.totalQuestions,
-      answers: answers ?? this.answers,
-      reviewLater: reviewLater ?? this.reviewLater,
-      startTime: startTime ?? this.startTime,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSaving: isSaving ?? this.isSaving,
-      errorMessage: errorMessage,
-    );
-  }
+  const factory ExamState.loading() = _Loading;
 
-  @override
-  List<Object?> get props => [
-        currentQuestionIndex,
-        totalQuestions,
-        answers,
-        reviewLater,
-        startTime,
-        isSubmitting,
-        isSaving,
-        errorMessage,
-      ];
+  const factory ExamState.hasData({
+    required ExamMode examMode,
+    required List<String> selectedSubjects,
+    required List<ExamSession> examSessions,
+    required ExamSession currentSession,
+  }) = _HasData;
+
+  const factory ExamState.completed({
+    required List<ExamSession> examSessions,
+    required ExamSession completedSession,
+  }) = _Completed;
+
+  const factory ExamState.error({
+    required String message,
+  }) = _Error;
 }
-

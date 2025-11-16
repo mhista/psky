@@ -23,7 +23,7 @@ class SubscriptionPage extends StatefulWidget {
 class _SubscriptionPageState extends State<SubscriptionPage> {
   @override
   Widget build(BuildContext context) {
-    return SiteTemplate2(
+    return const SiteTemplate2(
         useLayout: true,
         desktop: SubscriptionDesktop());
   }
