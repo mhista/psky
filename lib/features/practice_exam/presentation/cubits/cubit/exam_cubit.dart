@@ -1126,6 +1126,16 @@ class ExamCubit extends Cubit<ExamState> {
 // FETCH SESSIONS IN PROGRESS
 // ============================================================================
 
+   /// Get all sessions that are currently in progress
+  List<ExamSession> getAllSessions() {
+    final currentState = state;
+
+    if (currentState is! _HasData) return [];
+
+    return currentState.examSessions;
+  }
+
+ 
   /// Get all sessions that are currently in progress
   List<ExamSession> getSessionsInProgress() {
     final currentState = state;
@@ -1544,6 +1554,26 @@ class ExamCubit extends Cubit<ExamState> {
     }
   }
 
+  /// Calculate aggregate results for all completed sessions
+  AggregateExamResult? calculateAggregateWithParams(
+      List<ExamSession> sessions) {
+    try {
+      if (sessions.isEmpty) {
+        pskyLog('No completed sessions to calculate');
+        return null;
+      }
+
+      final result = ExamCalculator.calculateAggregateResult(sessions);
+      pskyLog('Aggregate result calculated: ${sessions.length} sessions, '
+          'Overall: ${result.aggregateScore.percentage}% - ${result.overallGrade.grade}');
+
+      return result;
+    } catch (e) {
+      pskyLog('Error calculating aggregate results: $e');
+      return null;
+    }
+  }
+
   /// Get aggregate results for a specific subject
   AggregateExamResult? calculateSubjectAggregateResults(String subjectId) {
     final currentState = state;
@@ -1660,6 +1690,423 @@ class ExamCubit extends Cubit<ExamState> {
       pskyLog('Error grouping results by subject: $e');
       return {};
     }
+  }
+
+// Add cache tracking
+  DateTime? _lastLeaderboardFetch;
+  static const Duration _leaderboardRefreshInterval = Duration(minutes: 5);
+
+  /// Get leaderboard entries with advanced filtering and caching
+  /// Returns empty list if there's only one person on the leaderboard
+  Future<List<LeaderboardEntry>> getLeaderboardEntries({
+    int limit = 100,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    LeaderboardFilter? filter,
+    bool forceRefresh = false,
+  }) async {
+    try {
+      final repository = getIt<ExamRepository>();
+
+      // Smart refresh logic: only refresh if forced or cache is stale
+      final shouldRefresh = forceRefresh || _shouldRefreshLeaderboard();
+
+      // Check if there are multiple users (cached)
+      final hasMultipleUsers = await repository.hasMultipleLeaderboardUsers(
+        forceRefresh: shouldRefresh,
+      );
+
+      if (!hasMultipleUsers) {
+        pskyLog('Leaderboard has only one user, returning empty list');
+        return [];
+      }
+
+      // Fetch leaderboard entries (uses cache internally)
+      var entries = await repository.getLeaderboardList(
+        limit: limit,
+        type: type,
+        subjectId: subjectId,
+        forceRefresh: shouldRefresh,
+      );
+
+      // Update last fetch time
+      if (shouldRefresh) {
+        _lastLeaderboardFetch = DateTime.now();
+      }
+
+      // Apply client-side filtering if provided
+      if (filter != null) {
+        entries = _applyLeaderboardFilter(entries, filter);
+      }
+
+      pskyLog(
+          'Retrieved ${entries.length} leaderboard entries (after filtering)');
+      return entries;
+    } catch (e) {
+      pskyLog('Error getting leaderboard entries: $e');
+      return [];
+    }
+  }
+
+  /// Check if leaderboard should be refreshed
+  bool _shouldRefreshLeaderboard() {
+    if (_lastLeaderboardFetch == null) return true;
+
+    final timeSinceLastFetch =
+        DateTime.now().difference(_lastLeaderboardFetch!);
+    return timeSinceLastFetch > _leaderboardRefreshInterval;
+  }
+
+  /// Force refresh leaderboard cache
+  Future<void> refreshLeaderboardCache() async {
+    final repository = getIt<ExamRepository>();
+    repository.clearLeaderboardCache();
+    _lastLeaderboardFetch = null;
+    pskyLog('Leaderboard cache force refreshed');
+  }
+
+  /// Apply client-side filtering to leaderboard entries
+  List<LeaderboardEntry> _applyLeaderboardFilter(
+    List<LeaderboardEntry> entries,
+    LeaderboardFilter filter,
+  ) {
+    var filtered = entries;
+
+    // Filter by minimum score
+    if (filter.minScore != null) {
+      filtered =
+          filtered.where((e) => e.overallScore >= filter.minScore!).toList();
+    }
+
+    // Filter by maximum score
+    if (filter.maxScore != null) {
+      filtered =
+          filtered.where((e) => e.overallScore <= filter.maxScore!).toList();
+    }
+
+    // // Filter by minimum exam count
+    // if (filter.minExamsCompleted != null) {
+    //   filtered = filtered.where((e) => e.totalExams >= filter.minExamsCompleted!).toList();
+    // }
+
+    // Filter by user IDs (useful for friends/group filtering)
+    if (filter.userIds != null && filter.userIds!.isNotEmpty) {
+      filtered =
+          filtered.where((e) => filter.userIds!.contains(e.userId)).toList();
+    }
+
+    // Filter by display name search
+    if (filter.searchQuery != null && filter.searchQuery!.isNotEmpty) {
+      final query = filter.searchQuery!.toLowerCase();
+      filtered = filtered
+          .where((e) => e.displayName.toLowerCase().contains(query))
+          .toList();
+    }
+
+    // Filter by date range (last updated)
+    if (filter.startDate != null) {
+      filtered = filtered
+          .where((e) =>
+              e.lastUpdated.isAfter(filter.startDate!) ||
+              e.lastUpdated.isAtSameMomentAs(filter.startDate!))
+          .toList();
+    }
+
+    if (filter.endDate != null) {
+      filtered = filtered
+          .where((e) =>
+              e.lastUpdated.isBefore(filter.endDate!) ||
+              e.lastUpdated.isAtSameMomentAs(filter.endDate!))
+          .toList();
+    }
+
+    // Filter by rank range
+    if (filter.minRank != null || filter.maxRank != null) {
+      // Add ranks to entries first
+      for (int i = 0; i < filtered.length; i++) {
+        // Rank is position + 1
+        final rank = i + 1;
+
+        if (filter.minRank != null && rank < filter.minRank!) {
+          continue;
+        }
+        if (filter.maxRank != null && rank > filter.maxRank!) {
+          break;
+        }
+      }
+
+      if (filter.minRank != null) {
+        filtered = filtered.skip(filter.minRank! - 1).toList();
+      }
+      if (filter.maxRank != null) {
+        filtered = filtered.take(filter.maxRank!).toList();
+      }
+    }
+
+    // Apply sorting if specified
+    if (filter.sortBy != null) {
+      filtered = _sortLeaderboardEntries(
+          filtered, filter.sortBy!, filter.sortDescending);
+    }
+
+    // Apply limit after filtering
+    if (filter.customLimit != null) {
+      filtered = filtered.take(filter.customLimit!).toList();
+    }
+
+    return filtered;
+  }
+
+  /// Sort leaderboard entries by different criteria
+  List<LeaderboardEntry> _sortLeaderboardEntries(
+    List<LeaderboardEntry> entries,
+    LeaderboardSortBy sortBy,
+    bool descending,
+  ) {
+    final sorted = List<LeaderboardEntry>.from(entries);
+
+    switch (sortBy) {
+      case LeaderboardSortBy.score:
+        sorted.sort((a, b) => descending
+            ? b.overallScore.compareTo(a.overallScore)
+            : a.overallScore.compareTo(b.overallScore));
+        break;
+
+      case LeaderboardSortBy.lastUpdated:
+        sorted.sort((a, b) => descending
+            ? b.lastUpdated.compareTo(a.lastUpdated)
+            : a.lastUpdated.compareTo(b.lastUpdated));
+        break;
+
+      case LeaderboardSortBy.displayName:
+        sorted.sort((a, b) => descending
+            ? b.displayName.compareTo(a.displayName)
+            : a.displayName.compareTo(b.displayName));
+        break;
+    }
+
+    return sorted;
+  }
+
+  /// Get leaderboard count (cached)
+  Future<int> getLeaderboardUserCount({bool forceRefresh = false}) async {
+    try {
+      final repository = getIt<ExamRepository>();
+      return await repository.getLeaderboardCount(forceRefresh: forceRefresh);
+    } catch (e) {
+      pskyLog('Error getting leaderboard count: $e');
+      return 0;
+    }
+  }
+
+  /// Check if should show leaderboard (cached check)
+  Future<bool> shouldShowLeaderboard({bool forceRefresh = false}) async {
+    try {
+      final repository = getIt<ExamRepository>();
+      return await repository.hasMultipleLeaderboardUsers(
+          forceRefresh: forceRefresh);
+    } catch (e) {
+      pskyLog('Error checking leaderboard visibility: $e');
+      return false;
+    }
+  }
+
+  /// Get leaderboard with current user's rank (optimized)
+  Future<LeaderboardData?> getLeaderboardWithUserRank({
+    required String userId,
+    int limit = 100,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    LeaderboardFilter? filter,
+    bool forceRefresh = false,
+  }) async {
+    try {
+      final repository = getIt<ExamRepository>();
+
+      // Smart refresh
+      final shouldRefresh = forceRefresh || _shouldRefreshLeaderboard();
+
+      // Check if there are multiple users (cached)
+      final hasMultipleUsers = await repository.hasMultipleLeaderboardUsers(
+        forceRefresh: shouldRefresh,
+      );
+
+      if (!hasMultipleUsers) {
+        pskyLog('Leaderboard has only one user, returning null');
+        return null;
+      }
+
+      // Fetch leaderboard entries and user rank in parallel
+      final results = await Future.wait([
+        repository.getLeaderboardList(
+          limit: limit,
+          type: type,
+          subjectId: subjectId,
+          forceRefresh: shouldRefresh,
+        ),
+        repository.getUserRank(
+          userId: userId,
+          type: type,
+          subjectId: subjectId,
+        ),
+      ]);
+
+      var entries = results[0] as List<LeaderboardEntry>;
+      final userRank = results[1] as LeaderboardRank;
+
+      // Update last fetch time
+      if (shouldRefresh) {
+        _lastLeaderboardFetch = DateTime.now();
+      }
+
+      // Apply filtering if provided
+      if (filter != null) {
+        entries = _applyLeaderboardFilter(entries, filter);
+      }
+
+      // Find user's entry in the list
+      final userEntry = entries.firstWhere(
+        (entry) => entry.userId == userId,
+        orElse: () => entries.first,
+      );
+
+      return LeaderboardData(
+        entries: entries,
+        userRank: userRank,
+        userEntry: userEntry,
+        totalUsers: userRank.totalUsers,
+        type: type,
+        appliedFilter: filter,
+      );
+    } catch (e) {
+      pskyLog('Error getting leaderboard with user rank: $e');
+      return null;
+    }
+  }
+
+  /// Get top performers with optional filtering (cached)
+  Future<List<LeaderboardEntry>> getTopPerformers({
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    LeaderboardFilter? filter,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      limit: 10,
+      type: type,
+      subjectId: subjectId,
+      filter: filter,
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Get leaderboard for specific subject with filtering (cached)
+  Future<List<LeaderboardEntry>> getSubjectLeaderboard(
+    String subjectId, {
+    LeaderboardFilter? filter,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      type: LeaderboardType.subject,
+      subjectId: subjectId,
+      limit: 50,
+      filter: filter,
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Get filtered leaderboard by score range (cached)
+  Future<List<LeaderboardEntry>> getLeaderboardByScoreRange({
+    required double minScore,
+    required double maxScore,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      type: type,
+      subjectId: subjectId,
+      filter: LeaderboardFilter(
+        minScore: minScore,
+        maxScore: maxScore,
+      ),
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Get leaderboard for friends/specific users (cached)
+  Future<List<LeaderboardEntry>> getFriendsLeaderboard({
+    required List<String> friendUserIds,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      type: type,
+      subjectId: subjectId,
+      filter: LeaderboardFilter(
+        userIds: friendUserIds,
+      ),
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Search leaderboard by display name (cached)
+  Future<List<LeaderboardEntry>> searchLeaderboard({
+    required String query,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      type: type,
+      subjectId: subjectId,
+      filter: LeaderboardFilter(
+        searchQuery: query,
+      ),
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Get active users (updated recently) (cached)
+  Future<List<LeaderboardEntry>> getActiveUsers({
+    int daysBack = 7,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    bool forceRefresh = false,
+  }) async {
+    final startDate = DateTime.now().subtract(Duration(days: daysBack));
+
+    return await getLeaderboardEntries(
+      type: type,
+      subjectId: subjectId,
+      filter: LeaderboardFilter(
+        startDate: startDate,
+        sortBy: LeaderboardSortBy.lastUpdated,
+        sortDescending: true,
+      ),
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  /// Get top rank range (e.g., ranks 1-10, 11-20, etc.) (cached)
+  Future<List<LeaderboardEntry>> getLeaderboardByRankRange({
+    required int minRank,
+    required int maxRank,
+    LeaderboardType type = LeaderboardType.overall,
+    String? subjectId,
+    bool forceRefresh = false,
+  }) async {
+    return await getLeaderboardEntries(
+      limit: maxRank,
+      type: type,
+      subjectId: subjectId,
+      filter: LeaderboardFilter(
+        minRank: minRank,
+        maxRank: maxRank,
+      ),
+      forceRefresh: forceRefresh,
+    );
   }
 
   /// Get performance trend (improvement over time)

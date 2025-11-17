@@ -1,6 +1,8 @@
 
 import 'package:ahiaa_web/core/services/streak_service.dart';
+import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
+import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
 
 class GlobalTimeMetrics {
   final int totalSessions;
@@ -269,4 +271,148 @@ class ValidationResult {
     
     return buffer.toString();
   }
+}
+
+
+/// Filter options for leaderboard queries
+class LeaderboardFilter {
+  final double? minScore;
+  final double? maxScore;
+  final int? minExamsCompleted;
+  final List<String>? userIds; // For filtering friends/specific users
+  final String? searchQuery; // For searching by display name
+  final DateTime? startDate; // Filter by last updated date
+  final DateTime? endDate;
+  final int? minRank; // Filter by rank range
+  final int? maxRank;
+  final LeaderboardSortBy? sortBy;
+  final bool sortDescending;
+  final int? customLimit;
+
+  const LeaderboardFilter({
+    this.minScore,
+    this.maxScore,
+    this.minExamsCompleted,
+    this.userIds,
+    this.searchQuery,
+    this.startDate,
+    this.endDate,
+    this.minRank,
+    this.maxRank,
+    this.sortBy,
+    this.sortDescending = true,
+    this.customLimit,
+  });
+
+  /// Create filter for top performers only
+  factory LeaderboardFilter.topPerformers({int limit = 10}) {
+    return LeaderboardFilter(
+      minScore: 70.0,
+      customLimit: limit,
+      sortBy: LeaderboardSortBy.score,
+    );
+  }
+
+  /// Create filter for active users (updated in last N days)
+  factory LeaderboardFilter.activeUsers({int days = 7}) {
+    return LeaderboardFilter(
+      startDate: DateTime.now().subtract(Duration(days: days)),
+      sortBy: LeaderboardSortBy.lastUpdated,
+    );
+  }
+
+  /// Create filter for specific score range
+  factory LeaderboardFilter.scoreRange({
+    required double min,
+    required double max,
+  }) {
+    return LeaderboardFilter(
+      minScore: min,
+      maxScore: max,
+    );
+  }
+
+  /// Create filter for friends
+  factory LeaderboardFilter.friends(List<String> friendIds) {
+    return LeaderboardFilter(
+      userIds: friendIds,
+    );
+  }
+
+  /// Create filter for search
+  factory LeaderboardFilter.search(String query) {
+    return LeaderboardFilter(
+      searchQuery: query,
+    );
+  }
+
+  /// Copy with method for easy modification
+  LeaderboardFilter copyWith({
+    double? minScore,
+    double? maxScore,
+    int? minExamsCompleted,
+    List<String>? userIds,
+    String? searchQuery,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? minRank,
+    int? maxRank,
+    LeaderboardSortBy? sortBy,
+    bool? sortDescending,
+    int? customLimit,
+  }) {
+    return LeaderboardFilter(
+      minScore: minScore ?? this.minScore,
+      maxScore: maxScore ?? this.maxScore,
+      minExamsCompleted: minExamsCompleted ?? this.minExamsCompleted,
+      userIds: userIds ?? this.userIds,
+      searchQuery: searchQuery ?? this.searchQuery,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      minRank: minRank ?? this.minRank,
+      maxRank: maxRank ?? this.maxRank,
+      sortBy: sortBy ?? this.sortBy,
+      sortDescending: sortDescending ?? this.sortDescending,
+      customLimit: customLimit ?? this.customLimit,
+    );
+  }
+}
+
+
+
+/// Complete leaderboard data with user info
+class LeaderboardData {
+  final List<LeaderboardEntry> entries;
+  final LeaderboardRank userRank;
+  final LeaderboardEntry? userEntry;
+  final int totalUsers;
+  final LeaderboardType type;
+  final LeaderboardFilter? appliedFilter;
+
+  LeaderboardData({
+    required this.entries,
+    required this.userRank,
+    this.userEntry,
+    required this.totalUsers,
+    required this.type,
+    this.appliedFilter,
+  });
+
+  /// Check if current user is in top 10
+  bool get isUserInTopTen => userRank.rank <= 10;
+
+  /// Check if current user is in top 100
+  bool get isUserInTopHundred => userRank.rank <= 100;
+
+  /// Get user's position text (e.g., "#1", "#15")
+  String get userPositionText => '#${userRank.rank}';
+
+  /// Get user's percentile text (e.g., "Top 5%")
+  String get userPercentileText => 'Top ${userRank.percentile.toStringAsFixed(0)}%';
+
+  /// Check if filter is applied
+  bool get isFiltered => appliedFilter != null;
+
+  /// Get filtered count vs total
+  String get countSummary => '${entries.length} of $totalUsers users';
 }

@@ -74,11 +74,11 @@ class FirebaseExamDataSource {
       final snapshot = await query.get();
       
       if (snapshot.docs.isEmpty) {
-        pskyLog('No exam sessions found for user: $userId');
+        print('No exam sessions found for user: $userId');
         return [];
       }
 
-      pskyLog('Found ${snapshot.docs.length} sessions');
+      print('Found ${snapshot.docs.length} sessions');
       
       final sessions = <ExamSession>[];
       
@@ -118,9 +118,9 @@ class FirebaseExamDataSource {
           // Update cache
           _cacheManager.cache(session.examSessionId, _generateHash(session));
         } catch (e, stackTrace) {
-          pskyLog('Error parsing session ${doc.id}: $e');
-          pskyLog('Stack trace: $stackTrace');
-          pskyLog('Data: ${doc.data()}');
+          print('Error parsing session ${doc.id}: $e');
+          print('Stack trace: $stackTrace');
+          print('Data: ${doc.data()}');
           // Continue with other sessions
           continue;
         }
@@ -128,8 +128,8 @@ class FirebaseExamDataSource {
 
       return sessions;
     } catch (e, stackTrace) {
-      pskyLog('Error in getUserExamSessions: $e');
-      pskyLog('Stack trace: $stackTrace');
+      print('Error in getUserExamSessions: $e');
+      print('Stack trace: $stackTrace');
       throw ExamDataSourceException('Failed to get user exam sessions: $e');
     }
   }
@@ -150,7 +150,7 @@ class FirebaseExamDataSource {
             .where('status', isEqualTo: ExamSessionStatus.inProgress.name)
             .get();
 
-        pskyLog('Found ${inProgressSnapshot.docs.length} in-progress sessions');
+        print('Found ${inProgressSnapshot.docs.length} in-progress sessions');
 
         for (final doc in inProgressSnapshot.docs) {
           try {
@@ -163,11 +163,11 @@ class FirebaseExamDataSource {
             
             sessions.add(ExamSession.fromJson(data));
           } catch (e) {
-            pskyLog('Error parsing in-progress session ${doc.id}: $e');
+            print('Error parsing in-progress session ${doc.id}: $e');
           }
         }
       } catch (e) {
-        pskyLog('Error fetching in-progress sessions: $e');
+        print('Error fetching in-progress sessions: $e');
       }
 
       // Query for paused sessions
@@ -179,7 +179,7 @@ class FirebaseExamDataSource {
             .where('status', isEqualTo: ExamSessionStatus.paused.name)
             .get();
 
-        pskyLog('Found ${pausedSnapshot.docs.length} paused sessions');
+        print('Found ${pausedSnapshot.docs.length} paused sessions');
 
         for (final doc in pausedSnapshot.docs) {
           try {
@@ -192,11 +192,11 @@ class FirebaseExamDataSource {
             
             sessions.add(ExamSession.fromJson(data));
           } catch (e) {
-            pskyLog('Error parsing paused session ${doc.id}: $e');
+            print('Error parsing paused session ${doc.id}: $e');
           }
         }
       } catch (e) {
-        pskyLog('Error fetching paused sessions: $e');
+        print('Error fetching paused sessions: $e');
       }
 
       // Sort by startedAt
@@ -206,11 +206,11 @@ class FirebaseExamDataSource {
         );
       }
 
-      pskyLog('Found ${sessions.length} incomplete sessions total');
+      print('Found ${sessions.length} incomplete sessions total');
       return sessions;
     } catch (e, stackTrace) {
-      pskyLog('Error in getIncompleteSessions: $e');
-      pskyLog('Stack trace: $stackTrace');
+      print('Error in getIncompleteSessions: $e');
+      print('Stack trace: $stackTrace');
       // Return empty list instead of throwing
       return [];
     }
@@ -228,7 +228,7 @@ class FirebaseExamDataSource {
         final currentHash = _generateHash(session);
         
         if (cachedHash == currentHash) {
-          pskyLog('Session ${session.examSessionId} unchanged, skipping write');
+          print('Session ${session.examSessionId} unchanged, skipping write');
           return;
         }
       }
@@ -245,9 +245,9 @@ class FirebaseExamDataSource {
       _cacheManager.cache(session.examSessionId, _generateHash(session));
       await _updateLastSyncTime();
 
-      pskyLog('Successfully saved session: ${session.examSessionId}');
+      print('Successfully saved session: ${session.examSessionId}');
     } catch (e) {
-      pskyLog('Error saving session: $e');
+      print('Error saving session: $e');
       throw ExamDataSourceException('Failed to save exam session: $e');
     }
   }
@@ -296,9 +296,9 @@ class FirebaseExamDataSource {
       }
 
       await _updateLastSyncTime();
-      pskyLog('Batch saved ${sessions.length} sessions');
+      print('Batch saved ${sessions.length} sessions');
     } catch (e) {
-      pskyLog('Error in batch save: $e');
+      print('Error in batch save: $e');
       throw ExamDataSourceException('Failed to batch save sessions: $e');
     }
   }
@@ -330,7 +330,7 @@ class FirebaseExamDataSource {
 
       return session;
     } catch (e) {
-      pskyLog('Error getting session: $e');
+      print('Error getting session: $e');
       throw ExamDataSourceException('Failed to get exam session: $e');
     }
   }
@@ -349,7 +349,7 @@ class FirebaseExamDataSource {
           .delete();
 
       _cacheManager.remove(sessionId);
-      pskyLog('Deleted session: $sessionId');
+      print('Deleted session: $sessionId');
     } catch (e) {
       throw ExamDataSourceException('Failed to delete exam session: $e');
     }
@@ -387,7 +387,7 @@ class FirebaseExamDataSource {
           
           sessions.add(ExamSession.fromJson(data));
         } catch (e) {
-          pskyLog('Error parsing session ${doc.id}: $e');
+          print('Error parsing session ${doc.id}: $e');
           continue;
         }
       }
@@ -482,7 +482,7 @@ class FirebaseExamDataSource {
             SetOptions(merge: true),
           );
 
-      pskyLog('Updated leaderboard for user: $userId');
+      print('Updated leaderboard for user: $userId');
     } catch (e) {
       throw ExamDataSourceException('Failed to update leaderboard: $e');
     }
@@ -741,4 +741,191 @@ class FirebaseExamDataSource {
       (sum, session) => sum + (session.progress?.timeElapsedMinutes ?? 0),
     );
   }
+
+  // ============================================================================
+// 1. ADD TO FIREBASE_EXAM_DATA_SOURCE (firebase_exam_satasource.dart)
+// ============================================================================
+
+// Add cache management for leaderboard
+Map<String, CachedLeaderboard> _leaderboardCache = {};
+static const Duration _leaderboardCacheDuration = Duration(minutes: 5);
+
+/// Get leaderboard as Future (non-streaming) with caching
+Future<List<LeaderboardEntry>> getLeaderboardList({
+  int limit = 100,
+  LeaderboardType type = LeaderboardType.overall,
+  String? subjectId,
+  bool forceRefresh = false,
+}) async {
+  try {
+    // Generate cache key
+    final cacheKey = _generateLeaderboardCacheKey(type, subjectId, limit);
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && _leaderboardCache.containsKey(cacheKey)) {
+      final cached = _leaderboardCache[cacheKey]!;
+      if (cached.isValid) {
+        pskyLog('Using cached leaderboard (${cached.entries.length} entries)');
+        return cached.entries;
+      }
+    }
+
+    pskyLog('Fetching fresh leaderboard from Firestore');
+    
+    Query query = _firestore.collection(_leaderboardCollection);
+
+    // Apply filters based on type
+    switch (type) {
+      case LeaderboardType.overall:
+        query = query.orderBy('overallScore', descending: true);
+        break;
+      case LeaderboardType.subject:
+        if (subjectId == null) {
+          throw ExamDataSourceException('Subject ID required for subject leaderboard');
+        }
+        query = query
+            .where('subjectScores.$subjectId', isNull: false)
+            .orderBy('subjectScores.$subjectId', descending: true);
+        break;
+      case LeaderboardType.weekly:
+        final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+        query = query
+            .where('lastUpdated', isGreaterThanOrEqualTo: weekAgo)
+            .orderBy('lastUpdated', descending: true)
+            .orderBy('overallScore', descending: true);
+        break;
+      case LeaderboardType.monthly:
+        final monthAgo = DateTime.now().subtract(const Duration(days: 30));
+        query = query
+            .where('lastUpdated', isGreaterThanOrEqualTo: monthAgo)
+            .orderBy('lastUpdated', descending: true)
+            .orderBy('overallScore', descending: true);
+        break;
+    }
+
+    query = query.limit(limit);
+
+    final snapshot = await query.get();
+    
+    final entries = snapshot.docs
+        .map((doc) {
+          try {
+            return LeaderboardEntry.fromJson(doc.data() as Map<String, dynamic>);
+          } catch (e) {
+            pskyLog('Error parsing leaderboard entry ${doc.id}: $e');
+            return null;
+          }
+        })
+        .whereType<LeaderboardEntry>()
+        .toList();
+
+    // Cache the results
+    _leaderboardCache[cacheKey] = CachedLeaderboard(
+      entries: entries,
+      cachedAt: DateTime.now(),
+      cacheKey: cacheKey,
+    );
+
+    pskyLog('Fetched and cached ${entries.length} leaderboard entries');
+    return entries;
+  } catch (e) {
+    pskyLog('Error fetching leaderboard list: $e');
+    throw ExamDataSourceException('Failed to get leaderboard list: $e');
+  }
+}
+
+/// Get leaderboard count with caching
+int? _cachedLeaderboardCount;
+DateTime? _countCachedAt;
+static const Duration _countCacheDuration = Duration(minutes: 10);
+
+Future<int> getLeaderboardCount({bool forceRefresh = false}) async {
+  try {
+    // Check cache
+    if (!forceRefresh && 
+        _cachedLeaderboardCount != null && 
+        _countCachedAt != null) {
+      final age = DateTime.now().difference(_countCachedAt!);
+      if (age < _countCacheDuration) {
+        pskyLog('Using cached leaderboard count: $_cachedLeaderboardCount');
+        return _cachedLeaderboardCount!;
+      }
+    }
+
+    pskyLog('Fetching fresh leaderboard count from Firestore');
+    
+    final snapshot = await _firestore
+        .collection(_leaderboardCollection)
+        .count()
+        .get();
+    
+    final count = snapshot.count ?? 0;
+    
+    // Cache the count
+    _cachedLeaderboardCount = count;
+    _countCachedAt = DateTime.now();
+    
+    pskyLog('Leaderboard count: $count (cached)');
+    return count;
+  } catch (e) {
+    pskyLog('Error getting leaderboard count: $e');
+    return _cachedLeaderboardCount ?? 0;
+  }
+}
+
+/// Clear leaderboard cache (call when user updates their score)
+void clearLeaderboardCache() {
+  _leaderboardCache.clear();
+  _cachedLeaderboardCount = null;
+  _countCachedAt = null;
+  pskyLog('Leaderboard cache cleared');
+}
+
+/// Clear specific cache entry
+void clearLeaderboardCacheEntry(LeaderboardType type, String? subjectId) {
+  final keysToRemove = _leaderboardCache.keys.where((key) {
+    return key.contains(type.name) && 
+           (subjectId == null || key.contains(subjectId));
+  }).toList();
+  
+  for (final key in keysToRemove) {
+    _leaderboardCache.remove(key);
+  }
+  
+  pskyLog('Cleared ${keysToRemove.length} cache entries');
+}
+
+/// Generate cache key for leaderboard
+String _generateLeaderboardCacheKey(
+  LeaderboardType type, 
+  String? subjectId, 
+  int limit,
+) {
+  return 'leaderboard_${type.name}_${subjectId ?? 'all'}_$limit';
+}
+}
+
+
+
+/// Cache data class (place OUTSIDE the FirebaseExamDataSource class)
+class CachedLeaderboard {
+  final List<LeaderboardEntry> entries;
+  final DateTime cachedAt;
+  final String cacheKey;
+  
+  // Cache duration constant
+  static const Duration cacheDuration = Duration(minutes: 5);
+
+  CachedLeaderboard({
+    required this.entries,
+    required this.cachedAt,
+    required this.cacheKey,
+  });
+
+  bool get isValid {
+    final age = DateTime.now().difference(cachedAt);
+    return age < cacheDuration;
+  }
+
+  Duration get age => DateTime.now().difference(cachedAt);
 }

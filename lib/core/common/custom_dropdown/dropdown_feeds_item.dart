@@ -6,8 +6,8 @@ class DropdownFeedsItem extends StatefulWidget {
   final IconData? icon;
   final String label;
   final Color? iconColor;
-  final bool useIcon, alignRight;
-  final Widget? iconWidget;
+  final bool useIcon, alignRight, userCustomWidget;
+  final Widget? iconWidget, customWidget;
   final double? textSize, iconSize;
   final Function()? onTap;
 
@@ -21,7 +21,7 @@ class DropdownFeedsItem extends StatefulWidget {
     this.iconWidget,
     this.onTap,
     this.textSize,
-    this.iconSize,
+    this.iconSize,  this.userCustomWidget = false, this.customWidget,
 
   });
 
@@ -53,11 +53,11 @@ class _DropdownFeedsItemState extends State<DropdownFeedsItem> {
               mainAxisAlignment:widget.alignRight? MainAxisAlignment.end:MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!widget.useIcon) Icon(widget.icon, color: widget.iconColor ?? Colors.white, size: widget.iconSize,),
-                if (widget.useIcon) widget.iconWidget!,
+                if (!widget.useIcon && !widget.alignRight) Icon(widget.icon, color: widget.iconColor ?? Colors.white, size: widget.iconSize,),
+                if (widget.useIcon&& !widget.alignRight) widget.iconWidget!,
                 if(widget.icon != null)
                 const SizedBox(width: 10),
-                Flexible(
+               widget.userCustomWidget? widget.customWidget! : Flexible(
                   child: ResponsiveText(widget.label,
                   maxLines: 2,
                   softWrap: true,
@@ -68,7 +68,13 @@ class _DropdownFeedsItemState extends State<DropdownFeedsItem> {
                       fontSize: widget.textSize ?? 11,
                       
                   ),),
-                )
+                ),
+                 if(widget.icon != null || widget.iconWidget != null)
+                const SizedBox(width: 10),
+                if (!widget.useIcon && widget.alignRight) Icon(widget.icon, color: widget.iconColor ?? Colors.white, size: widget.iconSize,),
+                if (widget.useIcon&& widget.alignRight) widget.iconWidget!,
+                 if( widget.iconWidget != null)
+                const SizedBox(width: 10),
                 
               ],
             ),

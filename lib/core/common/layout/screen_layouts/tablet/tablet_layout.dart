@@ -10,13 +10,13 @@ class TabletLayout extends StatelessWidget {
   TabletLayout({super.key, this.body});
   final Widget? body;
   // GlobalKey to access the scaffold state
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+  // final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+      // key: scaffoldKey,
       drawer: const KSideBar(),
-      appBar: KHeader(scaffoldKey: scaffoldKey),
+      appBar: KHeader(),
       body:
           body ??
           const TRoundedContainer(

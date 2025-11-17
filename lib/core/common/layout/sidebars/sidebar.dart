@@ -6,6 +6,7 @@ import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/helpers/helper_functions.dart';
 
@@ -20,22 +21,38 @@ class _KSideBarState extends State<KSideBar> {
   bool canChangeHeigth = false;
 
   @override
+  void initState() {
+    super.initState();
+    // We'll set the initial state after the first frame when context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final responsive = ResponsiveBreakpoints.of(context);
+
+      // Automatically collapse the sidebar on tablet
+      if (responsive.isTablet) {
+        setState(() {
+          canChangeHeigth = true; // FIXED: was == instead of =
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
     final isDark = PHelperFunctions.isDarkMode(context);
     final appRouter = getIt<AppRouter>();
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: AnimatedSize(
-        duration:  Duration(milliseconds: canChangeHeigth?600: 800),
-          curve:!canChangeHeigth? Curves.easeInOut:Curves.easeIn,
+        duration: Duration(milliseconds: canChangeHeigth ? 600 : 800),
+        curve: !canChangeHeigth ? Curves.easeInOut : Curves.easeIn,
         child: Drawer(
           backgroundColor: isDark ? PColors.primary : PColors.primary,
           width: canChangeHeigth ? 80 : 300,
           shape: const BeveledRectangleBorder(),
           child: TRoundedContainer(
-              // padding: canChangeHeigth
-              //     ? EdgeInsets.only(left: 20, top: 16, right: 12, bottom: 16)
-              //     : EdgeInsets.all(16),
               width: canChangeHeigth ? 80 : 300,
               backgroundColor: isDark ? PColors.primary : PColors.primary,
               child: Column(
@@ -52,31 +69,33 @@ class _KSideBarState extends State<KSideBar> {
                           inverse: true,
                           useInverse2: true,
                         ),
-                      IconButton(
-                          onPressed: () {
-                            setState(() {
-                              canChangeHeigth = !canChangeHeigth;
-                            });
-                          },
-                          icon: const Icon(
-                            Iconsax.sidebar_left,
-                            color: PColors.white,
-                          )),
+                      if (responsive.isDesktop)
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                canChangeHeigth = !canChangeHeigth;
+                              });
+                            },
+                            icon: const Icon(
+                              Iconsax.sidebar_left,
+                              color: PColors.white,
+                            )),
                     ],
                   ),
                   if (!canChangeHeigth)
-                    const SizedBox(
-                        width: 272,
-                        height: 35,
-                        child: PSearchContainer(
-                          text: 'Search',
-                          isSmall: true,
-                          inverse: true,
-                          hasColor: true,
-                          usePrefixSuffix: true,
-                          color: PColors.transparent,
-                          useBorder: true,
-                        )),
+                    if (!responsive.isMobile)
+                      const SizedBox(
+                          width: 272,
+                          height: 35,
+                          child: PSearchContainer(
+                            text: 'Search',
+                            isSmall: true,
+                            inverse: true,
+                            hasColor: true,
+                            usePrefixSuffix: true,
+                            color: PColors.transparent,
+                            useBorder: true,
+                          )),
                   Expanded(
                       child: SingleChildScrollView(
                     child: Column(
@@ -127,8 +146,8 @@ class _KSideBarState extends State<KSideBar> {
                           child: Column(
                             children: [
                               SideBarNav(
-                                  onPressed: () =>
-                                      appRouter.router.goNamed(KRoutes.settings),
+                                  onPressed: () => appRouter.router
+                                      .goNamed(KRoutes.settings),
                                   showText: !canChangeHeigth,
                                   icon: Iconsax.setting,
                                   text: 'Settings'),
@@ -166,7 +185,6 @@ class SideBarNav extends StatelessWidget {
       this.isSelected = false,
       this.textColor = Colors.white,
       this.selectedColor = PColors.accent,
-
       this.iconColor = Colors.white});
   final IconData icon;
   final String text;

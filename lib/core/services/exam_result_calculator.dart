@@ -887,6 +887,28 @@ class ExamResult {
 
   /// Get recommendations for improvement
   List<String> get recommendations => ExamCalculator.generateRecommendations(this);
+
+  ExamResult copyWith({
+    ExamSession? examSession,
+    ExamScore? score,
+    ExamGrade? grade,
+    List<WeakArea>? weakAreas,
+    PerformanceMetrics? performanceMetrics,
+    List<TopicPerformance>? topicBreakdown,
+    DifficultyAnalysis? difficultyAnalysis,
+    DateTime? completedAt,
+  }) {
+    return ExamResult(
+      examSession: examSession ?? this.examSession,
+      score: score ?? this.score,
+      grade: grade ?? this.grade,
+      weakAreas: weakAreas ?? this.weakAreas,
+      performanceMetrics: performanceMetrics ?? this.performanceMetrics,
+      topicBreakdown: topicBreakdown ?? this.topicBreakdown,
+      difficultyAnalysis: difficultyAnalysis ?? this.difficultyAnalysis,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
 }
 
 class ExamScore {

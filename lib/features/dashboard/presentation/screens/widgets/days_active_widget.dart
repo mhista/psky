@@ -1,11 +1,13 @@
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
 import 'package:ahiaa_web/core/common/widgets/shimmer/three_to_one_shimmer.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/services/streak_service.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_cubit_helpers.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class DaysActiveWidget extends StatefulWidget {
@@ -25,6 +27,7 @@ class DaysActiveWidget extends StatefulWidget {
 class _DaysActiveWidgetState extends State<DaysActiveWidget> {
   MonthlyGridData? _cachedStreakData;
   bool _isLoading = true;
+  final examCubit = getIt<ExamCubit>();
 
   @override
   void initState() {
@@ -34,7 +37,6 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
 
   Future<void> _loadStreakData() async {
     try {
-      final examCubit = context.read<ExamCubit>();
       final streakData = await examCubit.getMonthlyGridData();
 
       if (mounted) {
@@ -59,6 +61,7 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
 
     final data = List.generate(30, (index) => index);
     return BlocListener<ExamCubit, ExamState>(
+      bloc: examCubit,
       listener: (context, state) {
         // Refresh streak data when exam is completed
         state.maybeWhen(
@@ -71,22 +74,26 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
   }
 
   ThreeToOneShimmer _buildDaysActivuty(List<int> data) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return ThreeToOneShimmer(
       isLoading: widget.isLoading,
       hasError: widget.hasError,
       hasData: widget.hasData,
       radius: 16,
-      height: 240,
+      height: responsive.isMobile ? 300 : 240,
       width: double.infinity,
       errorColor: PColors.bg4.withValues(alpha: 0.3),
       errorText: "Couldn't load activity, Try again later",
       loadedWidget: TRoundedContainer(
         backgroundColor: PColors.white,
-        height: 240,
+        height: responsive.isMobile ? 300 : 240,
         width: double.infinity,
         padding: const EdgeInsets.all(0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: responsive.isMobile
+              ? MainAxisAlignment.start
+              : MainAxisAlignment.spaceBetween,
           children: [
             Padding(
               padding:
@@ -106,9 +113,9 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
                                 .bold
                                 .withColor(PColors.buttonSecondary),
                           ),
-                          const ResponsiveText('30')
+                          ResponsiveText('30')
                               .bold
-                              .withSize(58)
+                              .withSize(responsive.isMobile ? 48 : 58)
                               .withColor(PColors.primary5),
                         ],
                       ),
@@ -131,7 +138,9 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
                         radius: 100,
                         child: Row(
                           children: [
-                             ResponsiveText(_cachedStreakData?.month ?? 'January').withSize(9),
+                            ResponsiveText(
+                                    _cachedStreakData?.month ?? 'January')
+                                .withSize(9),
                             // const Gap(5),
                             // const Icon(
                             //   Icons.arrow_drop_down_rounded,
@@ -145,66 +154,78 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
             ),
             // if(isExpanded)
             // const Gap(20),
-            if (_isLoading)
-              Padding(
-                padding: const EdgeInsets.only(left: 9.0, right: 9, bottom: 10),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.start,
-                  children: data.map((day) {
-                    Color color;
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (_isLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 9.0, right: 9, bottom: 10),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.start,
+                          children: data.map((day) {
+                            Color color;
 
-                    return const TRoundedContainer(
-                      width: 40,
-                      height: 40,
-                      radius: 8,
-                      backgroundColor: PColors.light,
-                    );
-                  }).toList(),
+                            return const TRoundedContainer(
+                              width: 40,
+                              height: 40,
+                              radius: 8,
+                              backgroundColor: PColors.light,
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    if (!_isLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 9.0, right: 9, bottom: 10),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.start,
+                          children: _cachedStreakData!.days.reversed.map((day) {
+                            Color color;
+
+                            // Color based on intensity (0-4)
+                            switch (day.intensity) {
+                              case 0:
+                                color = Colors.gray[200]; // No activity
+                                break;
+                              case 1:
+                                color = PColors.primary5
+                                    .withValues(alpha: 0.3); // Low
+                                break;
+                              case 2:
+                                color = PColors.primary5
+                                    .withValues(alpha: 0.5); // Medium
+                                break;
+                              case 3:
+                                color = PColors.primary5
+                                    .withValues(alpha: 0.7); // High
+                                break;
+                              case 4:
+                                color = PColors.primary5
+                                    .withValues(alpha: 0.9); // Very high
+                                break;
+                              default:
+                                color = Colors.gray[200];
+                            }
+                            return TRoundedContainer(
+                              width: 40,
+                              height: 40,
+                              radius: 8,
+                              backgroundColor: color,
+                            );
+                          }).toList(),
+                        ),
+                      )
+                  ],
                 ),
               ),
-            if (!_isLoading)
-              Padding(
-                padding: const EdgeInsets.only(left: 9.0, right: 9, bottom: 10),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.start,
-                  children: _cachedStreakData!.days.reversed.map((day) {
-                    Color color;
-
-                    // Color based on intensity (0-4)
-                    switch (day.intensity) {
-                      case 0:
-                        color = Colors.gray[200]; // No activity
-                        break;
-                      case 1:
-                        color = PColors.primary5.withValues(alpha: 0.3); // Low
-                        break;
-                      case 2:
-                        color =
-                            PColors.primary5.withValues(alpha: 0.5); // Medium
-                        break;
-                      case 3:
-                        color = PColors.primary5.withValues(alpha: 0.7); // High
-                        break;
-                      case 4:
-                        color = PColors.primary5
-                            .withValues(alpha: 0.9); // Very high
-                        break;
-                      default:
-                        color = Colors.gray[200];
-                    }
-                    return TRoundedContainer(
-                      width: 40,
-                      height: 40,
-                      radius: 8,
-                      backgroundColor: color,
-                    );
-                  }).toList(),
-                ),
-              )
+            )
           ],
         ),
       ),

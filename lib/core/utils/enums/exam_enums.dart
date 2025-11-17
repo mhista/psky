@@ -709,3 +709,10 @@ enum OperationType {
   deleteSession,
   updateLeaderboard,
 }
+
+/// Sort options for leaderboard
+enum LeaderboardSortBy {
+  score,
+  lastUpdated,
+  displayName,
+}

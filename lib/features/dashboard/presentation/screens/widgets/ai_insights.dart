@@ -5,6 +5,7 @@ import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class AiInsightWidget extends StatelessWidget {
   const AiInsightWidget({
@@ -18,6 +19,8 @@ class AiInsightWidget extends StatelessWidget {
   final String? aiText;
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return  TRoundedContainer(
       backgroundColor: bgColor.withValues(alpha: 0.5),
       padding:const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -36,7 +39,7 @@ class AiInsightWidget extends StatelessWidget {
               const ResponsiveText('AI Insights for You').withSize(8).bold.withColor(PColors.primary5).withLetterSpacing(1)
             ],
           ),
-               ResponsiveText(aiText?? 'No new insights right now. Complete a test to unlock personalised tips.').withSize(10).withColor(PColors.black),
+               ResponsiveText(aiText?? 'No new insights right now. Complete a test to unlock personalised tips.').withSize(responsive.isMobile? 8:10).withColor(PColors.black),
          if(extra != null) extra!
         ],
       ),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class FireStreakWidget extends StatelessWidget {
   final Color backgroundColor;
@@ -305,6 +306,8 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
   }
 
   Widget _buildStreakCard() {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final hasStreak = (_cachedStreakData?.currentStreak ?? 0) > 0;
     final streakDays = _cachedStreakData?.currentStreak ?? 0;
 
@@ -315,7 +318,7 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
         hasStreak ? widget.textColor : const Color(0xFF888888);
 
     return TRoundedContainer(
-      width: 178,
+      width: double.infinity,
       height: 128,
       backgroundColor: displayColor,
       padding: const EdgeInsets.all(0),
@@ -379,6 +382,7 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
+                spacing: responsive.isMobile?3:2,
                 children: [
                   if (_isLoading)
                     SizedBox(
@@ -393,7 +397,7 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
                     Text(
                       hasStreak ? '$streakDays' : '00',
                       style: TextStyle(
-                        fontSize: 36,
+                        fontSize: responsive.isMobile ? 40 : 36,
                         fontWeight: FontWeight.w700,
                         color: displayTextColor,
                         height: 1,
@@ -403,7 +407,7 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
                   Text(
                     hasStreak ? widget.title : 'No streak yet',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: responsive.isMobile ? 13 : 11,
                       fontWeight: FontWeight.w600,
                       color: displayTextColor,
                       letterSpacing: 1,
@@ -414,7 +418,7 @@ class _FireStreakWidgetOptimizedState extends State<FireStreakWidgetOptimized> {
                         ? widget.subtitle
                         : 'Try a 10-minute drill to start one',
                     style: TextStyle(
-                      fontSize: 6,
+                      fontSize: responsive.isMobile ? 8 : 6,
                       color:
                           displayTextColor.withOpacity(hasStreak ? 0.8 : 0.7),
                       height: 1.3,

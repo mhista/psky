@@ -6,6 +6,7 @@ import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class QuickStartWidget extends StatefulWidget {
   const QuickStartWidget({
@@ -46,6 +47,8 @@ class _QuickStartWidgetState extends State<QuickStartWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -101,7 +104,7 @@ class _QuickStartWidgetState extends State<QuickStartWidget> {
                           style: Theme.of(context)
                               .textTheme
                               .titleLarge!
-                              .apply(color: widget.bgColor),
+                              .apply(color: widget.bgColor, fontSizeDelta: responsive.isTablet?-5:0),
                         ),
                       ],
                     ),

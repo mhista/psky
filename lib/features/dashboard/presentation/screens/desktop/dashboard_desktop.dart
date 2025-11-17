@@ -21,6 +21,7 @@ import 'package:ahiaa_web/features/personalization/presentation/cubit/cubit/user
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide Theme;
 
 class DashboardDesktop extends StatelessWidget {
@@ -33,6 +34,8 @@ class DashboardDesktop extends StatelessWidget {
   final bool isLoading, hasError, hasData, expand;
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final user = getIt<UserCubit>().user ?? UserEntity.empty();
     final subjects = [
       SubjectScore(name: 'Chemistry', score: 100, color: PColors.primary5),
@@ -87,24 +90,38 @@ class DashboardDesktop extends StatelessWidget {
                       ),
                     if (hasError || hasData)
                       TRoundedContainer(
-                        width: 250,
+                        width: responsive.isDesktop ? 250 : 180,
                         padding: const EdgeInsets.all(0),
                         child: Column(
                           spacing: 10,
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Hi, ${user.firstName}!')
-                                .x4Large
-                                .black
-                                .animate()
-                                .fadeIn(duration: 1000.ms),
-                            const Text('What are you learning today?')
-                                .x4Large
-                                .black
-                                .withOpacity(0.5)
-                                .animate(delay: 500.ms)
-                                .fadeIn(duration: 800.ms)
-                          ],
+                          children: responsive.isDesktop
+                              ? [
+                                  Text('Hi, ${user.firstName}!')
+                                      .x4Large
+                                      .black
+                                      .animate()
+                                      .fadeIn(duration: 1000.ms),
+                                  const Text('What are you learning today?')
+                                      .x4Large
+                                      .black
+                                      .withOpacity(0.5)
+                                      .animate(delay: 500.ms)
+                                      .fadeIn(duration: 800.ms)
+                                ]
+                              : [
+                                  Text('Hi, ${user.firstName}!')
+                                      .x2Large
+                                      .black
+                                      .animate()
+                                      .fadeIn(duration: 1000.ms),
+                                  const Text('What are you learning today?')
+                                      .x2Large
+                                      .black
+                                      .withOpacity(0.5)
+                                      .animate(delay: 500.ms)
+                                      .fadeIn(duration: 800.ms)
+                                ],
                         ),
                       )
                   ],
@@ -256,27 +273,41 @@ class DashboardDesktop extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          const DaysActiveWidget()
+                            const DaysActiveWidget()
                           ],
                         ),
                       ),
-                      ThreeToOneShimmer(
-                          isLoading: isLoading,
-                          hasError: hasError,
-                          hasData: hasData,
-                          radius: 12,
-                          height: 57,
-                          width: double.infinity,
-                          errorColor: PColors.tertiary.withValues(alpha: 0.5),
-                          shouldCenter: false,
-                          errorText: "Couldn't fetch insights, Retry later",
-                          loadedWidget: const AiInsightWidget())
+                      if (responsive.isDesktop)
+                        ThreeToOneShimmer(
+                            isLoading: isLoading,
+                            hasError: hasError,
+                            hasData: hasData,
+                            radius: 12,
+                            height: 57,
+                            width: double.infinity,
+                            errorColor: PColors.tertiary.withValues(alpha: 0.5),
+                            shouldCenter: false,
+                            errorText: "Couldn't fetch insights, Retry later",
+                            loadedWidget: const AiInsightWidget())
                     ],
                   ),
                 ),
-                LeaderBoardWidget(expand: expand)
+                if (responsive.isDesktop) LeaderBoardWidget(expand: expand)
               ],
-            )
+            ),
+            if (responsive.isTablet) LeaderBoardWidget(expand: expand),
+            if (responsive.isTablet)
+              ThreeToOneShimmer(
+                  isLoading: isLoading,
+                  hasError: hasError,
+                  hasData: hasData,
+                  radius: 12,
+                  height: 57,
+                  width: double.infinity,
+                  errorColor: PColors.tertiary.withValues(alpha: 0.5),
+                  shouldCenter: false,
+                  errorText: "Couldn't fetch insights, Retry later",
+                  loadedWidget: const AiInsightWidget())
           ],
         ),
       ),

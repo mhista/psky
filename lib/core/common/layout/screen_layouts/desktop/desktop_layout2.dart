@@ -29,7 +29,7 @@ class DesktopLayout2 extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const KHeader2(),
+                   KHeader2(),
                   Expanded(
                     child: body ??   
                         const TRoundedContainer(

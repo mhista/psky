@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+
 class ScoreGaugeWidget extends StatefulWidget {
   
   final bool isExpanded;
@@ -108,6 +111,8 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return BlocListener<ExamCubit, ExamState>(
       bloc: examCubit,
       listener: (context, state) {
@@ -124,6 +129,8 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
   }
 
   TRoundedContainer _buildScoreGauge() {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final colors = [
       PColors.primary5,
       PColors.primary2,
@@ -147,7 +154,7 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
 
     return TRoundedContainer(
       height: 128,
-      width: 178,
+      width: double.infinity,
       padding: const EdgeInsets.all(10),
       backgroundColor: PColors.primary5.withValues(alpha: 0.2),
       child: Column(
@@ -155,6 +162,7 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
         spacing: 8,
         children: [
           SizedBox(
+            width: responsive.isMobile?136:150,
             child: CustomPaint(
               painter: GaugePainter(
                 percentage: totalAverage,
@@ -167,10 +175,11 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      if(responsive.isMobile) const Gap(5),
                       ResponsiveText(
                         '${totalAverage.toInt()}%',
-                        style: const TextStyle(
-                          fontSize: 25,
+                        style:  TextStyle(
+                          fontSize:responsive.isMobile? 20: 23,
                           fontWeight: FontWeight.bold,
                           color: PColors.primary5,
                         ),
@@ -190,47 +199,52 @@ class _ScoreGaugeWidgetState extends State<ScoreGaugeWidget> {
               ),
             ),
           ),
+          
           if (subjects != null && subjects!.isNotEmpty) ...[
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: subjects!.map((subject) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: subject.color,
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.circular(4),
+            Padding(
+                 
+              padding: responsive.isMobile? const EdgeInsets.only(top:10.0):const EdgeInsets.all(0.0),
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: subjects!.map((subject) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: subject.color,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Row(
-                      children: [
-                        Text(
-                          '${subject.name} - ',
-                          style: const TextStyle(
-                            fontSize: 6,
-                            color: Color.fromARGB(255, 57, 47, 82),
+                      const SizedBox(width: 6),
+                      Row(
+                        children: [
+                          Text(
+                            '${subject.name} - ',
+                            style:  TextStyle(
+                              fontSize:responsive.isMobile? 8: 6,
+                              color: Color.fromARGB(255, 57, 47, 82),
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${subject.score.toInt()}%',
-                          style: const TextStyle(
-                            fontSize: 6,
-                            color: PColors.primary5,
-                            fontWeight: FontWeight.w800,
+                          Text(
+                            '${subject.score.toInt()}%',
+                            style:  TextStyle(
+                              fontSize:responsive.isMobile?8: 6,
+                              color: PColors.primary5,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              }).toList(),
+                        ],
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ],

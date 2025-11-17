@@ -5,8 +5,10 @@ import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/features/authentication/domain/entities/user.dart';
 import 'package:ahiaa_web/features/dashboard/presentation/screens/desktop/dashboard_desktop.dart';
+import 'package:ahiaa_web/features/dashboard/presentation/screens/mobile/mobile_dashboard.dart';
 import 'package:ahiaa_web/features/onboarding/presentation/screens/desktop/desktop_screen.dart';
 import 'package:ahiaa_web/features/personalization/presentation/cubit/cubit/user_cubit.dart';
+import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,14 +19,20 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = getIt<UserCubit>().user ?? UserEntity.empty();
     final hasData = user != UserEntity.empty();
-    return BlocBuilder<InitializationCubit, InitializationState>(
-      bloc: getIt<InitializationCubit>(),
+    final examCubit = getIt<ExamCubit>();
+    return BlocBuilder<ExamCubit, ExamState>(
+      bloc: getIt<ExamCubit>(),
       builder: (context, state) {
         final stateData = state.maybeWhen(
-          orElse: () => (loaderState: LoaderState.error,),
-          initialized: (_) => (loaderState: LoaderState.done,),
+          orElse: () {
+            examCubit.loadFromStorage().then((v) {
+              // examCubit.syncFromDb(getIt<UserEntity>().id);
+            });
+            return (loaderState: LoaderState.loading,);
+          },
+          hasData: (_, __, ___, ____) => (loaderState: LoaderState.done,),
           initial: () => (loaderState: LoaderState.loading,),
-          initializing: () => (loaderState: LoaderState.loading,),
+          loading: () => (loaderState: LoaderState.loading,),
         );
 
         // Derive shimmer states from BLoC state
@@ -34,6 +42,11 @@ class DashboardScreen extends StatelessWidget {
         return SiteTemplate2(
           useLayout: true,
           desktop: DashboardDesktop(
+            hasData: hasData,
+            isLoading: isLoading,
+            hasError: hasError,
+          ),
+          mobile: DashboardMobile(
             hasData: hasData,
             isLoading: isLoading,
             hasError: hasError,

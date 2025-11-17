@@ -168,6 +168,46 @@ class ExamRepository {
     );
   }
 
+
+
+/// Get leaderboard as Future with caching (non-streaming version)
+Future<List<LeaderboardEntry>> getLeaderboardList({
+  int limit = 100,
+  LeaderboardType type = LeaderboardType.overall,
+  String? subjectId,
+  bool forceRefresh = false,
+}) async {
+  return await _dataSource.getLeaderboardList(
+    limit: limit,
+    type: type,
+    subjectId: subjectId,
+    forceRefresh: forceRefresh,
+  );
+}
+
+/// Get leaderboard count with caching
+Future<int> getLeaderboardCount({bool forceRefresh = false}) async {
+  return await _dataSource.getLeaderboardCount(forceRefresh: forceRefresh);
+}
+
+/// Check if leaderboard has multiple users with caching
+Future<bool> hasMultipleLeaderboardUsers({bool forceRefresh = false}) async {
+  final count = await getLeaderboardCount(forceRefresh: forceRefresh);
+  return count > 1;
+}
+
+/// Clear leaderboard cache (call when user completes exam)
+void clearLeaderboardCache() {
+  _dataSource.clearLeaderboardCache();
+}
+
+/// Clear specific cache entry
+void clearLeaderboardCacheEntry(LeaderboardType type, String? subjectId) {
+  _dataSource.clearLeaderboardCacheEntry(type, subjectId);
+}
+
+
+
   // ============================================================================
   // ANALYTICS OPERATIONS
   // ============================================================================

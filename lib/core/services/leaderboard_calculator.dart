@@ -41,6 +41,7 @@ class LeaderboardCalculator {
           totalQuestionsAnswered: 0,
           totalCorrectAnswers: 0,
           lastUpdated: DateTime.now(),
+          metadata: {'session':sessions.map((s)=>s.toJson()).toList()}
         );
       }
 

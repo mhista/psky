@@ -7,6 +7,7 @@ import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide CircularProgressIndicator;
 
 class TestTracker extends StatefulWidget {
@@ -41,6 +42,8 @@ class _TestTrackerState extends State<TestTracker> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return BlocListener<ExamCubit, ExamState>(
       bloc: examCubit,
       listener: (context, state) {
@@ -51,9 +54,10 @@ class _TestTrackerState extends State<TestTracker> {
         );
       },
       child: TRoundedContainer(
+        backgroundColor:responsive.isMobile?PColors.light:PColors.white ,
         padding: const EdgeInsets.all(8),
         height: 128,
-        width: 178,
+        width: double.infinity,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
@@ -86,7 +90,7 @@ class _TestTrackerState extends State<TestTracker> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 // Calculate element width and spacing
-                final elementWidth = widget.isExpanded ? 10.0 : 6.0;
+                final elementWidth = responsive.isMobile? 15.0: widget.isExpanded ? 10.0 : 6.0;
                 final spacing = 2.0;
                 
                 // Calculate how many elements can fit
@@ -110,7 +114,7 @@ class _TestTrackerState extends State<TestTracker> {
                       radius: 1000,
                       backgroundColor: index < coloredCount
                           ? PColors.primary
-                          : PColors.light,
+                          : responsive.isMobile?PColors.white: PColors.light,
                     ),
                   ),
                 );
