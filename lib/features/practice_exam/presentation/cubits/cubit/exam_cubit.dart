@@ -8,6 +8,7 @@ import 'package:ahiaa_web/core/services/leaderboard_calculator.dart';
 import 'package:ahiaa_web/core/services/streak_service.dart';
 import 'package:ahiaa_web/core/services/subject_service.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_cubit_helpers.dart';
@@ -30,7 +31,7 @@ part 'exam_cubit.freezed.dart';
 @lazySingleton
 class ExamCubit extends Cubit<ExamState> {
   final FirebaseFirestore _firestore;
-  final SharedPreferences _prefs;
+  final LocalStorageService _storage;
   String? _lastSyncedDataHash; // Track data changes
   bool _isCurrentlySyncing = false; // Prevent duplicate syncs
   Timer? _autoSyncTimer; // Separate from _autoSaveTimer
@@ -38,20 +39,39 @@ class ExamCubit extends Cubit<ExamState> {
   Timer? _autoSaveTimer;
   static const String _storageKey = 'exam_sessions';
   static const Duration _autoSaveInterval = Duration(minutes: 3);
-  static const Duration _firebaseSyncInterval = Duration(minutes: 60);
+  static const Duration _firebaseSyncInterval = Duration(minutes: 10);
 
   // Track changes to optimize Firebase writes
   bool _hasUnsyncedChanges = false;
   DateTime? _lastFirebaseSync;
   String? _lastSyncedSessionJson;
+  String? _currentUserId; // Track current user
 
-  ExamCubit(this._firestore, this._prefs) : super(const ExamState.initial()) {
+  ExamCubit(this._firestore, this._storage) : super(const ExamState.initial()) {
     _startAutoSave();
   }
 
   // ============================================================================
   // MODE SELECTION
   // ============================================================================
+  // /// Initialize for specific user - MUST be called after authentication
+  Future<void> initializeForUser(String userId) async {
+    try {
+      _currentUserId = userId;
+      await _storage.setUser(userId);
+
+      // Load user's exam sessions
+      await loadFromStorage();
+
+      // Sync with Firebase in background
+      await syncFromDb(userId);
+
+      print('ExamCubit initialized for user: $userId');
+    } catch (e) {
+      print('Error initializing ExamCubit for user: $e');
+      emit(ExamState.error(message: 'Failed to initialize: $e'));
+    }
+  }
 
   /// Select exam mode before starting
   void selectMode(ExamMode mode) {
@@ -284,7 +304,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated startExam - marks data as changed
-  Future<void> startExam({
+ Future<void> startExam({
     required String userId,
     required String subjectId,
     required ExamBody examBody,
@@ -319,7 +339,7 @@ class ExamCubit extends Cubit<ExamState> {
 
       await _saveToLocalStorage(existingSessions);
       _hasUnsyncedChanges = true;
-      _lastSyncedDataHash = null; // Force sync on next check
+      _lastSyncedDataHash = null;
 
       emit(ExamState.hasData(
         selectedSubjects: currentSubjects,
@@ -328,12 +348,20 @@ class ExamCubit extends Cubit<ExamState> {
         examMode: examMode,
       ));
 
-      // Immediate sync for exam start (important action)
+      // Immediate sync
       _syncViaSyncCubit(userId, examSession);
+
+      // ✅ NOTIFICATION: Session started
+      _sendSessionStartNotification(examSession);
+      
+      // ✅ NOTIFICATION: Schedule expiry warning (30 mins before)
+      _scheduleExpiryWarningNotification(examSession);
+
     } catch (e) {
       emit(ExamState.error(message: 'Failed to start exam: $e'));
     }
   }
+
 
   // ============================================================================
   // LOAD FROM STORAGE
@@ -344,10 +372,11 @@ class ExamCubit extends Cubit<ExamState> {
 // ============================================================================
 
   /// Save to local storage (ENHANCED)
+  /// Save to local storage using new service
   Future<void> _saveToLocalStorage(List<ExamSession> sessions) async {
     try {
       if (sessions.isEmpty) {
-        await _prefs.remove(_storageKey);
+        await _storage.removeUserData(StorageKeys.examSessions);
         pskyLog('Cleared empty sessions from storage');
         return;
       }
@@ -358,7 +387,8 @@ class ExamCubit extends Cubit<ExamState> {
             try {
               return s.toJson();
             } catch (e) {
-              print('Error converting session ${s.examSessionId} to JSON: $e');
+              pskyLog(
+                  'Error converting session ${s.examSessionId} to JSON: $e');
               return null;
             }
           })
@@ -366,54 +396,43 @@ class ExamCubit extends Cubit<ExamState> {
           .toList();
 
       if (sessionJsonList.isEmpty) {
-        print('Warning: No valid sessions to save');
+        pskyLog('Warning: No valid sessions to save');
         return;
       }
 
-      final sessionsJson = jsonEncode(sessionJsonList);
-      await _prefs.setString(_storageKey, sessionsJson);
-
-      pskyLog('Saved ${sessionJsonList.length} sessions to local storage');
+      // Save using new storage service
+      await _storage.saveUserJsonList(
+          StorageKeys.examSessions, sessionJsonList);
+      pskyLog(
+          'Saved ${sessionJsonList.length} sessions to local storage (user-specific)');
     } catch (e, stackTrace) {
-      print('Error saving to local storage: $e');
-      print('Stack trace: $stackTrace');
+      pskyLog('Error saving to local storage: $e');
+      pskyLog('Stack trace: $stackTrace');
       throw Exception('Failed to save to local storage: $e');
     }
   }
 
-  /// Clear all storage (UTILITY METHOD)
+  /// Clear all storage for current user
   Future<void> clearStorage() async {
     try {
-      await _prefs.remove(_storageKey);
+      await _storage.clearUserData();
       pskyLog('Cleared all exam sessions from storage');
     } catch (e) {
-      print('Error clearing storage: $e');
+      pskyLog('Error clearing storage: $e');
     }
   }
 
   /// Get storage info (DEBUGGING HELPER)
   Future<StorageInfo> getStorageInfo() async {
     try {
-      final sessionsJson = _prefs.getString(_storageKey);
-
-      if (sessionsJson == null || sessionsJson.isEmpty) {
-        return StorageInfo(
-          hasData: false,
-          sessionCount: 0,
-          storageSize: 0,
-          lastModified: null,
-        );
-      }
-
-      final List<dynamic> sessionsList = jsonDecode(sessionsJson);
-      final sizeInBytes = sessionsJson.length;
+      final hasData = _storage.hasUserData(StorageKeys.examSessions);
+      final sessionsList = _storage.getUserJsonList(StorageKeys.examSessions);
 
       return StorageInfo(
-        hasData: true,
-        sessionCount: sessionsList.length,
-        storageSize: sizeInBytes,
-        lastModified:
-            DateTime.now(), // Can't get actual timestamp from SharedPrefs
+        hasData: hasData,
+        sessionCount: sessionsList?.length ?? 0,
+        storageSize: 0, // Size calculation can be added if needed
+        lastModified: DateTime.now(),
       );
     } catch (e) {
       print('Error getting storage info: $e');
@@ -427,60 +446,60 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Validate storage data (DEBUGGING HELPER)
-  Future<ValidationResult> validateStorage() async {
-    try {
-      final sessionsJson = _prefs.getString(_storageKey);
+  // Future<ValidationResult> validateStorage() async {
+  //   try {
+  //     final sessionsJson = _storage.(_storageKey);
 
-      if (sessionsJson == null || sessionsJson.isEmpty) {
-        return ValidationResult(
-          isValid: true,
-          errors: [],
-          warnings: ['No data in storage'],
-        );
-      }
+  //     if (sessionsJson == null || sessionsJson.isEmpty) {
+  //       return ValidationResult(
+  //         isValid: true,
+  //         errors: [],
+  //         warnings: ['No data in storage'],
+  //       );
+  //     }
 
-      final errors = <String>[];
-      final warnings = <String>[];
+  //     final errors = <String>[];
+  //     final warnings = <String>[];
 
-      // Try to parse JSON
-      try {
-        final List<dynamic> sessionsList = jsonDecode(sessionsJson);
+  //     // Try to parse JSON
+  //     try {
+  //       final List<dynamic> sessionsList = jsonDecode(sessionsJson);
 
-        // Try to parse each session
-        for (int i = 0; i < sessionsList.length; i++) {
-          try {
-            final json = sessionsList[i] as Map<String, dynamic>;
-            _normalizeStorageData(json);
-            ExamSession.fromJson(json);
-          } catch (e) {
-            errors.add('Session $i failed to parse: $e');
-          }
-        }
+  //       // Try to parse each session
+  //       for (int i = 0; i < sessionsList.length; i++) {
+  //         try {
+  //           final json = sessionsList[i] as Map<String, dynamic>;
+  //           _normalizeStorageData(json);
+  //           ExamSession.fromJson(json);
+  //         } catch (e) {
+  //           errors.add('Session $i failed to parse: $e');
+  //         }
+  //       }
 
-        if (errors.isEmpty) {
-          return ValidationResult(
-            isValid: true,
-            errors: [],
-            warnings: warnings,
-          );
-        }
-      } catch (e) {
-        errors.add('Failed to decode JSON: $e');
-      }
+  //       if (errors.isEmpty) {
+  //         return ValidationResult(
+  //           isValid: true,
+  //           errors: [],
+  //           warnings: warnings,
+  //         );
+  //       }
+  //     } catch (e) {
+  //       errors.add('Failed to decode JSON: $e');
+  //     }
 
-      return ValidationResult(
-        isValid: false,
-        errors: errors,
-        warnings: warnings,
-      );
-    } catch (e) {
-      return ValidationResult(
-        isValid: false,
-        errors: ['Validation failed: $e'],
-        warnings: [],
-      );
-    }
-  }
+  //     return ValidationResult(
+  //       isValid: false,
+  //       errors: errors,
+  //       warnings: warnings,
+  //     );
+  //   } catch (e) {
+  //     return ValidationResult(
+  //       isValid: false,
+  //       errors: ['Validation failed: $e'],
+  //       warnings: [],
+  //     );
+  //   }
+  // }
 
   /// Load exam sessions from local storage (FIXED)
   Future<void> loadFromStorage() async {
@@ -524,22 +543,22 @@ class ExamCubit extends Cubit<ExamState> {
   /// Load sessions from SharedPreferences (FIXED)
   Future<List<ExamSession>> _loadSessionsFromStorage() async {
     try {
-      final sessionsJson = _prefs.getString(_storageKey);
-      pskyLog('Raw storage data: $sessionsJson');
+      final sessionsList = _storage.getUserJsonList(StorageKeys.examSessions);
+      pskyLog('Raw storage data: $sessionsList');
 
-      if (sessionsJson == null || sessionsJson.isEmpty) {
+      if (sessionsList == null || sessionsList.isEmpty) {
         pskyLog('No sessions in storage');
         return [];
       }
 
-      final List<dynamic> sessionsList = jsonDecode(sessionsJson);
+      // final List<dynamic> sessions = jsonDecode(sessionsJson);
       pskyLog('Decoded ${sessionsList.length} sessions');
 
       final List<ExamSession> sessions = [];
 
       for (int i = 0; i < sessionsList.length; i++) {
         try {
-          final json = sessionsList[i] as Map<String, dynamic>;
+          final json = sessionsList[i];
 
           // Normalize the data before parsing
           _normalizeStorageData(json);
@@ -645,7 +664,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated pauseAndSave - marks data as changed
-  Future<void> pauseAndSave() async {
+ Future<void> pauseAndSave() async {
     final currentState = state;
     if (currentState is! _HasData) return;
 
@@ -678,7 +697,7 @@ class ExamCubit extends Cubit<ExamState> {
 
       await _saveToLocalStorage(updatedSessions);
       _hasUnsyncedChanges = true;
-      _lastSyncedDataHash = null; // Force sync
+      _lastSyncedDataHash = null;
 
       emit(ExamState.hasData(
         examSessions: updatedSessions,
@@ -687,8 +706,11 @@ class ExamCubit extends Cubit<ExamState> {
         examMode: currentState.examMode,
       ));
 
-      // Immediate sync for pause (important action)
       _syncViaSyncCubit(updatedSession.userId, updatedSession);
+
+      // ✅ NOTIFICATION: Session paused
+      _sendSessionPauseNotification(updatedSession);
+
     } catch (e) {
       emit(ExamState.error(message: 'Failed to pause exam: $e'));
     }
@@ -699,7 +721,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated endAndSave - stops auto-sync since session is no longer active
-  Future<void> endAndSave() async {
+ Future<void> endAndSave() async {
     final currentState = state;
     if (currentState is! _HasData) return;
 
@@ -734,23 +756,430 @@ class ExamCubit extends Cubit<ExamState> {
         completedSession: updatedSession,
       ));
 
-      // Immediate sync for completion (critical action)
       _syncViaSyncCubit(updatedSession.userId, updatedSession);
+
+      // ✅ NOTIFICATION: Session completed with score
+      await _sendSessionCompletionNotification(updatedSession);
 
       // Background tasks
       _updateLeaderboard(updatedSession.userId);
-      _checkAchievements(updatedSession.userId, updatedSessions);
-      _sendCompletionNotification(updatedSession);
-
-      // Reset sync tracking since session is complete
-      _lastSyncedDataHash = null;
-      // ✅ NEW: Update streak data
+      await _checkAchievements(updatedSession.userId, updatedSessions);
       await _updateStreakAfterCompletion(updatedSession);
+      
+      // ✅ NOTIFICATION: Check for leaderboard update
+      await _checkAndNotifyLeaderboardUpdate(updatedSession.userId);
+      
+      // ✅ NOTIFICATION: Check for daily goal achievement
+      await _checkAndNotifyDailyGoal(updatedSession.userId, updatedSessions);
+
+      _lastSyncedDataHash = null;
       pskyLog('Exam completed: ${updatedSession.examSessionId}');
     } catch (e) {
       emit(ExamState.error(message: 'Failed to end exam: $e'));
     }
   }
+
+
+  // ============================================================================
+  // NOTIFICATION HELPER METHODS - ADD THESE TO YOUR EXAMCUBIT
+  // ============================================================================
+
+  /// Send session start notification
+  void _sendSessionStartNotification(ExamSession session) {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
+      
+      notificationService.sendSessionStartNotification(
+        userId: session.userId,
+        sessionId: session.examSessionId,
+        subjectName: subject?.name ?? 'Exam',
+      );
+    } catch (e) {
+      pskyLog('Failed to send start notification: $e');
+    }
+  }
+
+  /// Send session pause notification
+  void _sendSessionPauseNotification(ExamSession session) {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
+      
+      notificationService.sendSessionPauseNotification(
+        userId: session.userId,
+        sessionId: session.examSessionId,
+        subjectName: subject?.name ?? 'Exam',
+      );
+    } catch (e) {
+      pskyLog('Failed to send pause notification: $e');
+    }
+  }
+
+  /// Send session completion notification with score
+  Future<void> _sendSessionCompletionNotification(ExamSession session) async {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
+      final result = ExamCalculator.calculateResult(session);
+      
+      await notificationService.sendSessionCompletionNotification(
+        userId: session.userId,
+        sessionId: session.examSessionId,
+        subjectName: subject?.name ?? 'Exam',
+        scorePercentage: result.score.percentage,
+        grade: result.grade.grade,
+      );
+    } catch (e) {
+      pskyLog('Failed to send completion notification: $e');
+    }
+  }
+
+  /// Schedule expiry warning notification (30 minutes before)
+  void _scheduleExpiryWarningNotification(ExamSession session) {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
+      
+      if (session.timeLimitMinutes > 30) {
+        final expiryTime = session.startedAt!.add(
+          Duration(minutes: session.timeLimitMinutes),
+        );
+        
+        final warningTime = expiryTime.subtract(const Duration(minutes: 30));
+        
+        if (warningTime.isAfter(DateTime.now())) {
+          notificationService.scheduleNotification(
+            id: 'expiry_${session.examSessionId}',
+            title: '⏰ Exam Expiring Soon',
+            body: 'Your ${subject?.name ?? 'exam'} will expire in 30 minutes',
+            scheduledTime: warningTime,
+            payload: {
+              'type': 'session_expiring',
+              'sessionId': session.examSessionId,
+              'userId': session.userId,
+              'action': 'open_session',
+            },
+            priority: NotificationPriority.high,
+          );
+        }
+      }
+    } catch (e) {
+      pskyLog('Failed to schedule expiry warning: $e');
+    }
+  }
+
+  /// Check and notify achievements after completion
+  Future<void> _checkAchievements(String userId, List<ExamSession> sessions) async {
+    try {
+      final achievementService = getIt<AchievementService>();
+      final notificationService = getIt<ExamNotificationService>();
+
+      // Check achievements in background
+      final newAchievements = await achievementService.checkAchievements(
+        userId: userId,
+        sessions: sessions,
+      );
+
+      // ✅ NOTIFICATION: Send achievement notifications
+      for (final achievement in newAchievements) {
+        await notificationService.sendAchievementNotification(
+          userId: userId,
+          achievement: achievement,
+        );
+      }
+    } catch (e) {
+      pskyLog('Failed to check achievements: $e');
+    }
+  }
+
+  /// Check and notify leaderboard position change
+  Future<void> _checkAndNotifyLeaderboardUpdate(String userId) async {
+    try {
+      final repository = getIt<ExamRepository>();
+      final notificationService = getIt<ExamNotificationService>();
+
+      // Get current rank
+      final rankData = await repository.getUserRank(
+        userId: userId,
+        type: LeaderboardType.overall,
+      );
+
+      // Get previous rank from storage
+      final previousRank = _storage.getUserData('previous_rank') as int?;
+
+      if (previousRank != null && previousRank != rankData.rank) {
+        // ✅ NOTIFICATION: Rank changed
+        await notificationService.sendLeaderboardUpdate(
+          userId: userId,
+          newRank: rankData.rank,
+          previousRank: previousRank,
+        );
+      }
+
+      // Save current rank for next comparison
+      await _storage.saveUserData('previous_rank', rankData.rank);
+    } catch (e) {
+      pskyLog('Failed to check leaderboard update: $e');
+    }
+  }
+
+  /// Check and notify daily goal progress
+  Future<void> _checkAndNotifyDailyGoal(String userId, List<ExamSession> sessions) async {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      
+      // Get sessions completed today
+      final today = DateTime.now();
+      final todaySessions = sessions.where((s) {
+        return s.status == ExamSessionStatus.completed &&
+            s.completedAt != null &&
+            s.completedAt!.year == today.year &&
+            s.completedAt!.month == today.month &&
+            s.completedAt!.day == today.day;
+      }).length;
+
+      // Get daily goal from preferences (default: 3 sessions)
+      final dailyGoal = _storage.getUserData('daily_goal') as int? ?? 3;
+
+      // ✅ NOTIFICATION: Daily goal achieved
+      if (todaySessions >= dailyGoal) {
+        await notificationService.sendDailyGoal(
+          userId: userId,
+          targetSessions: dailyGoal,
+          completedSessions: todaySessions,
+        );
+      }
+    } catch (e) {
+      pskyLog('Failed to check daily goal: $e');
+    }
+  }
+
+  /// Enhanced streak update with milestone notifications
+  Future<void> _updateStreakAfterCompletion(ExamSession session) async {
+    try {
+      final currentState = state;
+      if (currentState is! _Completed) return;
+
+      final streakService = getIt<StreakService>();
+      final notificationService = getIt<ExamNotificationService>();
+      
+      await streakService.updateStreakOnSessionComplete(
+        userId: session.userId,
+        session: session,
+        allSessions: currentState.examSessions,
+      );
+
+      // Check for milestones
+      final streakData = await getStreakData();
+      final milestone = streakService.checkMilestone(streakData.currentStreak);
+
+      // ✅ NOTIFICATION: Streak milestone
+      if (milestone != null) {
+        await notificationService.sendAchievementNotification(
+          userId: session.userId,
+          achievement: Achievement(
+            id: 'streak_milestone_${milestone.days}',
+            title: milestone.title,
+            description: milestone.message,
+            category: AchievementCategory.streak,
+            points: milestone.reward,
+            unlockedAt: DateTime.now(),
+          ),
+        );
+      }
+
+      // ✅ NOTIFICATION: Streak reminder for tomorrow
+      if (streakData.currentStreak > 0) {
+        _scheduleStreakReminderForTomorrow(session.userId, streakData.currentStreak);
+      }
+    } catch (e) {
+      pskyLog('Error updating streak: $e');
+    }
+  }
+
+  /// Schedule streak reminder for tomorrow
+  void _scheduleStreakReminderForTomorrow(String userId, int currentStreak) {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      
+      // Schedule for tomorrow at 9 AM
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final reminderTime = DateTime(
+        tomorrow.year,
+        tomorrow.month,
+        tomorrow.day,
+        9, // 9 AM
+        0,
+      );
+
+      notificationService.scheduleNotification(
+        id: 'streak_reminder_$userId',
+        title: '🔥 Keep Your Streak!',
+        body: 'You have a $currentStreak day streak. Don\'t break it today!',
+        scheduledTime: reminderTime,
+        payload: {
+          'type': 'streak_reminder',
+          'userId': userId,
+          'streak': currentStreak.toString(),
+          'action': 'open_practice',
+        },
+      );
+    } catch (e) {
+      pskyLog('Failed to schedule streak reminder: $e');
+    }
+  }
+
+  
+  // ============================================================================
+  // PERIODIC NOTIFICATION TRIGGERS
+  // ============================================================================
+
+  /// Schedule daily study reminder (call this when user sets preferences)
+  Future<void> scheduleDailyStudyReminder({
+    required String userId,
+    required TimeOfDay preferredTime,
+  }) async {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      
+      // Calculate next occurrence of the preferred time
+      final now = DateTime.now();
+      var scheduledTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        preferredTime.hour,
+        preferredTime.minute,
+      );
+
+      // If time has passed today, schedule for tomorrow
+      if (scheduledTime.isBefore(now)) {
+        scheduledTime = scheduledTime.add(const Duration(days: 1));
+      }
+
+      await notificationService.scheduleNotification(
+        id: 'daily_study_$userId',
+        title: '📚 Time to Study!',
+        body: 'Keep your streak going. Start a practice session today.',
+        scheduledTime: scheduledTime,
+        payload: {
+          'type': 'daily_study',
+          'userId': userId,
+          'action': 'open_practice',
+        },
+      );
+    } catch (e) {
+      pskyLog('Failed to schedule daily study reminder: $e');
+    }
+  }
+
+  /// Check if user should receive motivation (after poor performance)
+  Future<void> _checkAndSendMotivation(String userId, ExamSession session) async {
+    try {
+      final result = ExamCalculator.calculateResult(session);
+      
+      // If performance is below 50%, send motivation
+      if (result.score.percentage < 50) {
+        final notificationService = getIt<ExamNotificationService>();
+        
+        final motivationalMessages = [
+          'Don\'t give up! Every expert was once a beginner.',
+          'Mistakes are proof that you\'re trying. Keep going!',
+          'Success is the sum of small efforts repeated day in and day out.',
+          'You\'re improving with every session. Stay consistent!',
+        ];
+
+        final message = motivationalMessages[
+          DateTime.now().millisecond % motivationalMessages.length
+        ];
+
+        // Wait 10 minutes before sending motivation
+        await Future.delayed(const Duration(minutes: 10));
+
+        await notificationService.sendImprovementSuggestion(
+          userId: userId,
+          suggestion: message,
+          weakArea: result.weakAreas.first.topicName,
+        );
+      }
+    } catch (e) {
+      pskyLog('Failed to send motivation: $e');
+    }
+  }
+
+  // ============================================================================
+  // NOTIFICATION CLEANUP
+  // ============================================================================
+
+  /// Cancel session-specific notifications when session completes
+  void _cancelSessionNotifications(String sessionId) {
+    try {
+      final notificationService = getIt<ExamNotificationService>();
+      
+      // Cancel expiry warning
+      notificationService.cancelNotification('expiry_$sessionId');
+    } catch (e) {
+      pskyLog('Failed to cancel session notifications: $e');
+    }
+  }
+
+  /// Send performance insight after multiple completions
+  Future<void> _sendPerformanceInsights(String userId, List<ExamSession> sessions) async {
+    try {
+      final completedSessions = sessions
+          .where((s) => s.status == ExamSessionStatus.completed)
+          .toList();
+
+      if (completedSessions.length < 3) return; // Need at least 3 sessions
+
+      final notificationService = getIt<ExamNotificationService>();
+      final aggregate = ExamCalculator.calculateAggregateResult(completedSessions);
+
+      // Check for improvements
+      if (aggregate.progressTrend.isImproving) {
+        await notificationService.sendPerformanceInsight(
+          userId: userId,
+          insight: 'Your performance is improving! Keep up the great work!',
+          subject: 'Overall Performance',
+        );
+      }
+
+      // Check for weak areas
+      if (aggregate.weakestSubject != null) {
+        final weakSubject = getIt<SubjectRepository>()
+            .getSubjectById(aggregate.weakestSubject!.subjectId);
+        
+        if (weakSubject != null) {
+          await notificationService.sendImprovementSuggestion(
+            userId: userId,
+            suggestion: 'Practice more questions in this subject to improve',
+            weakArea: weakSubject.name,
+          );
+        }
+      }
+    } catch (e) {
+      pskyLog('Failed to send performance insights: $e');
+    }
+  }
+
+  /// Update leaderboard with notification check
+  void _updateLeaderboard(String userId) {
+    try {
+      final leaderboardCalculator = getIt<LeaderboardCalculator>();
+
+      leaderboardCalculator.calculateLeaderboardEntry(
+        userId: userId,
+        displayName: 'User', // Get from UserCubit
+      ).then((_) {
+        // After leaderboard update, check for rank changes
+        _checkAndNotifyLeaderboardUpdate(userId);
+      });
+    } catch (e) {
+      pskyLog('Failed to update leaderboard: $e');
+    }
+  }
+
 
   /// Send exam completion notification
   void _sendCompletionNotification(ExamSession session) {
@@ -779,7 +1208,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Load sessions from Firebase and merge with local - USES SYNCCUBIT
-  Future<void> syncFromDb(String userId) async {
+  Future<void> syncFromDb(String userId, {bool forcePull = false}) async {
     try {
       emit(const ExamState.loading());
 
@@ -792,8 +1221,10 @@ class ExamCubit extends Cubit<ExamState> {
       // Get local sessions
       final localSessions = await _loadSessionsFromStorage();
 
-      // Merge sessions (Firebase takes precedence)
-      final mergedSessions = _mergeSessions(localSessions, firestoreSessions);
+      // Merge sessions (Firebase takes precedence if forcePull)
+      final mergedSessions = forcePull
+          ? firestoreSessions // Use only Firebase data
+          : _mergeSessions(localSessions, firestoreSessions);
 
       // Save merged sessions to local storage
       await _saveToLocalStorage(mergedSessions);
@@ -803,7 +1234,7 @@ class ExamCubit extends Cubit<ExamState> {
         (s) =>
             s.status == ExamSessionStatus.inProgress ||
             s.status == ExamSessionStatus.paused,
-        orElse: () => mergedSessions.last,
+        orElse: () => mergedSessions.isNotEmpty ? mergedSessions.last : throw Exception('No active or completed sessions found'),
       );
 
       if (currentSession == null) {
@@ -823,6 +1254,8 @@ class ExamCubit extends Cubit<ExamState> {
         currentSession: currentSession,
         examMode: ExamMode.custom,
       ));
+      _lastFirebaseSync = DateTime.now();
+      pskyLog('Sync completed: ${mergedSessions.length} sessions');
     } catch (e) {
       emit(ExamState.error(message: 'Failed to sync from database: $e'));
     }
@@ -915,37 +1348,37 @@ class ExamCubit extends Cubit<ExamState> {
     pskyLog('Force sync completed');
   }
 
-  /// Update leaderboard after exam completion
-  void _updateLeaderboard(String userId) {
-    try {
-      final leaderboardCalculator = getIt<LeaderboardCalculator>();
+  // /// Update leaderboard after exam completion
+  // void _updateLeaderboard(String userId) {
+  //   try {
+  //     final leaderboardCalculator = getIt<LeaderboardCalculator>();
 
-      // Fire and forget - calculate and update in background
-      leaderboardCalculator.calculateLeaderboardEntry(
-        userId: userId,
-        displayName: 'User', // Get from UserCubit
-      );
-    } catch (e) {
-      pskyLog('Failed to update leaderboard: $e');
-      // Don't throw - non-critical
-    }
-  }
+  //     // Fire and forget - calculate and update in background
+  //     leaderboardCalculator.calculateLeaderboardEntry(
+  //       userId: userId,
+  //       displayName: 'User', // Get from UserCubit
+  //     );
+  //   } catch (e) {
+  //     pskyLog('Failed to update leaderboard: $e');
+  //     // Don't throw - non-critical
+  //   }
+  // }
 
-  /// Check and unlock achievements after exam completion
-  void _checkAchievements(String userId, List<ExamSession> sessions) {
-    try {
-      final achievementService = getIt<AchievementService>();
+  // /// Check and unlock achievements after exam completion
+  // void _checkAchievements(String userId, List<ExamSession> sessions) {
+  //   try {
+  //     final achievementService = getIt<AchievementService>();
 
-      // Fire and forget - check achievements in background
-      achievementService.checkAchievements(
-        userId: userId,
-        sessions: sessions,
-      );
-    } catch (e) {
-      pskyLog('Failed to check achievements: $e');
-      // Don't throw - non-critical
-    }
-  }
+  //     // Fire and forget - check achievements in background
+  //     achievementService.checkAchievements(
+  //       userId: userId,
+  //       sessions: sessions,
+  //     );
+  //   } catch (e) {
+  //     pskyLog('Failed to check achievements: $e');
+  //     // Don't throw - non-critical
+  //   }
+  // }
 // ============================================================================
 // ENHANCED AUTO-SAVE WITH SMART SYNC
 // ============================================================================
@@ -1061,9 +1494,27 @@ class ExamCubit extends Cubit<ExamState> {
       sessionMap[session.examSessionId] = session;
     }
 
+ 
     // Override with remote sessions (they're more authoritative)
-    for (final session in remote) {
-      sessionMap[session.examSessionId] = session;
+    // But keep local if it's newer (last updated)
+    for (final remoteSession in remote) {
+      final localSession = sessionMap[remoteSession.examSessionId];
+      
+      if (localSession != null) {
+        // Compare timestamps and keep the newer one
+        final localUpdated = localSession.progress?.lastUpdated ?? localSession.startedAt;
+        final remoteUpdated = remoteSession.progress?.lastUpdated ?? remoteSession.startedAt;
+        
+        if (localUpdated != null && remoteUpdated != null) {
+          if (remoteUpdated.isAfter(localUpdated)) {
+            sessionMap[remoteSession.examSessionId] = remoteSession;
+          }
+        } else {
+          sessionMap[remoteSession.examSessionId] = remoteSession;
+        }
+      } else {
+        sessionMap[remoteSession.examSessionId] = remoteSession;
+      }
     }
 
     return sessionMap.values.toList()
@@ -1126,7 +1577,7 @@ class ExamCubit extends Cubit<ExamState> {
 // FETCH SESSIONS IN PROGRESS
 // ============================================================================
 
-   /// Get all sessions that are currently in progress
+  /// Get all sessions that are currently in progress
   List<ExamSession> getAllSessions() {
     final currentState = state;
 
@@ -1135,7 +1586,6 @@ class ExamCubit extends Cubit<ExamState> {
     return currentState.examSessions;
   }
 
- 
   /// Get all sessions that are currently in progress
   List<ExamSession> getSessionsInProgress() {
     final currentState = state;
@@ -2419,34 +2869,34 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Update streak after completing an exam
-  Future<void> _updateStreakAfterCompletion(ExamSession session) async {
-    try {
-      final currentState = state;
-      if (currentState is! _Completed) return;
+  // Future<void> _updateStreakAfterCompletion(ExamSession session) async {
+  //   try {
+  //     final currentState = state;
+  //     if (currentState is! _Completed) return;
 
-      final streakService = getIt<StreakService>();
-      await streakService.updateStreakOnSessionComplete(
-        userId: session.userId,
-        session: session,
-        allSessions: currentState.examSessions,
-      );
+  //     final streakService = getIt<StreakService>();
+  //     await streakService.updateStreakOnSessionComplete(
+  //       userId: session.userId,
+  //       session: session,
+  //       allSessions: currentState.examSessions,
+  //     );
 
-      // Check for milestones
-      final streakData = await getStreakData();
-      final milestone = streakService.checkMilestone(streakData.currentStreak);
+  //     // Check for milestones
+  //     final streakData = await getStreakData();
+  //     final milestone = streakService.checkMilestone(streakData.currentStreak);
 
-      if (milestone != null) {
-        _notifyStreakMilestone(session.userId, milestone);
-      }
+  //     if (milestone != null) {
+  //       _notifyStreakMilestone(session.userId, milestone);
+  //     }
 
-      // Check if need to send reminder
-      if (streakService.shouldSendStreakReminder(streakData)) {
-        _sendStreakReminder(session.userId, streakData.currentStreak);
-      }
-    } catch (e) {
-      pskyLog('Error updating streak: $e');
-    }
-  }
+  //     // Check if need to send reminder
+  //     if (streakService.shouldSendStreakReminder(streakData)) {
+  //       _sendStreakReminder(session.userId, streakData.currentStreak);
+  //     }
+  //   } catch (e) {
+  //     pskyLog('Error updating streak: $e');
+  //   }
+  // }
 
   /// Send streak milestone notification
   void _notifyStreakMilestone(String userId, StreakMilestone milestone) {

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:ahiaa_web/core/services/cache_manager.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
 import 'package:ahiaa_web/core/utils/exceptions/exam_data_source_exceptions.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
@@ -18,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 @lazySingleton
 class FirebaseExamDataSource {
   final FirebaseFirestore _firestore;
-  final SharedPreferences _prefs;
+  final LocalStorageService _prefs;
   final ExamCacheManager _cacheManager;
 
   // Collection references
@@ -685,7 +686,7 @@ class FirebaseExamDataSource {
 
   /// Get last sync time
   Future<DateTime?> getLastSyncTime() async {
-    final timestamp = _prefs.getInt(_lastSyncKey);
+    final timestamp = _prefs.getUserData(_lastSyncKey);
     if (timestamp == null) return null;
 
     return DateTime.fromMillisecondsSinceEpoch(timestamp);
@@ -693,13 +694,13 @@ class FirebaseExamDataSource {
 
   /// Update last sync time
   Future<void> _updateLastSyncTime() async {
-    await _prefs.setInt(_lastSyncKey, DateTime.now().millisecondsSinceEpoch);
+    await _prefs.saveUserData(_lastSyncKey, DateTime.now().millisecondsSinceEpoch);
   }
 
   /// Clear sync cache
   Future<void> clearSyncCache() async {
     _cacheManager.clearAll();
-    await _prefs.remove(_lastSyncKey);
+    await _prefs.removeUserData(_lastSyncKey);
   }
 
   // ============================================================================

@@ -35,6 +35,7 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final responsive = ResponsiveBreakpoints.of(context);
     final examCubit = getIt<ExamCubit>();
 
@@ -103,7 +104,7 @@ class ResultScreen extends StatelessWidget {
               examCubit.calculateAggregateResults();
             },
             loadedWidget: TRoundedContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
+              padding:  EdgeInsets.symmetric(horizontal:responsive.isMobile ? 12: 0,vertical:  responsive.isMobile? 16:0),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -349,9 +350,12 @@ class ResultScreen extends StatelessWidget {
                             ),
                           ),
                         )),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      alignment: WrapAlignment.center,
                       spacing: 12,
+                      runSpacing: 12,
+
                       children: [
                         TElevatedButton(
                           text: 'View Report',

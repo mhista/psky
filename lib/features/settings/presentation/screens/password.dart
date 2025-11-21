@@ -12,6 +12,7 @@ import 'package:ahiaa_web/features/settings/presentation/screens/widgets/gender_
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart' hide Form;
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide TextButton;
 
 class PasswordSettings extends StatefulWidget {
@@ -28,6 +29,8 @@ class _PasswordSettingsState extends State<PasswordSettings> {
   
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
   return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0),
       child: Column(
@@ -101,17 +104,17 @@ class _PasswordSettingsState extends State<PasswordSettings> {
                         getIt<AppRouter>().router.goNamed(KRoutes.onboarding);
                       },
                       style: ElevatedButton.styleFrom(
-                        maximumSize: const Size(172, 56),
-                        minimumSize: const Size(172, 56),
+                        maximumSize: const Size(172, 48),
+                        minimumSize: const Size(172, 48),
                       ),
-                      child: const Text('Change password'),
+                      child:  Text('Change password', style: TextStyle( fontSize: responsive.isMobile ? 12 : 15),),
                     ),
                   ),
                  
                 ],
               ))
         ],
-      ).withPadding(vertical: 40, horizontal: 50),
+      ).withPadding(vertical:responsive.isMobile ? 30: 40, horizontal: responsive.isMobile ? 0 :50),
     );
   }
 }

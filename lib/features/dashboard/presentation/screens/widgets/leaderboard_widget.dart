@@ -4,6 +4,7 @@ import 'package:ahiaa_web/core/common/widgets/progress/animated_linear_progress.
 import 'package:ahiaa_web/core/common/widgets/shimmer/three_to_one_shimmer.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
+import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/personalization/presentation/screens/widgets/user_avater.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
@@ -40,6 +41,8 @@ class _LeaderBoardWidgetState extends State<LeaderBoardWidget> {
 
   Future<void> _getLeaderBoardData() async {
     _leaderBoard = await examCubit.getLeaderboardEntries();
+    _leaderBoard?.removeWhere((l)=>l.overallScore == 0);
+    pskyLog(_leaderBoard);
     setState(() {
       _isLoading = false;
     });
@@ -55,7 +58,7 @@ class _LeaderBoardWidgetState extends State<LeaderBoardWidget> {
         (context, state) {
           // Refresh streak data when exam is completed
           state.maybeWhen(
-            hasData: (_, __, ___, ____) => _getLeaderBoardData(),
+            // hasData: (_, __, ___, ____) => _getLeaderBoardData(),
             completed: (_, __) => _getLeaderBoardData(),
             orElse: () {},
           );
@@ -90,7 +93,7 @@ class _LeaderBoardWidgetState extends State<LeaderBoardWidget> {
                 ),
               ),
               const Gap(15),
-              if ((_leaderBoard ?? []).isEmpty)
+              if ((_leaderBoard ?? []).isEmpty )
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(top:20.0),
@@ -103,6 +106,7 @@ class _LeaderBoardWidgetState extends State<LeaderBoardWidget> {
                   child: ListView.separated(
                       itemBuilder: (context, index) {
                         final leader = _leaderBoard![index];
+                        pskyLog(leader);
                         final sessions = (leader.metadata?['session'] as List)
                             .map((q) =>
                                 ExamSession.fromJson(q as Map<String, dynamic>))

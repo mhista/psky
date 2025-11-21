@@ -2,6 +2,7 @@ import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_c
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide Checkbox;
 
 class NotificationSettings extends StatelessWidget {
@@ -9,6 +10,8 @@ class NotificationSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return TRoundedContainer(
       child: Column(
          spacing: 28,
@@ -28,12 +31,16 @@ class NotificationSettings extends StatelessWidget {
                         Column(
                           spacing: 6,
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const ResponsiveText(
                               'Test Reminders'
                             ).withSize(12),
                             const ResponsiveText(
-                              'Get notified when it’s time for a scheduled or saved test.'
+                              'Get notified when it’s time for a scheduled or saved test.',
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ).withSize(10)
                           ],
                         ),

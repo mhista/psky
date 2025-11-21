@@ -9,17 +9,16 @@ class PColors {
   static const Color primary3 = Color(0xFF614491);
   static const Color primary4 = Color(0xFF81609e);
   static const Color primary5 = Color(0xFF21005D);
+  static const Color sec1 = Color(0xFFFF6607);
+  static const Color sec2 = Color(0xFFFF8307);
+
+
 
   static const Color tertiary = Color(0xFFEFB8C8);
   static const Color review = Color(0xFF625B71);
 
   
   // #625B71
-
-
-
-
-
   static const Color secondary = Color(0xffffe24b);
   static const Color accent = Color(0xffb0c7ff);
   static const Color accent2 = Color(0xffF0FDF4);

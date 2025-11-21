@@ -1,6 +1,7 @@
 
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class GenderRadioGroup extends StatefulWidget {
   final Function(String?) onChanged;
@@ -27,13 +28,15 @@ class _GenderRadioGroupState extends State<GenderRadioGroup> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(top:8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const ResponsiveText('Gender').withSize(9),
+          const ResponsiveText('Gender').withSize(responsive.isMobile? 12: 9),
           RadioGroup<String>(
             groupValue: selectedGender,
             onChanged: (value) {

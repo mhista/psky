@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ahiaa_web/core/cubits/cubit/initialization_cubit.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/features/authentication/domain/entities/user.dart';
 import 'package:ahiaa_web/features/authentication/domain/usecases/get_current_user_usecase.dart';
 import 'package:ahiaa_web/features/authentication/domain/usecases/login_usecase.dart';
@@ -27,6 +28,7 @@ class AuthCubit extends Cubit<AuthState> {
   final LogoutUseCase logoutUseCase;
   final SendPasswordResetEmailUseCase sendPasswordResetEmailUseCase;
   final FirebaseAuth firebaseAuth;
+  final LocalStorageService localStorageService;
   StreamSubscription<User?>? _sub;
 
   AuthCubit({
@@ -37,6 +39,7 @@ class AuthCubit extends Cubit<AuthState> {
     required this.logoutUseCase,
     required this.sendPasswordResetEmailUseCase,
     required this.firebaseAuth,
+    required this.localStorageService,
   }) : super(const AuthState.initial()) {
     // Delay subscription until after current event loop completes
     // This ensures Flutter's binding is fully initialized
@@ -54,7 +57,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (currenState is! _Authenticated) return;
       final initCubit = getIt<InitializationCubit>();
-
+      // await localStorageService.setUser(currenState.user.id);
       await initCubit.initialize(userId: currenState.user.id, quickStart: true);
     }
   }
@@ -135,6 +138,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     emit(const AuthState.loading());
+    await localStorageService.clearUser();
     final result = await logoutUseCase();
     result.fold(
       (error) => emit(AuthState.error(error)),

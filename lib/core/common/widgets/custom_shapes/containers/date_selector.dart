@@ -1,7 +1,8 @@
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:intl/intl.dart'; // Required for formatting the date
+import 'package:intl/intl.dart';
+import 'package:responsive_framework/responsive_framework.dart'; // Required for formatting the date
 
 class DatePickerContainerScreen extends StatefulWidget {
   // 1. Add the callback function parameter
@@ -43,13 +44,15 @@ class _DatePickerContainerScreenState extends State<DatePickerContainerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     // 4. Format the date for display
     final String dateDisplay = _selectedDate == null
         ? 'dd/mm/yyyy'
         : DateFormat('dd/MM/yyyy').format(_selectedDate!);
 
     return TRoundedContainer(
-      width: 229,
+      width: responsive.isMobile ? double.infinity : 229,
       height: 47.5,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       showBorder: true,
@@ -69,7 +72,11 @@ class _DatePickerContainerScreenState extends State<DatePickerContainerScreen> {
                 // fontSize: 16,
               ),
             ),
-            const Icon(Iconsax.calendar_1),
+            GestureDetector(
+                onTap: () => _selectDate(),
+                child: const MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Icon(Iconsax.calendar_1))),
           ],
         ),
       ),

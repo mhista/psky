@@ -66,6 +66,7 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
         // Refresh streak data when exam is completed
         state.maybeWhen(
           completed: (_, __) => _loadStreakData(),
+          
           orElse: () {},
         );
       },
@@ -158,7 +159,7 @@ class _DaysActiveWidgetState extends State<DaysActiveWidget> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    if (_isLoading)
+                    if (_isLoading || _cachedStreakData == null || _cachedStreakData!.days.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(
                             left: 9.0, right: 9, bottom: 10),

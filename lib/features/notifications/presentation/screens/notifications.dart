@@ -12,6 +12,7 @@ import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/features/notifications/presentation/screens/desktop/notification_desktop.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({
@@ -28,6 +29,8 @@ class NotificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Move the key inside the widget where it's used
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final dropDownKey = GlobalKey<CustomDropdownMenuState>();
     final dropDownKey2 = GlobalKey<CustomDropdownMenuState>();
 
@@ -40,7 +43,7 @@ class NotificationPage extends StatelessWidget {
         },
         icon: Icons.check,
         iconColor: PColors.deepBlack,
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
         iconSize: 10,
       ),
       DropdownFeedsItem(
@@ -50,7 +53,7 @@ class NotificationPage extends StatelessWidget {
           dropDownKey.currentState?.hide();
         },
         icon: Icons.delete,
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
         iconSize: 10,
         iconColor: PColors.bg2,
       )
@@ -61,35 +64,35 @@ class NotificationPage extends StatelessWidget {
         onTap: () {
           dropDownKey2.currentState?.hide();
         },
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
       ),
       DropdownFeedsItem(
         label: 'Tests',
         onTap: () {
           dropDownKey2.currentState?.hide();
         },
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
       ),
       DropdownFeedsItem(
         label: 'AI Insights',
         onTap: () {
           dropDownKey2.currentState?.hide();
         },
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
       ),
       DropdownFeedsItem(
         label: 'Progress & Analytics',
         onTap: () {
           dropDownKey2.currentState?.hide();
         },
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
       ),
       DropdownFeedsItem(
         label: 'System updates / Announcemenets',
         onTap: () {
           dropDownKey2.currentState?.hide();
         },
-        textSize: 8,
+        textSize: responsive.isMobile? 10: 8,
       ),
     ];
     return SiteTemplate2(

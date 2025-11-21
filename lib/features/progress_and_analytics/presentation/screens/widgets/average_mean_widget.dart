@@ -10,6 +10,7 @@ import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class AverageMeanWidget extends StatelessWidget {
   const AverageMeanWidget({
@@ -26,78 +27,136 @@ class AverageMeanWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final examCubit = getIt<ExamCubit>();
+    final responsive = ResponsiveBreakpoints.of(context);
 
     return BlocBuilder<ExamCubit, ExamState>(
       bloc: examCubit,
       builder: (context, state) {
-          // Extract state information
-          
-          final aggregate = examCubit.calculateAggregateResults();
-          final correctScores = aggregate?.aggregateScore.correct;
-          final totalQuestions = aggregate?.aggregateScore.totalQuestions;
+        // Extract state information
 
-          final grade = aggregate?.overallGrade.grade;
-          final description = aggregate?.overallGrade.description;
-          final globalMetrics = examCubit.getGlobalTimeMetrics();
+        final aggregate = examCubit.calculateAggregateResults();
+        final correctScores = aggregate?.aggregateScore.correct;
+        final totalQuestions = aggregate?.aggregateScore.totalQuestions;
 
-          final remarks = aggregate?.overallGrade.remarks;
-          final individualResults = aggregate?.individualResults ?? [];
-          pskyLog(aggregate?.totalTimeSpent);
-          pskyLog(
-              " current: ${examCubit.getTotalTimeSpentAcrossAllSessions()}  total: ${examCubit.getTotalTimeLimitAcrossAllSessions()}");
-          final recommendation = aggregate?.bestPerformance.recommendations;
-          recommendation?.shuffle();
+        final grade = aggregate?.overallGrade.grade;
+        final description = aggregate?.overallGrade.description;
+        final globalMetrics = examCubit.getGlobalTimeMetrics();
 
-        return Row(
-          spacing: 12,
-          // runAlignment: WrapAlignment.center,
-          children: [
-            Expanded(
-              child: ThreeToOneShimmer(
-                isLoading: isLoading,
-                hasError: hasError,
-                hasData: hasData,
-                loadedWidget: AnalyticsAverage(
+        final remarks = aggregate?.overallGrade.remarks;
+        final individualResults = aggregate?.individualResults ?? [];
+        pskyLog(aggregate?.totalTimeSpent);
+        pskyLog(
+            " current: ${examCubit.getTotalTimeSpentAcrossAllSessions()}  total: ${examCubit.getTotalTimeLimitAcrossAllSessions()}");
+        final recommendation = aggregate?.bestPerformance.recommendations;
+        recommendation?.shuffle();
+
+        return responsive.isMobile
+            ? Column(
+                spacing: 12,
+                // runAlignment: WrapAlignment.center,
+                children: [
+                  ThreeToOneShimmer(
+                    isLoading: isLoading,
+                    hasError: hasError,
                     hasData: hasData,
-                    title: 'Average Score',
-                    subtitle: 'Your mean score across all exams',
-                    score: aggregate?.averageCompletionRate.toStringAsFixed(2) ?? '0.0',
-                    symbol: '%',
-                    info: 'Your mean score across all exams'),
-              ),
-            ),
-            Expanded(
-              child: ThreeToOneShimmer(
-                isLoading: isLoading,
-                hasError: hasError,
-                hasData: hasData,
-                loadedWidget: AnalyticsAverage(
+                    loadedWidget: AnalyticsAverage(
+                        hasData: hasData,
+                        title: 'Average Score',
+                        subtitle: 'Your mean score across all exams',
+                        score: aggregate?.averageCompletionRate
+                                .toStringAsFixed(2) ??
+                            '0.0',
+                        symbol: '%',
+                        info: 'Your mean score across all exams'),
+                  ),
+                  ThreeToOneShimmer(
+                    isLoading: isLoading,
+                    hasError: hasError,
                     hasData: hasData,
-                    isUp: true,
-                    title: 'Total Exams',
-                    subtitle: 'Number of practice tests completed',
-                    score: aggregate?.totalSessions.toString() ?? '0',
-                    symbol: '',
-                    info: '24% decrease from last month'),
-              ),
-            ),
-            Expanded(
-              child: ThreeToOneShimmer(
-                isLoading: isLoading,
-                hasError: hasError,
-                hasData: hasData,
-                loadedWidget: AnalyticsAverage(
+                    loadedWidget: AnalyticsAverage(
+                        hasData: hasData,
+                        isUp: false,
+                        title: 'Total Exams',
+                        subtitle: 'Number of practice tests completed',
+                        score: aggregate?.totalSessions.toString() ?? '0',
+                        symbol: '',
+                        info: 'The exams you have completed at the moment'),
+                  ),
+                  ThreeToOneShimmer(
+                    isLoading: isLoading,
+                    hasError: hasError,
                     hasData: hasData,
-                    isUp: true,
-                    title: 'Time Spent',
-                    subtitle: "Total time you've taken to practice",
-                    score: ((aggregate?.totalTimeSpent ?? 0) ~/ 60).toString() ?? '0',
-                    symbol: 'hrs',
-                    info: '20% decrease from last month'),
-              ),
-            ),
-          ],
-        );
+                    loadedWidget: AnalyticsAverage(
+                        hasData: hasData,
+                        isUp: false,
+                        title: 'Time Spent',
+                        subtitle: "Total time you've taken to practice",
+                        score: ((aggregate?.totalTimeSpent ?? 0) ~/ 60)
+                                .toString() ??
+                            '0',
+                        symbol: 'hrs',
+                        info: "You've spent ${((aggregate?.totalTimeSpent ?? 0) ~/ 60)
+                                .toString() ??
+                            '0'}hours writing exam"),
+                  ),
+                ],
+              )
+            : Row(
+                spacing: 12,
+                // runAlignment: WrapAlignment.center,
+                children: [
+                  Expanded(
+                    child: ThreeToOneShimmer(
+                      isLoading: isLoading,
+                      hasError: hasError,
+                      hasData: hasData,
+                      loadedWidget: AnalyticsAverage(
+                          hasData: hasData,
+                          title: 'Average Score',
+                          subtitle: 'Your mean score across all exams',
+                          score: aggregate?.averageCompletionRate
+                                  .toStringAsFixed(2) ??
+                              '0.0',
+                          symbol: '%',
+                          info: 'Your mean score across all exams'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ThreeToOneShimmer(
+                      isLoading: isLoading,
+                      hasError: hasError,
+                      hasData: hasData,
+                      loadedWidget: AnalyticsAverage(
+                          hasData: hasData,
+                          isUp: false,
+                          title: 'Total Exams',
+                          subtitle: 'Number of practice tests completed',
+                          score: aggregate?.totalSessions.toString() ?? '0',
+                          symbol: '',
+                          info: 'The exams you have completed at the moment'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ThreeToOneShimmer(
+                      isLoading: isLoading,
+                      hasError: hasError,
+                      hasData: hasData,
+                      loadedWidget: AnalyticsAverage(
+                          hasData: hasData,
+                          isUp: false,
+                          title: 'Time Spent',
+                          subtitle: "Total time you've taken to practice",
+                          score: ((aggregate?.totalTimeSpent ?? 0) ~/ 60)
+                                  .toString() ??
+                              '0',
+                          symbol: 'hrs',
+                          info: "You've spent ${((aggregate?.totalTimeSpent ?? 0) ~/ 60)
+                                .toString() ??
+                            '0'}hours writing exam"),
+                    ),
+                  ),
+                ],
+              );
       },
     );
   }
@@ -189,10 +248,10 @@ class AnalyticsAverage extends StatelessWidget {
                     Row(
                       spacing: 8,
                       children: [
-                        if (isUp) const Icon(Iconsax.trend_up),
-                        if (!isUp) const Icon(Iconsax.trend_down),
-                        const ResponsiveText(
-                                "Your mean score accross all exams")
+                       const Icon(Iconsax.trend_up),
+                        // if (!isUp) const Icon(Iconsax.trend_down),
+                         ResponsiveText(
+                               info?? "Your mean score accross all exams")
                             .withSize(6)
                       ],
                     )

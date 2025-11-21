@@ -16,6 +16,7 @@ import 'package:ahiaa_web/features/notifications/presentation/screens/widgets/no
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide TextButton;
 
 class NotificationDesktop extends StatelessWidget {
@@ -40,6 +41,8 @@ class NotificationDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final notifCubit = getIt<NotificationCubit>();
     return BlocBuilder<NotificationCubit, NotificationState>(
       bloc: notifCubit,
@@ -49,77 +52,157 @@ class NotificationDesktop extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 28,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if(state.currentPageIndex < 1)
-                  const ResponsiveText('Notifications').withSize(28).bold,
-                  if(state.currentPageIndex > 0)
-                    TextButton(
-                      onPressed: () => notifCubit.previous(),
-                      child: Row(
-                        spacing: 5,
-                        children: [
-                          const Icon(
-                            Icons.arrow_back_ios_new_rounded, size: 13,
-                          ),
+              if (!responsive.isMobile)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (state.currentPageIndex < 1)
+                      const ResponsiveText('Notifications')
+                          .withSize(responsive.isMobile ? 24 : 28)
+                          .bold,
+                    if (state.currentPageIndex > 0)
+                      TextButton(
+                        onPressed: () => notifCubit.previous(),
+                        child: Row(
+                          spacing: 5,
+                          children: [
+                            const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 13,
+                            ),
                             const ResponsiveText('Back').withSize(10)
-                          
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  Row(
-                    spacing: 12,
-                    children: [
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: CustomDropdownMenu(
-                            key: dropDownKey, // ← ADD THIS LINE!
-                            height: 56,
+                    Row(
+                      spacing: 12,
+                      children: [
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: CustomDropdownMenu(
+                              key: dropDownKey, // ← ADD THIS LINE!
+                              height: 56,
+                              width: 120,
+                              backgroundColor: PColors.light,
+                              // position: DropdownPosition.bottomCenter,
+                              trigger: TRoundedContainer(
+                                onTap: null,
+                                height: 40,
+                                radius: 100,
+                                backgroundColor: PColors.light,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 0, horizontal: 10),
+                                child: Row(
+                                  spacing: 12,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const ResponsiveText('Actions')
+                                        .withSize(10),
+                                    const Icon(Icons.arrow_drop_down_rounded)
+                                  ],
+                                ),
+                              ),
+                              items: actionItems),
+                        ),
+                        CustomDropdownMenu(
+                            key: dropDownKey2, // ← ADD THIS LINE!
+                            height: 177,
                             width: 120,
                             backgroundColor: PColors.light,
-                            // position: DropdownPosition.bottomCenter,
-                            trigger: TRoundedContainer(
-                              onTap: null,
-                              height: 40,
-                              radius: 100,
-                              backgroundColor: PColors.light,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 0, horizontal: 10),
-                              child: Row(
-                                spacing: 12,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const ResponsiveText('Actions').withSize(10),
-                                  const Icon(Icons.arrow_drop_down_rounded)
-                                ],
-                              ),
+                            trigger: const MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: PCircularIcon(
+                                  onPressed: null,
+                                  width: 40,
+                                  height: 40,
+                                  widget: PRoundedImage(
+                                    imageType: ImagesType.asset,
+                                    image: PImages.filter,
+                                    fit: BoxFit.scaleDown,
+                                  ),
+                                )),
+                            items: filterItems)
+                      ],
+                    ),
+                  ],
+                ),
+              if (responsive.isMobile)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 12,
+                  children: [
+                    if (state.currentPageIndex < 1)
+                      const ResponsiveText('Notifications')
+                          .withSize(responsive.isMobile ? 24 : 28)
+                          .bold,
+                    if (state.currentPageIndex > 0)
+                      TextButton(
+                        onPressed: () => notifCubit.previous(),
+                        child: Row(
+                          spacing: 5,
+                          children: [
+                            const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 13,
                             ),
-                            items: actionItems),
+                            const ResponsiveText('Back').withSize(10)
+                          ],
+                        ),
                       ),
-                      CustomDropdownMenu(
-                          key: dropDownKey2, // ← ADD THIS LINE!
-                          height: 177,
-                          width: 120,
-                          backgroundColor: PColors.light,
-                          trigger: const MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: PCircularIcon(
-                                onPressed: null,
-                                width: 40,
+                    Row(
+                      spacing: 12,
+                      children: [
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: CustomDropdownMenu(
+                              key: dropDownKey, // ← ADD THIS LINE!
+                              height: 56,
+                              width: 120,
+                              backgroundColor: PColors.light,
+                              // position: DropdownPosition.bottomCenter,
+                              trigger: TRoundedContainer(
+                                onTap: null,
                                 height: 40,
-                                widget: PRoundedImage(
-                                  imageType: ImagesType.asset,
-                                  image: PImages.filter,
-                                  fit: BoxFit.scaleDown,
+                                radius: 100,
+                                backgroundColor: PColors.light,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 0, horizontal: 10),
+                                child: Row(
+                                  spacing: 12,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const ResponsiveText('Actions')
+                                        .withSize(10),
+                                    const Icon(Icons.arrow_drop_down_rounded)
+                                  ],
                                 ),
-                              )),
-                          items: filterItems)
-                    ],
-                  ),
-                ],
-              ),
+                              ),
+                              items: actionItems),
+                        ),
+                        CustomDropdownMenu(
+                            key: dropDownKey2, // ← ADD THIS LINE!
+                            height: 177,
+                            width: 120,
+                            backgroundColor: PColors.light,
+                            trigger: const MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: PCircularIcon(
+                                  onPressed: null,
+                                  width: 40,
+                                  height: 40,
+                                  widget: PRoundedImage(
+                                    imageType: ImagesType.asset,
+                                    image: PImages.filter,
+                                    fit: BoxFit.scaleDown,
+                                  ),
+                                )),
+                            items: filterItems)
+                      ],
+                    ),
+                  ],
+                ),
               Expanded(
                 child: ThreeToOneShimmer(
                     isLoading: isLoading,
@@ -184,7 +267,6 @@ class NotificationDesktop extends StatelessWidget {
                                     padding: const EdgeInsets.only(top: 12),
                                     itemBuilder: (_, index) {
                                       return NotificationItem(
-                                        
                                           timeAgo: '5m ago',
                                           title: 'Your test results are ready',
                                           subtitle:

@@ -1,6 +1,7 @@
 import 'package:ahiaa_web/core/common/widgets/buttons/dropdown_buttons.dart';
 import 'package:ahiaa_web/core/common/widgets/buttons/elevated_r_button.dart';
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
+import 'package:ahiaa_web/core/common/widgets/progress/animated_linear_progress.dart';
 import 'package:ahiaa_web/core/common/widgets/shimmer/three_to_one_shimmer.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
@@ -12,6 +13,7 @@ import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class ProgressAndAnlyticsThirdSection extends StatefulWidget {
@@ -135,6 +137,7 @@ class _ProgressAndAnlyticsThirdSectionState
   @override
   Widget build(BuildContext context) {
     final examCubit = getIt<ExamCubit>();
+    final responsive = ResponsiveBreakpoints.of(context);
 
     return BlocListener<ExamCubit, ExamState>(
       bloc: examCubit,
@@ -166,74 +169,111 @@ class _ProgressAndAnlyticsThirdSectionState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const ResponsiveText('Subject Breakdown')
-                          .withSize(20)
-                          .bold,
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 269),
-                        child: const ResponsiveText(
-                          'See how your perform across different subjects',
-                        ).withSize(10),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 12,
-                    children: [
-                      KDropDownButton(
-                        text: 'This month',
-                        showBorder: true,
-                        isActive: widget.hasData,
-                        size: 7,
-                      ),
-                    ],
-                  )
-                ],
-              ),
-              const Gap(20),
-              TRoundedContainer(
-                height: 52,
-                radius: 16,
-                backgroundColor: PColors.grey,
-                child: Row(
-                  spacing: 125,
+              if (responsive.isMobile)
+                Column(
+                  spacing: 12,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const ResponsiveText('Subject')
-                        .withSize(10)
-                        .withOpacity(0.9)
-                        .bold,
-                    const ResponsiveText('Average Score')
-                        .withSize(10)
-                        .withOpacity(0.9)
-                        .bold,
-                    const ResponsiveText('Attempts')
-                        .withSize(10)
-                        .withOpacity(0.9)
-                        .bold,
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: const ResponsiveText('Status')
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ResponsiveText('Subject Breakdown')
+                            .withSize(20)
+                            .bold,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 269),
+                          child: const ResponsiveText(
+                            'See how your perform across different subjects',
+                          ).withSize(10),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: 12,
+                      children: [
+                        KDropDownButton(
+                          text: 'This month',
+                          showBorder: true,
+                          isActive: widget.hasData,
+                          size: 7,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              if (!responsive.isMobile)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ResponsiveText('Subject Breakdown')
+                            .withSize(20)
+                            .bold,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 269),
+                          child: const ResponsiveText(
+                            'See how your perform across different subjects',
+                          ).withSize(10),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: 12,
+                      children: [
+                        KDropDownButton(
+                          text: 'This month',
+                          showBorder: true,
+                          isActive: widget.hasData,
+                          size: 7,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              const Gap(20),
+              if (!responsive.isMobile)
+                TRoundedContainer(
+                  height: 52,
+                  radius: 16,
+                  backgroundColor: PColors.grey,
+                  child: Row(
+                    spacing: 125,
+                    children: [
+                      const ResponsiveText('Subject')
                           .withSize(10)
                           .withOpacity(0.9)
                           .bold,
-                    ),
-                  ],
+                      const ResponsiveText('Average Score')
+                          .withSize(10)
+                          .withOpacity(0.9)
+                          .bold,
+                      const ResponsiveText('Attempts')
+                          .withSize(10)
+                          .withOpacity(0.9)
+                          .bold,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10.0),
+                        child: const ResponsiveText('Status')
+                            .withSize(10)
+                            .withOpacity(0.9)
+                            .bold,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               if (widget.hasData &&
                   mergedSubjects != null &&
                   mergedSubjects!.isNotEmpty)
                 Expanded(
                   child: ListView.separated(
-                    padding:
-                        const EdgeInsets.only(top: 20, left: 16, right: 16),
+                      padding: responsive.isMobile
+                              ? const EdgeInsets.only(top: 20)
+                              : const EdgeInsets.only(
+                                  top: 20, left: 16, right: 16),
                     itemBuilder: (context, index) {
                       final subject = mergedSubjects![index];
                       return _buildSubjectRow(subject);
@@ -286,69 +326,147 @@ class _ProgressAndAnlyticsThirdSectionState
 
   /// ✅ Build a single subject row
   Widget _buildSubjectRow(SubjectAverageData subject) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // Subject Name
-            SizedBox(
-              width: 100,
-              child: ResponsiveText(subject.subjectName).withSize(9).bold,
-            ),
-            const Gap(45),
+    final responsive = ResponsiveBreakpoints.of(context);
 
-            // Average Score
-            SizedBox(
-              width: 90,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 40),
-                child:
-                    ResponsiveText('${subject.averageScore.toStringAsFixed(1)}%')
-                        .withSize(9),
+    return responsive.isMobile
+        ? Container(
+            constraints: const BoxConstraints(maxWidth: 285),
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: PColors.light,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            // height: 144,
+            child: Column(
+              spacing: 12,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ResponsiveText(subject.subjectName ?? '')
+                            .withSize(11)
+                            .bold,
+                        ResponsiveText('${subject.attempts}').withSize(5),
+                      ],
+                    ),
+                    // Different colors
+                    TRoundedContainer(
+                      height: 20,
+                      radius: 50,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 0),
+                      backgroundColor:
+                          subject.status.color.withValues(alpha: 0.28),
+                      child: Center(
+                        child: ResponsiveText(subject.status.label)
+                            .withSize(7)
+                            .withColor(subject.status.color),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  spacing: 5,
+                  children: [
+                    Expanded(
+                      child: LinearGradeProgress(
+                        currentGrade: subject.averageScore.toDouble(),
+                        totalGrade: 100,
+                        height: 4,
+                        segments: [
+                          GradeSegment(value: 8, color: PColors.primary),
+                        ],
+                      ),
+                    ),
+                    ResponsiveText(
+                            '${subject.averageScore.toStringAsFixed(1)}%')
+                        .withSize(9)
+                  ],
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: TElevatedButton(
+                    text: 'View Report',
+                    color: PColors.white,
+                    bgColor: PColors.primary,
+                    onTap: () {
+                      // getIt<AppRouter>()
+                      //     .router
+                      //     .goNamed(KRoutes.result);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Subject Name
+                  SizedBox(
+                    width: 100,
+                    child: ResponsiveText(subject.subjectName).withSize(9).bold,
+                  ),
+                  const Gap(45),
+
+                  // Average Score
+                  SizedBox(
+                    width: 90,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 40),
+                      child: ResponsiveText(
+                              '${subject.averageScore.toStringAsFixed(1)}%')
+                          .withSize(9),
+                    ),
+                  ),
+                  const Gap(90),
+
+                  // Attempts
+                  SizedBox(
+                    width: 80,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 60),
+                      child: ResponsiveText('${subject.attempts}').withSize(9),
+                    ),
+                  ),
+                  const Gap(100),
+
+                  // Status Badge
+                  Center(
+                    child: TRoundedContainer(
+                      height: 28,
+                      margin: const EdgeInsets.only(left: 40),
+                      radius: 1000,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 7),
+                      backgroundColor:
+                          subject.status.color.withValues(alpha: 0.28),
+                      child: ResponsiveText(subject.status.label)
+                          .withSize(9)
+                          .withColor(subject.status.color),
+                    ),
+                  ),
+                  const Gap(20),
+                ],
               ),
-            ),
-            const Gap(90),
-
-            // Attempts
-            SizedBox(
-              width: 80,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 60),
-                child: ResponsiveText('${subject.attempts}').withSize(9),
+              TElevatedButton(
+                text: 'Practice weak areas',
+                color: PColors.white,
+                bgColor: PColors.primary,
+                onTap: () {
+                  // TODO: Navigate to practice for this subject
+                },
               ),
-            ),
-            const Gap(100),
-
-            // Status Badge
-            Center(
-              child: TRoundedContainer(
-                height: 28,
-                margin: const EdgeInsets.only(left: 40),
-                radius: 1000,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                backgroundColor: subject.status.color.withValues(alpha: 0.28),
-                child: ResponsiveText(subject.status.label)
-                    .withSize(9)
-                    .withColor(subject.status.color),
-              ),
-            ),
-            const Gap(20),
-
-          ],
-        ),
-        TElevatedButton(
-          text: 'Practice weak areas',
-          color: PColors.white,
-          bgColor: PColors.primary,
-          onTap: () {
-            // TODO: Navigate to practice for this subject
-          },
-        ),
-        const Gap(15)
-      ],
-    );
+              const Gap(15)
+            ],
+          );
   }
 }
 

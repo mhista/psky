@@ -64,7 +64,6 @@ class AuthRemoteDataSourceFirebaseImp implements AuthRemoteDataSource {
   final FirebaseAuth firebaseAuth;
   final FirebaseFirestore firestore;
 
-
   AuthRemoteDataSourceFirebaseImp({
     required this.firebaseAuth,
     required this.firestore,
@@ -267,7 +266,7 @@ class AuthRemoteDataSourceFirebaseImp implements AuthRemoteDataSource {
       await firestore
           .collection('users')
           .doc(userModel.id)
-          .set(userModel.toMap());
+          .set(userModel.toMap(), SetOptions(merge: true));
 
       return userModel;
     } on FirebaseException catch (e) {

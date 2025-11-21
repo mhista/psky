@@ -4,6 +4,7 @@ import 'package:ahiaa_web/core/services/subject_helper.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/screens/desktop/practice_screen.dart';
+import 'package:ahiaa_web/features/practice_exam/presentation/screens/mobile/mobile_practice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,6 +34,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             desktop: DesktopPracticeScreen(
               
             ),
+            mobile: MobilePracticeScreen()
           );
       },
     );

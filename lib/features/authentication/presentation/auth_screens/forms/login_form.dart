@@ -19,6 +19,7 @@ import 'package:flutter/material.dart' hide Colors, Form, FormField, TextField;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get_utils/src/extensions/widget_extensions.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     hide Theme, TextButton, Checkbox;
 
@@ -75,6 +76,8 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return BlocConsumer<AuthCubit, AuthState>(
       bloc: authCubit, // Explicitly provide the bloc instance
       listenWhen: (previous, current) {
@@ -124,7 +127,7 @@ class _LoginFormState extends State<LoginForm> {
           orElse: () => false,
         );
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          padding:  EdgeInsets.symmetric(horizontal:responsive.isMobile? 0: 30.0),
           child: Column(
             spacing: 28,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,7 +229,7 @@ class _LoginFormState extends State<LoginForm> {
                     ],
                   ))
             ],
-          ).withPadding(vertical: 40, horizontal: 50),
+          ).withPadding(vertical: 40, horizontal:responsive.isMobile? 0: 50),
         );
       },
     );

@@ -16,77 +16,97 @@ class TestimonialCarousel extends StatefulWidget {
 }
 
 class _TestimonialCarouselState extends State<TestimonialCarousel> {
-
   int currentIndex = 0;
   final CarouselSliderController _carouselController = CarouselSliderController();
+  
   @override
   Widget build(BuildContext context) {
-     final responsive = ResponsiveBreakpoints.of(context);
+    final responsive = ResponsiveBreakpoints.of(context);
     final isMobile = responsive.isMobile;
+    
+    // CRITICAL FIX: Ensure we have items before rendering
+    if (testimonialsMap.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Column(
       children: [
-        CarouselSlider(
-          carouselController: _carouselController,
-          items: testimonialsMap
-              .map((e) => TRoundedContainer(
-                    height: 229,
-                    width: 240,
-                    showBorder: true,
-                    backgroundColor: PColors.primary.withValues(alpha: 0.1),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          e["comment"]!,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall!
-                              .apply(fontWeightDelta: 2, fontSizeDelta: 1),
-                        ),
-                        const Gap(68),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              e["name"]!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .apply(fontWeightDelta: 2, fontSizeDelta: -2),
-                            ),
-                            Text(
-                              e["location"]!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall!
-                                  .apply(fontWeightDelta: 2, fontSizeDelta: -2),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  ))
-              .toList(),
-          options: CarouselOptions(
-            
-            height: 230,
-            viewportFraction:isMobile?0.8: 0.22, // Show 1.6 items at once
-            initialPage: 0,
-            enableInfiniteScroll: true,
-            reverse: false,
-            autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 4),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: false, // Don't enlarge center page
-            scrollDirection: Axis.horizontal,
-            padEnds: false, // Don't add padding at ends
-             onPageChanged: (index, reason) {
-              setState(() {
-                currentIndex = index;
-              });
-            },
+        // CRITICAL FIX: Wrap in ConstrainedBox to prevent layout issues
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: 230,
+            maxHeight: 230,
+          ),
+          child: CarouselSlider(
+            carouselController: _carouselController,
+            items: testimonialsMap
+                .map((e) => Builder( // CRITICAL: Use Builder for proper context
+                      builder: (BuildContext context) {
+                        return TRoundedContainer(
+                          height: 229,
+                          width: 240,
+                          showBorder: true,
+                          backgroundColor: PColors.primary.withValues(alpha: 0.1),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                e["comment"]!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall!
+                                    .apply(fontWeightDelta: 2, fontSizeDelta: 1),
+                              ),
+                              const Gap(68),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e["name"]!,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .apply(fontWeightDelta: 2, fontSizeDelta: -2),
+                                  ),
+                                  Text(
+                                    e["location"]!,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall!
+                                        .apply(fontWeightDelta: 2, fontSizeDelta: -2),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ))
+                .toList(),
+            options: CarouselOptions(
+              height: 230,
+              viewportFraction: isMobile ? 0.8 : 0.22,
+              initialPage: 0,
+              // CRITICAL FIX: Only enable infinite scroll if we have enough items
+              enableInfiniteScroll: testimonialsMap.length > 3,
+              reverse: false,
+              autoPlay: testimonialsMap.length > 1, // Only autoplay if multiple items
+              autoPlayInterval: const Duration(seconds: 4),
+              autoPlayAnimationDuration: const Duration(milliseconds: 800),
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enlargeCenterPage: false,
+              scrollDirection: Axis.horizontal,
+              // CRITICAL FIX: Set to true to prevent scroll offset issues
+              padEnds: true,
+              // CRITICAL FIX: Add pageSnapping for stable scrolling
+              pageSnapping: true,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  currentIndex = index;
+                });
+              },
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -97,18 +117,16 @@ class _TestimonialCarouselState extends State<TestimonialCarousel> {
               currentIndex: currentIndex,
               totalItems: testimonialsMap.length,
               onPrevious: () {
-               _carouselController.previousPage(
+                _carouselController.previousPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.ease,
                 );
-                
               },
               onNext: () {
                 _carouselController.nextPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.ease,
                 );
-                
               },
             )
           ],
@@ -118,7 +136,6 @@ class _TestimonialCarouselState extends State<TestimonialCarousel> {
   }
 }
 
-// Alternative: More sophisticated sliding indicator
 class SlidingArrowIndicator extends StatelessWidget {
   final int currentIndex;
   final int totalItems;
@@ -137,11 +154,10 @@ class SlidingArrowIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = ResponsiveBreakpoints.of(context);
     final isMobile = responsive.isMobile;
-     double indicatorWidth =isMobile?100: 200.0;
-     double thumbWidth =isMobile? 15: 20.0;
+    double indicatorWidth = isMobile ? 100 : 200.0;
+    double thumbWidth = isMobile ? 15 : 20.0;
 
     return SizedBox(
-      // width: indicatorWidth + 80,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -149,7 +165,6 @@ class SlidingArrowIndicator extends StatelessWidget {
           MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              
               onTap: onPrevious,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -169,7 +184,7 @@ class SlidingArrowIndicator extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.arrow_back_ios,
-                  size:isMobile? 10: 16,
+                  size: isMobile ? 10 : 16,
                   color: currentIndex > 0 ? Colors.grey[700] : Colors.grey[400],
                 ),
               ),
@@ -187,29 +202,29 @@ class SlidingArrowIndicator extends StatelessWidget {
                 // Background track
                 Container(
                   width: indicatorWidth,
-                  height:isMobile? 4: 6,
+                  height: isMobile ? 4 : 6,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
 
-                // Sliding thumb
+                // Sliding thumb - CRITICAL FIX: Handle edge cases
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeInOut,
-                  left: (currentIndex / (totalItems - 1)) *
-                      (indicatorWidth - thumbWidth),
+                  left: totalItems > 1
+                      ? (currentIndex / (totalItems - 1)) * (indicatorWidth - thumbWidth)
+                      : 0,
                   child: Container(
                     width: thumbWidth,
-                    height:isMobile? 4: 6,
+                    height: isMobile ? 4 : 6,
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(3),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.3),
+                          color: Theme.of(context).primaryColor.withOpacity(0.3),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -226,7 +241,6 @@ class SlidingArrowIndicator extends StatelessWidget {
           // Right Arrow
           MouseRegion(
             cursor: SystemMouseCursors.click,
-
             child: GestureDetector(
               onTap: onNext,
               child: AnimatedContainer(
@@ -249,7 +263,7 @@ class SlidingArrowIndicator extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.arrow_forward_ios,
-                  size:isMobile? 10: 16,
+                  size: isMobile ? 10 : 16,
                   color: currentIndex < totalItems - 1
                       ? Colors.grey[700]
                       : Colors.grey[400],
@@ -263,7 +277,6 @@ class SlidingArrowIndicator extends StatelessWidget {
   }
 }
 
-// Alternative: Using Map for simpler structure
 List<Map<String, String>> testimonialsMap = [
   {
     "name": "Chioma",

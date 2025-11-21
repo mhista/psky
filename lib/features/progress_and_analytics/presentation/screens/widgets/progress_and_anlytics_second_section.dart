@@ -79,11 +79,32 @@ class ProgressAndAnlyticsSecondSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  if(responsive.isMobile)
+                  SizedBox(
+                    width: 212,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ResponsiveText('Performance Over Time')
+                            .withSize(responsive.isMobile? 14: 20)
+                            .bold,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: 269,
+                          ),
+                          child: const ResponsiveText(
+                                  'See how your performance has changed with each exam')
+                              .withSize(responsive.isMobile? 8: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if(!responsive.isMobile)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const ResponsiveText('Performance Over Time')
-                          .withSize(20)
+                          .withSize(responsive.isMobile? 14: 20)
                           .bold,
                       ConstrainedBox(
                         constraints: const BoxConstraints(
@@ -91,7 +112,7 @@ class ProgressAndAnlyticsSecondSection extends StatelessWidget {
                         ),
                         child: const ResponsiveText(
                                 'See how your performance has changed with each exam')
-                            .withSize(10),
+                            .withSize(responsive.isMobile? 8: 10),
                       ),
                     ],
                   ),

@@ -5,6 +5,7 @@ import 'package:ahiaa_web/features/personalization/presentation/screens/widgets/
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:flutter/material.dart' hide Colors, Form, FormField, TextField;
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     hide Theme, TextButton, Checkbox;
 
@@ -13,8 +14,9 @@ class ExamType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final responsive = ResponsiveBreakpoints.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        padding:  EdgeInsets.symmetric(horizontal:responsive.isMobile? 0: 30.0),
       child: Column(
         // mainAxisAlignment: MainAxisAlignment.end,
         spacing: 28,
@@ -70,7 +72,7 @@ class ExamType extends StatelessWidget {
             ],
           )
         ],
-      ).withPadding(vertical: 40, horizontal: 50),
+      ).withPadding(vertical: 40, horizontal:responsive.isMobile? 0: 50),
     );
   }
 }

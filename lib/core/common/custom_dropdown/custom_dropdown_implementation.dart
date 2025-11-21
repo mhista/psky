@@ -12,10 +12,12 @@ class KCustomDropdown extends StatelessWidget {
   final Function(String? value)? onChanged;
   @override
   Widget build(BuildContext context) {
+    
     final isDark = PHelperFunctions.isDarkMode(context);
 
     return CustomDropdown(
       // expandedHeaderPadding: EdgeInsets.all(0),
+    
 
       closedHeaderPadding:
           const EdgeInsets.symmetric(vertical: 10, horizontal: 15),

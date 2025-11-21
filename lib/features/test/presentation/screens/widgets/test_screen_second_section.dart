@@ -11,6 +11,7 @@ import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -31,6 +32,8 @@ class TestScreenSecondSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final examCubit = getIt<ExamCubit>();
+    final responsive = ResponsiveBreakpoints.of(context);
+
 
     return BlocBuilder<ExamCubit, ExamState>(
       bloc: examCubit,
@@ -42,14 +45,14 @@ class TestScreenSecondSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 16,
           children: [
-            const ResponsiveText('Ongoing Tests').withSize(28).bold,
+            const ResponsiveText('Ongoing Tests').withSize(responsive.isMobile? 24: 28).bold,
             ThreeToOneShimmer(
                 isLoading: isLoading,
                 hasData: hasData,
                 hasError: hasError,
                 width: double.infinity,
                 radius: 16,
-                height: 185,
+                // height:responsive.isMobile? double.infinity: 185,
                 useFunction: true,
                 errorText:
                     "Something went wrong while fetching yor tests. Please refresh",
@@ -62,7 +65,7 @@ class TestScreenSecondSection extends StatelessWidget {
                     padding: isFirstTime
                         ? const EdgeInsets.only(right: 16, top: 16)
                         : const EdgeInsets.only(right: 0, top: 0),
-                    height: 185,
+                    // height:responsive.isMobile? double.infinity: 185,
                     width: double.infinity,
                     child: isFirstTime
                         ? Row(

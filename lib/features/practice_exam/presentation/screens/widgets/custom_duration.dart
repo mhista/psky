@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:uuid/uuid.dart';
 
 class CustomExamDuration extends StatelessWidget {
@@ -32,6 +33,7 @@ class CustomExamDuration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final aiCubit = getIt<AiExamCubit>();
+    final responsive = ResponsiveBreakpoints.of(context);
 
     return BlocListener<ExamCubit, ExamState>(
       bloc: examCubit,
@@ -172,6 +174,8 @@ class CustomExamDuration extends StatelessWidget {
   }
 
   Widget _buildExamDurationUI(BuildContext context, AiExamCubit aiCubit) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final hasData = aiCubit.state.maybeWhen(
       orElse: () {},
       hasData: (activeExam, allExams, currentIndex,
@@ -209,10 +213,12 @@ class CustomExamDuration extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                spacing: 46,
+                spacing: responsive.isMobile ? 40 : 46,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const ResponsiveText('Custom Exam').withSize(16).bold,
+                  const ResponsiveText('Custom Exam')
+                      .withSize(responsive.isMobile ? 13 : 16)
+                      .bold,
                   Row(
                     spacing: 9,
                     children: [
@@ -222,65 +228,119 @@ class CustomExamDuration extends StatelessWidget {
                           .bold,
                     ],
                   ),
-                  Row(
-                    spacing: 9,
-                    children: [
-                      const ResponsiveText('Exam Duration :').withSize(8),
-                      Column(
-                        spacing: 3,
-                        children: [
-                          TRoundedContainer(
-                            padding: const EdgeInsets.all(0),
-                            backgroundColor: PColors.light,
-                            height: 37,
-                            width: 37,
-                            radius: 8,
-                            child: Center(
-                              child: ResponsiveText(
-                                totalTime.split(':')[0],
-                              ).withSize(12).bold,
+                  if (!responsive.isMobile)
+                    Row(
+                      spacing: 9,
+                      children: [
+                        const ResponsiveText('Exam Duration :').withSize(8),
+                        Column(
+                          spacing: 3,
+                          children: [
+                            TRoundedContainer(
+                              padding: const EdgeInsets.all(0),
+                              backgroundColor: PColors.light,
+                              height: 37,
+                              width: 37,
+                              radius: 8,
+                              child: Center(
+                                child: ResponsiveText(
+                                  totalTime.split(':')[0],
+                                ).withSize(12).bold,
+                              ),
                             ),
-                          ),
-                          const ResponsiveText(
-                            'Hours',
-                          ).withSize(5)
-                        ],
-                      ),
-                      Column(
-                        spacing: 3,
-                        children: [
-                          TRoundedContainer(
-                            padding: const EdgeInsets.all(0),
-                            backgroundColor: PColors.light,
-                            height: 37,
-                            width: 37,
-                            radius: 8,
-                            child: Center(
-                              child: ResponsiveText(
-                                totalTime.split(':')[1],
-                              ).withSize(12).bold,
+                            const ResponsiveText(
+                              'Hours',
+                            ).withSize(5)
+                          ],
+                        ),
+                        Column(
+                          spacing: 3,
+                          children: [
+                            TRoundedContainer(
+                              padding: const EdgeInsets.all(0),
+                              backgroundColor: PColors.light,
+                              height: 37,
+                              width: 37,
+                              radius: 8,
+                              child: Center(
+                                child: ResponsiveText(
+                                  totalTime.split(':')[1],
+                                ).withSize(12).bold,
+                              ),
                             ),
-                          ),
-                          const ResponsiveText(
-                            'Minutes',
-                          ).withSize(5)
-                        ],
-                      ),
-                    ],
-                  ),
+                            const ResponsiveText(
+                              'Minutes',
+                            ).withSize(5)
+                          ],
+                        ),
+                      ],
+                    ),
                 ],
               ),
-              TElevatedButton(
-                text: 'Adjust',
-                color: PColors.primary5,
-                bgColor: PColors.primary.withValues(alpha: 0.2),
-                onTap: () {
-                  // Show time picker dialog
-                  _showTimeAdjustDialog(context);
-                },
-              )
+              // TElevatedButton(
+              //   text: 'Adjust',
+              //   color: PColors.primary5,
+              //   bgColor: PColors.primary.withValues(alpha: 0.2),
+              //   onTap: () {
+              //     // Show time picker dialog
+              //     _showTimeAdjustDialog(context);
+              //   },
+              // )
             ],
           ),
+          if (responsive.isMobile)
+            Column(
+              spacing: 9,
+              children: [
+                const ResponsiveText('Exam Duration :').withSize(8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 9,
+                  children: [
+                    Column(
+                      spacing: 3,
+                      children: [
+                        TRoundedContainer(
+                          padding: const EdgeInsets.all(0),
+                          backgroundColor: PColors.light,
+                          height: 37,
+                          width: 37,
+                          radius: 8,
+                          child: Center(
+                            child: ResponsiveText(
+                              totalTime.split(':')[0],
+                            ).withSize(12).bold,
+                          ),
+                        ),
+                        const ResponsiveText(
+                          'Hours',
+                        ).withSize(5)
+                      ],
+                    ),
+                    Column(
+                      spacing: 3,
+                      children: [
+                        TRoundedContainer(
+                          padding: const EdgeInsets.all(0),
+                          backgroundColor: PColors.light,
+                          height: 37,
+                          width: 37,
+                          radius: 8,
+                          child: Center(
+                            child: ResponsiveText(
+                              totalTime.split(':')[1],
+                            ).withSize(12).bold,
+                          ),
+                        ),
+                        const ResponsiveText(
+                          'Minutes',
+                        ).withSize(5)
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           Column(
             children: [
               TRoundedContainer(
@@ -302,6 +362,7 @@ class CustomExamDuration extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: responsive.isMobile ? 5 : 0,
                     children: [
                       Expanded(
                         child: ResponsiveText(data.subject).withSize(9).bold,
@@ -316,8 +377,9 @@ class CustomExamDuration extends StatelessWidget {
                                     data.numberOfQuestions - 1, data);
                               }
                             },
-                            child: const Padding(
-                              padding: EdgeInsets.only(top: 2.0),
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                  top: responsive.isMobile ? 0 : 2.0),
                               child: Icon(Icons.minimize, size: 20),
                             ),
                           ),
@@ -343,8 +405,9 @@ class CustomExamDuration extends StatelessWidget {
                                     data.numberOfQuestions + 1, data);
                               }
                             },
-                            child: const Padding(
-                              padding: EdgeInsets.only(top: 12.0),
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                  top: responsive.isMobile ? 8.0 : 12.0),
                               child: Icon(Icons.add, size: 20),
                             ),
                           )
@@ -390,10 +453,16 @@ class CustomExamDuration extends StatelessWidget {
     await aiCubit.fetchAiQuestion();
     getIt<ExamSessionCubit>().state.maybeWhen(
           orElse: () {},
-          active: (session, currentQuestionIndex, timeRemainingSeconds, hssReachedLimit) {
+          active: (session, currentQuestionIndex, timeRemainingSeconds,
+              hssReachedLimit) {
             if (session.questions.isEmpty) {
               pskyLog('retrying');
-              _fetchAiQuestion(aiCubit, hasData, totalQuestion, context,);
+              _fetchAiQuestion(
+                aiCubit,
+                hasData,
+                totalQuestion,
+                context,
+              );
             } else {
               getIt<AppRouter>().router.goNamed(KRoutes.examInstruct);
             }

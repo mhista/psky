@@ -41,5 +41,5 @@ enum MessageRole { user, llm }
 /// Represents the state of a message (complete or streaming).
 enum MessageState { complete, streaming }
 
-enum LoaderState { loading, done, error }
+enum LoaderState { loading, done, error, Initial }
 

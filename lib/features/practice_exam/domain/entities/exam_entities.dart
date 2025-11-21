@@ -278,30 +278,33 @@ abstract class ExamNotification with _$ExamNotification {
       _$ExamNotificationFromJson(json);
 }
 
-enum NotificationType {
-  sessionReminder,
-  sessionExpiring,
-  achievementUnlocked,
-  leaderboardUpdate,
-  streakReminder,
-  dailyGoal,
-  weeklyReport,
-  examTip,
-  aiInsight,
-  appUpdate,
-  settingsChange,
-  featureAnnouncement,
-  motivational,
-  studyTip,
-  communityUpdate,
-  emergencyAlert,
-}
-
 enum NotificationPriority {
   low,
   normal,
   high,
   urgent,
+}
+
+enum NotificationType {
+  sessionStart,
+  sessionReminder,
+  sessionExpiring,
+  sessionPause,
+  sessionResume,
+  sessionComplete,
+  achievementUnlocked,
+  leaderboardUpdate,
+  streakReminder,
+  dailyGoal,
+  weeklyReport,
+  aiInsight,
+  examTip,
+  appUpdate,
+  settingsChange,
+  featureAnnouncement,
+  motivational,
+  communityUpdate,
+  emergencyAlert,
 }
 
 /// Notification preferences

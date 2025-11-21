@@ -7,7 +7,8 @@ import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/utils/constants/text_strings.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
-import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_controller_cubit.dart' show ExamControllerCubit;
+import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_controller_cubit.dart'
+    show ExamControllerCubit;
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_session_cubit.dart';
 import 'package:flutter/material.dart' hide DropdownMenu;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,10 +92,13 @@ class QuestionIndexContainers extends StatelessWidget {
                           cursor: SystemMouseCursors.click,
                           child: TRoundedContainer(
                             onTap: () {
-                             if( sessionData?.$1?.status == ExamSessionStatus.completed){
-                              sessionExam.updateCompletedCurrentQuestionIndex(entry.key);
-                              getIt<ExamControllerCubit>().goToQuestion(entry.key);
-                             }
+                              if (sessionData?.$1?.status ==
+                                  ExamSessionStatus.completed) {
+                                sessionExam.updateCompletedCurrentQuestionIndex(
+                                    entry.key);
+                                getIt<ExamControllerCubit>()
+                                    .goToQuestion(entry.key);
+                              }
                             },
                             padding: const EdgeInsets.all(0),
                             width: 40,
@@ -136,9 +140,13 @@ class QuestionIndexContainers extends StatelessWidget {
 
               Padding(
                 padding: const EdgeInsets.only(left: 16.0),
-                child: Row(
+                child: Wrap(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  spacing: 20,
+                  alignment: WrapAlignment.center,
+
+                  spacing: 10,
+                  runSpacing: 10,
+
                   children: [
                     const QuestionInfo(
                       text: 'Not Answered',
@@ -228,6 +236,7 @@ class QuestionInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       spacing: 5,
+      mainAxisSize: MainAxisSize.min,
       children: [
         TRoundedContainer(
           height: 8,

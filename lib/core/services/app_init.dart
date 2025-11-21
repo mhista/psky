@@ -1,5 +1,5 @@
 // ============================================================================
-// APP INITIALIZATION SERVICE - WITH LOGGING
+// APP INITIALIZATION SERVICE - FIXED WITH COMPLETE NOTIFICATION INTEGRATION
 // ============================================================================
 
 import 'dart:async';
@@ -8,6 +8,7 @@ import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/services/exam_notification_service.dart';
 import 'package:ahiaa_web/core/services/subject_helper.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
@@ -17,6 +18,8 @@ import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/sync_cubit.dart';
 import 'package:injectable/injectable.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// Orchestrates app initialization and data synchronization
 @lazySingleton
@@ -27,6 +30,12 @@ class AppInitializationService {
   final ExamCubit _examCubit;
   final SyncCubit _syncCubit;
   final Connectivity _connectivity;
+  final LocalStorageService _storage;
+  final SharedPreferences _prefs;
+
+  // Track initialization state
+  bool _isInitialized = false;
+  Timer? _backgroundSyncTimer;
 
   AppInitializationService(
     this._examRepository,
@@ -35,6 +44,8 @@ class AppInitializationService {
     this._examCubit,
     this._syncCubit,
     this._connectivity,
+    this._storage,
+    this._prefs,
   );
 
   // ============================================================================
@@ -52,20 +63,27 @@ class AppInitializationService {
       final startTime = DateTime.now();
       final steps = <InitializationStep>[];
 
+      // STEP 0: Initialize user-specific storage
+      final storageInitStep = await _initializeUserStorage(userId);
+      steps.add(storageInitStep);
+      _logStep(storageInitStep);
+
       // CRITICAL PATH (Blocking) - Only essential items
       pskyLog('⏳ Loading critical resources...');
 
-      final localDataStep = await _loadLocalData();
+      final localDataStep = await _loadLocalData(userId);
       steps.add(localDataStep);
       _logStep(localDataStep);
 
-      final notificationStep = await _initializeNotifications();
+      final notificationStep = await _initializeNotifications(userId);
       steps.add(notificationStep);
       _logStep(notificationStep);
 
       final criticalDuration = DateTime.now().difference(startTime);
-      pskyLog(
-          '✅ Critical path completed in ${criticalDuration.inMilliseconds}ms');
+      pskyLog('✅ Critical path completed in ${criticalDuration.inMilliseconds}ms');
+
+      // Mark as initialized
+      _isInitialized = true;
 
       // NON-CRITICAL PATH (Background) - Fire and forget
       pskyLog('🔄 Starting background initialization...');
@@ -93,6 +111,111 @@ class AppInitializationService {
     }
   }
 
+  // ============================================================================
+  // USER STORAGE INITIALIZATION
+  // ============================================================================
+
+  Future<InitializationStep> _initializeUserStorage(String userId) async {
+    try {
+      pskyLog('💾 Initializing user storage for: $userId');
+
+      // Set user in storage service
+      await _storage.setUser(userId);
+
+      // Check if migration is needed
+      final needsMigration = await _checkMigrationNeeded(userId);
+
+      if (needsMigration) {
+        pskyLog('🔄 Migration needed, starting...');
+        await _migrateUserData(userId);
+        pskyLog('✅ Migration completed');
+      }
+
+      return InitializationStep(
+        name: 'User Storage',
+        success: true,
+        message: needsMigration
+            ? 'Storage initialized (migrated from SharedPrefs)'
+            : 'Storage initialized',
+        metadata: {'migrated': needsMigration},
+      );
+    } catch (e) {
+      return InitializationStep(
+        name: 'User Storage',
+        success: false,
+        message: 'Failed: $e',
+      );
+    }
+  }
+
+  /// Check if migration from SharedPreferences to Hive is needed
+  Future<bool> _checkMigrationNeeded(String userId) async {
+    try {
+      // Check if old SharedPreferences data exists
+      final hasOldData = _prefs.containsKey('exam_sessions');
+
+      // Check if new Hive data exists
+      final hasNewData = _storage.hasUserData(StorageKeys.examSessions);
+
+      // Migration needed if old data exists but new data doesn't
+      return hasOldData && !hasNewData;
+    } catch (e) {
+      pskyLog('⚠️  Error checking migration: $e');
+      return false;
+    }
+  }
+
+  /// Migrate data from SharedPreferences to Hive
+  Future<void> _migrateUserData(String userId) async {
+    try {
+      pskyLog('📦 Migrating user data...');
+
+      // Migrate exam sessions
+      final oldSessionsJson = _prefs.getString('exam_sessions');
+      if (oldSessionsJson != null) {
+        await _storage.saveUserData(
+          StorageKeys.examSessions,
+          oldSessionsJson,
+        );
+        pskyLog('✅ Migrated exam sessions');
+      }
+
+      // Migrate streak data
+      final oldStreakData = _prefs.getString('user_streak_data');
+      if (oldStreakData != null) {
+        await _storage.saveUserData(
+          StorageKeys.streakData,
+          oldStreakData,
+        );
+        pskyLog('✅ Migrated streak data');
+      }
+
+      // Migrate last sync time
+      final oldLastSync = _prefs.getInt('last_firebase_sync');
+      if (oldLastSync != null) {
+        await _storage.saveUserData(
+          StorageKeys.lastSync,
+          oldLastSync,
+        );
+        pskyLog('✅ Migrated sync timestamp');
+      }
+
+      // Clear old data from SharedPreferences
+      await _prefs.remove('exam_sessions');
+      await _prefs.remove('user_streak_data');
+      await _prefs.remove('last_firebase_sync');
+
+      pskyLog('✅ Migration completed, old data cleared');
+    } catch (e) {
+      pskyLog('❌ Migration failed: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================================
+  // BACKGROUND INITIALIZATION
+  // ============================================================================
+
   /// Background initialization - runs after UI is ready
   Future<void> _backgroundInitialization(
     String userId,
@@ -107,10 +230,10 @@ class AppInitializationService {
       steps.add(connectivityStep);
       _logStep(connectivityStep);
 
+      final isConnected = connectivityStep.metadata?['connected'] == true;
+
       // Step 2: Sync with Firebase (if needed)
-      if (connectivityStep.success &&
-          connectivityStep.metadata?['connected'] == true &&
-          (forceSync || await _shouldSync())) {
+      if (isConnected && (forceSync || await _shouldSync())) {
         pskyLog('🔄 Firebase sync needed, starting...');
         final syncStep = await _syncWithFirebase(userId);
         steps.add(syncStep);
@@ -120,7 +243,7 @@ class AppInitializationService {
       }
 
       // Step 3: Initialize leaderboard
-      if (connectivityStep.success) {
+      if (isConnected) {
         final leaderboardStep = await _initializeLeaderboard(userId);
         steps.add(leaderboardStep);
         _logStep(leaderboardStep);
@@ -132,19 +255,25 @@ class AppInitializationService {
       _logStep(notificationsStep);
 
       // Step 5: Update user activity
-      final activityStep = await _updateUserActivity(userId);
-      steps.add(activityStep);
-      _logStep(activityStep);
+      if (isConnected) {
+        final activityStep = await _updateUserActivity(userId);
+        steps.add(activityStep);
+        _logStep(activityStep);
+      }
 
       // Step 6: Fetch AI insights
-      final insightsStep = await _fetchAIInsights(userId);
-      steps.add(insightsStep);
-      _logStep(insightsStep);
+      if (isConnected) {
+        final insightsStep = await _fetchAIInsights(userId);
+        steps.add(insightsStep);
+        _logStep(insightsStep);
+      }
 
       // Step 7: Check for app updates
-      final updatesStep = await _checkAppUpdates(userId);
-      steps.add(updatesStep);
-      _logStep(updatesStep);
+      if (isConnected) {
+        final updatesStep = await _checkAppUpdates(userId);
+        steps.add(updatesStep);
+        _logStep(updatesStep);
+      }
 
       pskyLog('✅ Background initialization completed successfully');
       pskyLog('📊 Total steps completed: ${steps.length}');
@@ -161,8 +290,8 @@ class AppInitializationService {
   Future<InitializationStep> _checkConnectivity() async {
     try {
       pskyLog('📡 Checking connectivity...');
-      final result = await _connectivity.checkConnectivity();
-      final isConnected = result != ConnectivityResult.none;
+      final results = await _connectivity.checkConnectivity();
+      final isConnected = !results.contains(ConnectivityResult.none);
 
       return InitializationStep(
         name: 'Connectivity Check',
@@ -179,10 +308,24 @@ class AppInitializationService {
     }
   }
 
-  Future<InitializationStep> _initializeNotifications() async {
+  Future<InitializationStep> _initializeNotifications(String userId) async {
     try {
       pskyLog('🔔 Initializing notifications...');
+      
+      // Initialize notification service
       await _notificationService.initialize();
+
+      // Subscribe to user-specific topics
+      await _notificationService.subscribeToTopic('user_$userId');
+      await _notificationService.subscribeToTopic('all_users');
+
+      // On web, request permission explicitly
+      if (kIsWeb) {
+        final hasPermission = await _notificationService.getFCMToken() != null;
+        pskyLog(hasPermission 
+            ? '✅ Web notification permission granted'
+            : '⚠️  Web notification permission denied');
+      }
 
       return const InitializationStep(
         name: 'Notifications',
@@ -190,6 +333,7 @@ class AppInitializationService {
         message: 'Notifications initialized',
       );
     } catch (e) {
+      pskyLog('⚠️  Notification initialization failed: $e');
       return InitializationStep(
         name: 'Notifications',
         success: false,
@@ -198,12 +342,15 @@ class AppInitializationService {
     }
   }
 
-  Future<InitializationStep> _loadLocalData() async {
+  Future<InitializationStep> _loadLocalData(String userId) async {
     try {
-      pskyLog('💾 Loading local data...');
+      pskyLog('💾 Loading local data for user: $userId');
+
+      // Load subjects (global data)
       getIt<SubjectDataHelper>().loadSubjectsForExamBody(ExamBody.waec);
 
-      await _examCubit.loadFromStorage();
+      // Initialize ExamCubit for this user
+      await _examCubit.initializeForUser(userId);
 
       return const InitializationStep(
         name: 'Local Data',
@@ -224,44 +371,60 @@ class AppInitializationService {
       pskyLog('☁️  Syncing with Firebase...');
       final syncStartTime = DateTime.now();
 
-      // Get local sessions
+      // Get local sessions count
       final currentState = _examCubit.state;
-      List<ExamSession> localSessions = [];
+      int localCount = 0;
 
       currentState.maybeWhen(
         orElse: () {},
         hasData: (examMode, selectedSubjects, examSessions, currentSession) {
-          localSessions = examSessions;
+          localCount = examSessions.length;
         },
       );
 
-      pskyLog('📦 Local sessions count: ${localSessions.length}');
+      pskyLog('📦 Local sessions count: $localCount');
 
-      // Sync from Firebase
-      await _examCubit.syncFromDb(userId);
+      // Smart sync: Only pull if needed
+      final shouldPull = await _shouldPullFromFirebase(userId);
+
+      if (shouldPull) {
+        pskyLog('🔽 Pulling from Firebase...');
+        await _examCubit.syncFromDb(userId, forcePull: false);
+      } else {
+        pskyLog('⏭️  Skipping Firebase pull (not needed)');
+      }
 
       // Get updated state
       final updatedState = _examCubit.state;
-      int remoteSessions = 0;
+      int finalCount = 0;
+
       updatedState.maybeWhen(
         orElse: () {},
         hasData: (examMode, selectedSubjects, examSessions, currentSession) {
-          remoteSessions = examSessions.length;
+          finalCount = examSessions.length;
         },
       );
 
       final syncDuration = DateTime.now().difference(syncStartTime);
-      pskyLog('☁️  Remote sessions count: $remoteSessions');
+      pskyLog('☁️  Final sessions count: $finalCount');
+
+      // Update last sync timestamp
+      await _storage.saveUserData(
+        StorageKeys.lastSync,
+        DateTime.now().millisecondsSinceEpoch,
+      );
 
       return InitializationStep(
         name: 'Firebase Sync',
         success: true,
-        message:
-            'Synced $remoteSessions sessions in ${syncDuration.inMilliseconds}ms',
+        message: shouldPull
+            ? 'Synced $finalCount sessions in ${syncDuration.inMilliseconds}ms'
+            : 'Skipped (not needed)',
         metadata: {
-          'local': localSessions.length,
-          'remote': remoteSessions,
+          'local': localCount,
+          'final': finalCount,
           'duration': syncDuration.inMilliseconds,
+          'pulled': shouldPull,
         },
       );
     } catch (e) {
@@ -273,13 +436,64 @@ class AppInitializationService {
     }
   }
 
+  /// Smart check: Should we pull from Firebase?
+  Future<bool> _shouldPullFromFirebase(String userId) async {
+    try {
+      // Check last sync time
+      final lastSync = _storage.getUserData<int>(StorageKeys.lastSync);
+
+      if (lastSync == null) {
+        pskyLog('🔍 No last sync time, pulling from Firebase');
+        return true;
+      }
+
+      final lastSyncTime = DateTime.fromMillisecondsSinceEpoch(lastSync);
+      final timeSinceSync = DateTime.now().difference(lastSyncTime);
+
+      // Pull if last sync was more than 1 hour ago
+      if (timeSinceSync.inHours >= 1) {
+        pskyLog('🔍 Last sync was ${timeSinceSync.inHours} hours ago, pulling');
+        return true;
+      }
+
+      // Check if there are incomplete sessions that might have been updated elsewhere
+      final incompleteSessions =
+          await _examRepository.getIncompleteSessions(userId);
+      if (incompleteSessions.isNotEmpty) {
+        pskyLog(
+            '🔍 Found ${incompleteSessions.length} incomplete sessions, pulling to check for updates');
+        return true;
+      }
+
+      pskyLog(
+          '🔍 Last sync was ${timeSinceSync.inMinutes} minutes ago, skipping pull');
+      return false;
+    } catch (e) {
+      pskyLog('⚠️  Error checking sync status: $e');
+      return true; // Default to pulling if check fails
+    }
+  }
+
   Future<InitializationStep> _initializeLeaderboard(String userId) async {
     try {
       pskyLog('🏆 Initializing leaderboard...');
+      
+      // Check if should show leaderboard (multiple users)
+      final shouldShow = await _examRepository.hasMultipleLeaderboardUsers();
+      
+      if (!shouldShow) {
+        pskyLog('⏭️  Only one user on leaderboard, skipping');
+        return const InitializationStep(
+          name: 'Leaderboard',
+          success: true,
+          message: 'Skipped (insufficient users)',
+          skipped: true,
+        );
+      }
+      
       // Get user's rank
       final rank = await _examRepository.getUserRank(userId: userId);
-      pskyLog(
-          '🏆 User rank: #${rank.rank} (${rank.percentile.toStringAsFixed(1)}%)');
+      pskyLog('🏆 User rank: #${rank.rank} (${rank.percentile.toStringAsFixed(1)}%)');
 
       return InitializationStep(
         name: 'Leaderboard',
@@ -298,6 +512,7 @@ class AppInitializationService {
       );
     }
   }
+  
 
   Future<InitializationStep> _scheduleNotifications(String userId) async {
     try {
@@ -315,35 +530,53 @@ class AppInitializationService {
             Duration(minutes: session.timeLimitMinutes),
           );
 
-          await _notificationService.scheduleSessionExpiryWarning(
-            sessionId: session.examSessionId,
-            subjectName: session.subjectId,
-            expiryTime: expiryTime,
-          );
-          scheduledCount++;
+          // Only schedule if expiry is in the future
+          if (expiryTime.isAfter(DateTime.now())) {
+            try {
+              await _notificationService.scheduleSessionExpiryWarning(
+                sessionId: session.examSessionId,
+                subjectName: session.subjectId,
+                expiryTime: expiryTime,
+                userId: userId
+              );
+              scheduledCount++;
+            } catch (e) {
+              pskyLog('⚠️  Failed to schedule expiry for ${session.examSessionId}: $e');
+            }
+          }
         }
       }
 
-      // 2. Schedule daily study reminder (9 AM)
-      final tomorrow9AM = DateTime.now().add(const Duration(days: 1)).copyWith(
-            hour: 9,
-            minute: 0,
-            second: 0,
-            millisecond: 0,
-          );
-      await _notificationService.scheduleDailyStudyReminder(
-        userId: userId,
-        scheduledTime: tomorrow9AM,
-      );
-      scheduledCount++;
+
+
+      // 2. Schedule daily study reminder (9 AM next day)
+      try {
+        final tomorrow9AM = DateTime.now().add(const Duration(days: 1)).copyWith(
+              hour: 9,
+              minute: 0,
+              second: 0,
+              millisecond: 0,
+            );
+        await _notificationService.scheduleDailyStudyReminder(
+          userId: userId,
+          scheduledTime: tomorrow9AM,
+        );
+        scheduledCount++;
+      } catch (e) {
+        pskyLog('⚠️  Failed to schedule daily reminder: $e');
+      }
 
       // 3. Schedule weekly report (Every Sunday 8 PM)
-      final nextSunday = _getNextWeekday(DateTime.sunday);
-      await _notificationService.scheduleWeeklyReport(
-        userId: userId,
-        scheduledTime: nextSunday,
-      );
-      scheduledCount++;
+      try {
+        final nextSunday = _getNextWeekday(DateTime.sunday);
+        await _notificationService.scheduleWeeklyReport(
+          userId: userId,
+          scheduledTime: nextSunday,
+        );
+        scheduledCount++;
+      } catch (e) {
+        pskyLog('⚠️  Failed to schedule weekly report: $e');
+      }
 
       pskyLog('⏰ Scheduled $scheduledCount notifications');
 
@@ -351,6 +584,7 @@ class AppInitializationService {
         name: 'Notifications Scheduled',
         success: true,
         message: '$scheduledCount notifications scheduled',
+        metadata: {'count': scheduledCount},
       );
     } catch (e) {
       return InitializationStep(
@@ -411,29 +645,15 @@ class AppInitializationService {
     }
   }
 
-  DateTime _getNextWeekday(int weekday) {
-    final now = DateTime.now();
-    final daysUntil = (weekday - now.weekday + 7) % 7;
-    final nextDate = now.add(Duration(days: daysUntil == 0 ? 7 : daysUntil));
-    return nextDate.copyWith(hour: 20, minute: 0, second: 0, millisecond: 0);
-  }
-
   Future<InitializationStep> _updateUserActivity(String userId) async {
     try {
       pskyLog('👤 Updating user activity...');
-      // Update last active timestamp
-      await _dataSource.updateLeaderboardEntry(
-        userId: userId,
-        entry: LeaderboardEntry(
-          userId: userId,
-          displayName: '', // This should come from user profile
-          overallScore: 0, // This should be calculated
-          subjectScores: {},
-          totalExamsCompleted: 0,
-          totalQuestionsAnswered: 0,
-          totalCorrectAnswers: 0,
-          lastUpdated: DateTime.now(),
-        ),
+      
+      // This should be called after leaderboard calculation
+      // For now, just mark timestamp
+      await _storage.saveUserData(
+        'last_activity_$userId',
+        DateTime.now().millisecondsSinceEpoch,
       );
 
       return const InitializationStep(
@@ -461,6 +681,13 @@ class AppInitializationService {
       pskyLog('⚠️  Error checking sync status: $e');
       return false;
     }
+  }
+
+  DateTime _getNextWeekday(int weekday) {
+    final now = DateTime.now();
+    final daysUntil = (weekday - now.weekday + 7) % 7;
+    final nextDate = now.add(Duration(days: daysUntil == 0 ? 7 : daysUntil));
+    return nextDate.copyWith(hour: 20, minute: 0, second: 0, millisecond: 0);
   }
 
   /// Log individual step result
@@ -507,49 +734,58 @@ class AppInitializationService {
   // BACKGROUND SYNC
   // ============================================================================
 
-  /// Setup periodic background sync
+  /// Setup periodic background sync (only when needed)
   void setupBackgroundSync({
     required String userId,
     Duration interval = const Duration(hours: 1),
   }) {
+    // Cancel existing timer
+    _backgroundSyncTimer?.cancel();
+
     pskyLog('🔄 Setting up background sync (every ${interval.inHours} hours)');
 
-    Timer.periodic(interval, (_) async {
+    _backgroundSyncTimer = Timer.periodic(interval, (_) async {
       try {
         pskyLog('🔄 Background sync triggered');
 
         // Check connectivity
         final connectivity = await _connectivity.checkConnectivity();
-        if (connectivity.first == ConnectivityResult.none) {
+        if (connectivity.contains(ConnectivityResult.none)) {
           pskyLog('⚠️  Background sync skipped: No connection');
           return;
         }
 
-        // Check if sync is needed
-        if (!await _shouldSync()) {
+        // Smart check: Only sync if needed
+        final shouldSync = await _shouldPullFromFirebase(userId);
+        if (!shouldSync) {
           pskyLog('⚠️  Background sync skipped: Not needed');
           return;
         }
 
-        // Perform sync
-        final currentState = _examCubit.state;
+        // Check if there are local changes to push
+        final hasLocalChanges = _examCubit.hasUnsyncedChanges();
 
-        currentState.maybeWhen(
-          orElse: () {},
-          hasData:
-              (examMode, selectedSubjects, examSessions, currentSession) async {
-            pskyLog('🔄 Syncing ${examSessions.length} sessions...');
-            await _syncCubit.sync(
-              userId: userId,
-              sessions: examSessions,
-            );
-            pskyLog('✅ Background sync completed');
-          },
-        );
+        if (hasLocalChanges) {
+          pskyLog('🔼 Pushing local changes to Firebase...');
+          await _examCubit.syncCurrentSessionNow();
+        }
+
+        // Pull from Firebase
+        pskyLog('🔽 Pulling from Firebase...');
+        await _examCubit.syncFromDb(userId, forcePull: false);
+
+        pskyLog('✅ Background sync completed');
       } catch (e) {
         pskyLog('❌ Background sync failed: $e');
       }
     });
+  }
+
+  /// Cancel background sync
+  void cancelBackgroundSync() {
+    _backgroundSyncTimer?.cancel();
+    _backgroundSyncTimer = null;
+    pskyLog('🛑 Background sync cancelled');
   }
 
   // ============================================================================
@@ -567,18 +803,26 @@ class AppInitializationService {
       final startTime = DateTime.now();
       final steps = <InitializationStep>[];
 
+      // STEP 0: Initialize user storage (MUST be synchronous)
+      final storageInitStep = await _initializeUserStorage(userId);
+      steps.add(storageInitStep);
+      _logStep(storageInitStep);
+
       // CRITICAL PATH ONLY (Must complete before showing UI)
       // These are synchronous and fast (<100ms)
-      final localDataStep = await _loadLocalData();
+      final localDataStep = await _loadLocalData(userId);
       steps.add(localDataStep);
       _logStep(localDataStep);
 
-      final notificationStep = await _initializeNotifications();
+      final notificationStep = await _initializeNotifications(userId);
       steps.add(notificationStep);
       _logStep(notificationStep);
 
       final duration = DateTime.now().difference(startTime);
       pskyLog('✅ UI ready in ${duration.inMilliseconds}ms');
+
+      // Mark as initialized
+      _isInitialized = true;
 
       // Start all background tasks WITHOUT awaiting
       pskyLog('🔄 Launching background tasks...');
@@ -604,6 +848,19 @@ class AppInitializationService {
         error: e.toString(),
       );
     }
+  }
+
+  // ============================================================================
+  // PUBLIC GETTERS
+  // ============================================================================
+
+  /// Check if app is initialized
+  bool get isInitialized => _isInitialized;
+
+  /// Cleanup on app dispose
+  void dispose() {
+    _backgroundSyncTimer?.cancel();
+    pskyLog('🧹 AppInitializationService disposed');
   }
 }
 

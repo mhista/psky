@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
@@ -20,7 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Manages offline operations and syncs when online
 @lazySingleton
 class OfflineQueueManager {
-  final SharedPreferences _prefs;
+  final LocalStorageService _prefs;
   final FirebaseExamDataSource _dataSource;
   final Connectivity _connectivity;
 
@@ -74,7 +75,7 @@ class OfflineQueueManager {
 
   /// Clear queue
   Future<void> clearQueue() async {
-    await _prefs.remove(_queueKey);
+    await _prefs.removeUserData(_queueKey);
     _queueController.add(0);
   }
 
@@ -90,7 +91,7 @@ class OfflineQueueManager {
 
   Future<List<OfflineOperation>> _getQueue() async {
     try {
-      final queueJson = _prefs.getString(_queueKey);
+      final queueJson = _prefs.getUserData(_queueKey);
       if (queueJson == null) return [];
 
       final List<dynamic> queueList = jsonDecode(queueJson);
@@ -106,7 +107,7 @@ class OfflineQueueManager {
   Future<void> _saveQueue(List<OfflineOperation> queue) async {
     try {
       final queueJson = jsonEncode(queue.map((op) => op.toJson()).toList());
-      await _prefs.setString(_queueKey, queueJson);
+      await _prefs.saveUserData(_queueKey, queueJson);
     } catch (e) {
       print('Error saving queue: $e');
     }

@@ -96,7 +96,12 @@ class DashBoardInfo extends StatelessWidget {
                 orElse: () {},
                 hasData:
                     (examMode, selectedSubjects, examSessions, currentSession) {
-                  final currentProgress = examCubit.getAllActiveSessions().last;
+                  final activeSessions = examCubit.getAllActiveSessions();
+                  if (activeSessions.isEmpty) {
+                    return null; // Return null instead of trying to access .last
+                  }
+
+                  final currentProgress = activeSessions.last;
                   return (
                     currentProgress,
                     examMode,
@@ -105,7 +110,12 @@ class DashBoardInfo extends StatelessWidget {
                     currentSession
                   );
                 });
+            pskyLog(hasData?.$1, logType: 'Dashboard Info');
+            final isEmpty =
+                hasData?.$1 == null || examCubit.getAllActiveSessions().isEmpty;
+
             final session = hasData?.$1;
+
             pskyLog(session?.subjectId);
             final name = getIt<SubjectRepository>()
                 .getSubjectById(session?.subjectId ?? '')
@@ -119,6 +129,10 @@ class DashBoardInfo extends StatelessWidget {
               height: 161,
               width: double.infinity,
               backgroundColor: PColors.primary2,
+              gradient: isEmpty
+                  ? const LinearGradient(colors: [PColors.sec2, PColors.sec1])
+                  : const LinearGradient(
+                      colors: [PColors.primary2, PColors.primary3]),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -130,7 +144,7 @@ class DashBoardInfo extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // INFO BUTTONS
-                        if (isNotEmptyState)
+                        if (isNotEmptyState && !isEmpty)
                           Row(
                             spacing: 8,
                             children: [
@@ -142,7 +156,7 @@ class DashBoardInfo extends StatelessWidget {
                                     .apply(
                                         color: Colors.white,
                                         fontSizeDelta:
-                                            !responsive.isDesktop? -4 : 0),
+                                            !responsive.isDesktop ? -4 : 0),
                               ),
                               ElevatedButton(
                                 onPressed: () {},
@@ -150,7 +164,7 @@ class DashBoardInfo extends StatelessWidget {
                                     padding: EdgeInsets.symmetric(
                                         vertical: 0,
                                         horizontal:
-                                            !responsive.isDesktop? 5 : 8),
+                                            !responsive.isDesktop ? 5 : 8),
                                     visualDensity:
                                         const VisualDensity(vertical: -4),
                                     backgroundColor: const Color(0xffDCF9E0)),
@@ -160,7 +174,7 @@ class DashBoardInfo extends StatelessWidget {
                                     .responsive
                                     .labelMedium
                                     .withColor(PColors.secondary1)
-                                    .withSize(!responsive.isDesktop? 6 : 9),
+                                    .withSize(!responsive.isDesktop ? 6 : 9),
                               ),
                               ElevatedButton(
                                 onPressed: () {},
@@ -168,7 +182,7 @@ class DashBoardInfo extends StatelessWidget {
                                     padding: EdgeInsets.symmetric(
                                         vertical: 0,
                                         horizontal:
-                                            !responsive.isDesktop? 5 : 8),
+                                            !responsive.isDesktop ? 5 : 8),
                                     visualDensity:
                                         const VisualDensity(vertical: -4),
                                     backgroundColor: const Color(0xffF9DEDC)),
@@ -178,19 +192,23 @@ class DashBoardInfo extends StatelessWidget {
                                     .responsive
                                     .labelMedium
                                     .withColor(PColors.bg2)
-                                    .withSize(!responsive.isDesktop? 6 : 9),
+                                    .withSize(!responsive.isDesktop ? 6 : 9),
                               ),
                             ],
                           ),
                         // WELCOME MESSAGE
+                        if (responsive.isMobile) const Gap(5),
+                        if (isEmpty) const Gap(12),
                         Align(
                           alignment: Alignment.topLeft,
                           child: SizedBox(
-                              width: !responsive.isDesktop? 136 : 284,
+                              width: !responsive.isDesktop ? 136 : 284,
                               child: ResponsiveText(
-                                isNotEmptyState
-                                    ? 'You’re on question ${session?.progress?.currentQuestionIndex} of ${session?.questions.length} — keep the momentum!'
-                                    : 'Welcome to your dashboard',
+                                isEmpty
+                                    ? 'Build your streak'
+                                    : isNotEmptyState
+                                        ? 'You’re on question ${session?.progress?.currentQuestionIndex} of ${session?.questions.length} — keep the momentum!'
+                                        : 'Welcome to your dashboard',
                               )
                                   .white
                                   .left
@@ -204,8 +222,8 @@ class DashBoardInfo extends StatelessWidget {
                                           ? 13
                                           : 20)),
                         ),
-                        if (isNotEmptyState) const Gap(10),
-                        if (!isNotEmptyState)
+                        if (isNotEmptyState && !isEmpty) const Gap(10),
+                        if (!isNotEmptyState && !isEmpty)
                           Align(
                             alignment: Alignment.topLeft,
                             child: SizedBox(
@@ -216,17 +234,41 @@ class DashBoardInfo extends StatelessWidget {
                                     .left
                                     .bodySmall
                                     .responsive
-                                    .withSize(!responsive.isDesktop? 6 : 8)
+                                    .withSize(!responsive.isDesktop ? 6 : 8)
                                     .withWeight(FontWeight.w200)
                                     .withColor(
                                         PColors.white.withValues(alpha: 0.7))),
                           ),
+                        if (isEmpty)
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                                width: 203,
+                                child: const ResponsiveText(
+                                  'Complete one practice today to kick off your study streak.',
+                                )
+                                    .left
+                                    .bodySmall
+                                    .responsive
+                                    .withSize(!responsive.isDesktop ? 6 : 8)
+                                    .withWeight(FontWeight.w200)
+                                    .withColor(
+                                        PColors.white.withValues(alpha: 0.7))),
+                          ),
+
+                        if (isEmpty) const Gap(12),
 
                         Row(
                           children: [
                             ElevatedButton(
                               onPressed: () async {
                                 pskyLog(session?.questions);
+                                if (isEmpty) {
+                                  getIt<AppRouter>()
+                                      .router
+                                      .goNamed(KRoutes.practiceExam);
+                                  return;
+                                }
                                 if (isNotEmptyState) {
                                   final user = getIt<UserCubit>().user ??
                                       UserEntity.empty();
@@ -266,18 +308,21 @@ class DashBoardInfo extends StatelessWidget {
                                       const VisualDensity(vertical: -4),
                                   backgroundColor: PColors.white),
                               child: ResponsiveText(
-                                isNotEmptyState
-                                    ? 'Continue Test'
-                                    : 'Start your mock exam',
+                                isEmpty
+                                    ? 'Start now'
+                                    : isNotEmptyState
+                                        ? 'Continue Test'
+                                        : 'Start your mock exam',
                                 letterSpacing: 1.0,
                               )
                                   .responsive
                                   .labelMedium
-                                  .withColor(PColors.primary)
-                                  .withSize(!responsive.isDesktop? 5 : 6)
+                                  .withColor(
+                                      isEmpty ? PColors.sec1 : PColors.primary)
+                                  .withSize(!responsive.isDesktop ? 5 : 6)
                                   .exBold,
                             ),
-                            if (isNotEmptyState)
+                            if (isNotEmptyState && !isEmpty)
                               TextButton(
                                 onPressed: () {
                                   getIt<AppRouter>()
@@ -297,7 +342,7 @@ class DashBoardInfo extends StatelessWidget {
                                     .responsive
                                     .labelMedium
                                     .withColor(PColors.white)
-                                    .withSize(!responsive.isDesktop? 5 : 7)
+                                    .withSize(!responsive.isDesktop ? 5 : 7)
                                     .exBold,
                               ),
                           ],
@@ -305,31 +350,96 @@ class DashBoardInfo extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if(!responsive.isDesktop)
-                  Expanded(
-                    child: PRoundedImage(
-                      imageType: ImagesType.asset,
-                      image:
-                          isNotEmptyState ? PImages.kaiWave : PImages.kaiMascot,
-                      height: 166,
-                      width: 200,
-                      fit: BoxFit.fill,
-                      padding: 0,
-                      borderRadius: 12,
+                  if (responsive.isTablet && !isEmpty)
+                    Expanded(
+                      child: PRoundedImage(
+                        imageType: ImagesType.asset,
+                        image: isEmpty
+                            ? PImages.flash
+                            : isNotEmptyState
+                                ? PImages.kaiWave
+                                : PImages.kaiMascot,
+                        height: 166,
+                        width: 200,
+                        fit: BoxFit.fill,
+                        padding: 0,
+                        borderRadius: 12,
+                      ),
                     ),
-                  ),
-                  if(!!responsive.isDesktop)
-                  PRoundedImage(
+                  if (responsive.isTablet && isEmpty)
+                    const Stack(
+                      children: [
+                        Expanded(
+                          child: PRoundedImage(
+                            imageType: ImagesType.asset,
+                            image: PImages.flash,
+                            height: 166,
+                            width: 150,
+                            fit: BoxFit.cover,
+                            padding: 0,
+                            borderRadius: 12,
+                          ),
+                        ),
+                        Positioned(
+                          left: -15,
+                          child: Expanded(
+                            child: PRoundedImage(
+                              imageType: ImagesType.asset,
+                              image: PImages.flash,
+                              height: 166,
+                              width: 150,
+                              fit: BoxFit.cover,
+                              padding: 0,
+                              borderRadius: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (responsive.isDesktop && !isEmpty)
+                    PRoundedImage(
                       imageType: ImagesType.asset,
-                      image:
-                          isNotEmptyState ? PImages.kaiWave : PImages.kaiMascot,
+                      image: isEmpty
+                          ? PImages.flash
+                          : isNotEmptyState
+                              ? PImages.kaiWave
+                              : PImages.flash,
                       height: 166,
                       width: 290,
                       fit: BoxFit.fill,
                       padding: 0,
                       borderRadius: 12,
                     ),
-
+                  if (responsive.isDesktop && isEmpty)
+                    const Stack(
+                      children: [
+                        Expanded(
+                          child: PRoundedImage(
+                            imageType: ImagesType.asset,
+                            image: PImages.flash,
+                            height: 166,
+                            width: 150,
+                            fit: BoxFit.cover,
+                            padding: 0,
+                            borderRadius: 12,
+                          ),
+                        ),
+                        Positioned(
+                          left: -30,
+                          child: Expanded(
+                            child: PRoundedImage(
+                              imageType: ImagesType.asset,
+                              image: PImages.flash,
+                              height: 166,
+                              width: 150,
+                              fit: BoxFit.cover,
+                              padding: 0,
+                              borderRadius: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             );

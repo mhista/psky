@@ -342,20 +342,23 @@ Map<String, dynamic> _$ExamNotificationToJson(_ExamNotification instance) =>
     };
 
 const _$NotificationTypeEnumMap = {
+  NotificationType.sessionStart: 'sessionStart',
   NotificationType.sessionReminder: 'sessionReminder',
   NotificationType.sessionExpiring: 'sessionExpiring',
+  NotificationType.sessionPause: 'sessionPause',
+  NotificationType.sessionResume: 'sessionResume',
+  NotificationType.sessionComplete: 'sessionComplete',
   NotificationType.achievementUnlocked: 'achievementUnlocked',
   NotificationType.leaderboardUpdate: 'leaderboardUpdate',
   NotificationType.streakReminder: 'streakReminder',
   NotificationType.dailyGoal: 'dailyGoal',
   NotificationType.weeklyReport: 'weeklyReport',
-  NotificationType.examTip: 'examTip',
   NotificationType.aiInsight: 'aiInsight',
+  NotificationType.examTip: 'examTip',
   NotificationType.appUpdate: 'appUpdate',
   NotificationType.settingsChange: 'settingsChange',
   NotificationType.featureAnnouncement: 'featureAnnouncement',
   NotificationType.motivational: 'motivational',
-  NotificationType.studyTip: 'studyTip',
   NotificationType.communityUpdate: 'communityUpdate',
   NotificationType.emergencyAlert: 'emergencyAlert',
 };

@@ -12,6 +12,7 @@ import 'package:ahiaa_web/features/settings/presentation/screens/widgets/gender_
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:flutter/material.dart' hide Form;
 import 'package:iconsax/iconsax.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     hide TextButton, Radio, RadioGroup;
 
@@ -42,6 +43,8 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0),
       child: Column(
@@ -50,7 +53,7 @@ class _EditProfileState extends State<EditProfile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Edit Profile').x3Large.bold.black,
-          Column(
+          const Column(
             spacing: 15,
 
             // crossAxisAlignment: CrossAxisAlignment.end,
@@ -70,18 +73,18 @@ class _EditProfileState extends State<EditProfile> {
               child: Column(
                 spacing: 20,
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 22,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        spacing: 38,
-                        children: [
-                          Expanded(
-                            child: TextFieldForm(
+                  if (responsive.isMobile)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 16,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 16,
+                          children: [
+                            TextFieldForm(
                                 controller: firstNameController,
                                 fieldName: 'First Name',
                                 labelText: 'First Name',
@@ -89,9 +92,7 @@ class _EditProfileState extends State<EditProfile> {
                                 validator: (value) =>
                                     PValidator.validateEmptyText(
                                         'First Name', value)),
-                          ),
-                          Expanded(
-                            child: TextFieldForm(
+                            TextFieldForm(
                               controller: lastNameController,
                               fieldName: 'Last Name',
                               labelText: 'Last Name',
@@ -100,24 +101,20 @@ class _EditProfileState extends State<EditProfile> {
                                   PValidator.validateEmptyText(
                                       'Last Name', value),
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        spacing: 38,
-                        children: [
-                          Expanded(
-                            child: TextFieldForm(
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 16,
+                          children: [
+                            TextFieldForm(
                               controller: emailController,
                               fieldName: 'Email',
                               labelText: 'Email',
                               icon: Icons.mail_outline_rounded,
                               validator: PValidator.validateEmail,
                             ),
-                          ),
-                          Expanded(
-                            child: TextFieldForm(
+                            TextFieldForm(
                               controller: phoneController,
                               fieldName: 'Phone',
                               labelText: '+234',
@@ -126,47 +123,129 @@ class _EditProfileState extends State<EditProfile> {
                                   PValidator.validateEmptyText(
                                       'Phone number', value),
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        spacing: 38,
-                        children: [
-                          const Expanded(child: DatePickerContainerScreen()),
-                          Expanded(child: GenderRadioGroup(onChanged: (value) {
-                            debugPrint(value);
-                          })),
-                        ],
-                      ),
-                      TextFieldForm(
-                        controller: schoolController,
-                        fieldName: 'School',
-                        labelText: 'ABC International College',
-                        // icon: Iconsax.call,
-                        validator: (value) =>
-                            PValidator.validateEmptyText('School', value),
-                      ),
-                      BioTextField(bioController: bioController),
-                    ],
-                  ),
-                 Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 8,
+                          children: [
+                            const DatePickerContainerScreen(),
+                            SizedBox(
+                              width: 250,
+                              child: GenderRadioGroup(onChanged: (value) {
+                                debugPrint(value);
+                              }),
+                            ),
+                          ],
+                        ),
+                        TextFieldForm(
+                          controller: schoolController,
+                          fieldName: 'School',
+                          labelText: 'ABC International College',
+                          // icon: Iconsax.call,
+                          validator: (value) =>
+                              PValidator.validateEmptyText('School', value),
+                        ),
+                        BioTextField(bioController: bioController),
+                      ],
+                    ),
+                  if (!responsive.isMobile)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 22,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 38,
+                          children: [
+                            Expanded(
+                              child: TextFieldForm(
+                                  controller: firstNameController,
+                                  fieldName: 'First Name',
+                                  labelText: 'First Name',
+                                  icon: Iconsax.user,
+                                  validator: (value) =>
+                                      PValidator.validateEmptyText(
+                                          'First Name', value)),
+                            ),
+                            Expanded(
+                              child: TextFieldForm(
+                                controller: lastNameController,
+                                fieldName: 'Last Name',
+                                labelText: 'Last Name',
+                                icon: Iconsax.user,
+                                validator: (value) =>
+                                    PValidator.validateEmptyText(
+                                        'Last Name', value),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 38,
+                          children: [
+                            Expanded(
+                              child: TextFieldForm(
+                                controller: emailController,
+                                fieldName: 'Email',
+                                labelText: 'Email',
+                                icon: Icons.mail_outline_rounded,
+                                validator: PValidator.validateEmail,
+                              ),
+                            ),
+                            Expanded(
+                              child: TextFieldForm(
+                                controller: phoneController,
+                                fieldName: 'Phone',
+                                labelText: '+234',
+                                icon: Iconsax.call,
+                                validator: (value) =>
+                                    PValidator.validateEmptyText(
+                                        'Phone number', value),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 38,
+                          children: [
+                            const Expanded(child: DatePickerContainerScreen()),
+                            Expanded(
+                                child: GenderRadioGroup(onChanged: (value) {
+                              debugPrint(value);
+                            })),
+                          ],
+                        ),
+                        TextFieldForm(
+                          controller: schoolController,
+                          fieldName: 'School',
+                          labelText: 'ABC International College',
+                          // icon: Iconsax.call,
+                          validator: (value) =>
+                              PValidator.validateEmptyText('School', value),
+                        ),
+                        BioTextField(bioController: bioController),
+                      ],
+                    ),
+                  Padding(
+                    padding:  EdgeInsets.only(top: responsive.isMobile ? 14 :20.0),
                     child: ElevatedButton(
                       onPressed: () {
-                        getIt<AppRouter>().router.goNamed(KRoutes.onboarding);
+                        // getIt<AppRouter>().router.goNamed(KRoutes.onboarding);
                       },
                       style: ElevatedButton.styleFrom(
-                        maximumSize: const Size(172, 56),
-                        minimumSize: const Size(172, 56),
+                        maximumSize: const Size(172, 48),
+                        minimumSize: const Size(172, 48),
                       ),
-                      child: const Text('Save changes'),
+                      child:  Text('Save changes', style: TextStyle( fontSize: responsive.isMobile ? 12 : 15),),
                     ),
                   ),
                 ],
               ))
         ],
-      ).withPadding(vertical: 40, horizontal: 50),
+      ).withPadding(vertical:responsive.isMobile ? 30: 40, horizontal: responsive.isMobile ? 0 : 50),
     );
   }
 }
@@ -218,7 +297,9 @@ class _BioTextFieldState extends State<BioTextField> {
           validator: (value) =>
               PValidator.validateEmptyText('Phone number', value),
         ),
-        ResponsiveText('${newwordCount == 0 ? wordCount:newwordCount} words left').withSize(8)
+        ResponsiveText(
+                '${newwordCount == 0 ? wordCount : newwordCount} words left')
+            .withSize(8)
       ],
     );
   }

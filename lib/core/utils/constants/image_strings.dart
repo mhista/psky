@@ -31,6 +31,7 @@ class PImages {
   static const String kaiSub = 'assets/images/kai_sub.png';
   static const String kaiMascot = 'assets/images/kai_mascot.png';
   static const String kaiWave = 'assets/images/kai_wave.png';
+  static const String flash = 'assets/images/flash.png';
   static const String kaiTest = 'assets/images/kai_test.png';
   static const String exam = 'assets/images/exam.png';
   static const String passed = 'assets/images/passed.png';

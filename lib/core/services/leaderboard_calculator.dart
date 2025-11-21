@@ -3,6 +3,7 @@
 // ============================================================================
 
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
@@ -29,20 +30,19 @@ class LeaderboardCalculator {
         userId: userId,
         filter: const ExamSessionFilter(status: ExamSessionStatus.completed),
       );
-
+      pskyLog(sessions);
       if (sessions.isEmpty) {
         return LeaderboardEntry(
-          userId: userId,
-          displayName: displayName,
-          avatarUrl: avatarUrl,
-          overallScore: 0,
-          subjectScores: {},
-          totalExamsCompleted: 0,
-          totalQuestionsAnswered: 0,
-          totalCorrectAnswers: 0,
-          lastUpdated: DateTime.now(),
-          metadata: {'session':sessions.map((s)=>s.toJson()).toList()}
-        );
+            userId: userId,
+            displayName: displayName,
+            avatarUrl: avatarUrl,
+            overallScore: 0,
+            subjectScores: {},
+            totalExamsCompleted: 0,
+            totalQuestionsAnswered: 0,
+            totalCorrectAnswers: 0,
+            lastUpdated: DateTime.now(),
+            metadata: {'session': sessions.map((s) => s.toJson()).toList()});
       }
 
       // Calculate overall statistics
@@ -56,9 +56,8 @@ class LeaderboardCalculator {
         (sum, s) => sum + _countCorrectAnswers(s),
       );
 
-      final overallScore = totalQuestions > 0 
-          ? (totalCorrect / totalQuestions) * 100
-          : 0.0;
+      final overallScore =
+          totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0.0;
 
       // Calculate subject scores
       final subjectScores = <String, double>{};
@@ -75,9 +74,8 @@ class LeaderboardCalculator {
           (sum, s) => sum + _countCorrectAnswers(s),
         );
 
-        subjectScores[entry.key] = questions > 0 
-            ? (correct / questions) * 100
-            : 0.0;
+        subjectScores[entry.key] =
+            questions > 0 ? (correct / questions) * 100 : 0.0;
       }
 
       // Calculate streak
@@ -135,10 +133,8 @@ class LeaderboardCalculator {
       total: userIds.length,
       successful: successful,
       failed: failed,
-      failedIds: results.entries
-          .where((e) => !e.value)
-          .map((e) => e.key)
-          .toList(),
+      failedIds:
+          results.entries.where((e) => !e.value).map((e) => e.key).toList(),
       errorMessages: errors,
     );
   }
@@ -158,7 +154,7 @@ class LeaderboardCalculator {
 
   Map<String, List<ExamSession>> _groupBySubject(List<ExamSession> sessions) {
     final groups = <String, List<ExamSession>>{};
-    
+
     for (final session in sessions) {
       groups.putIfAbsent(session.subjectId, () => []).add(session);
     }

@@ -50,7 +50,7 @@ class _KSideBarState extends State<KSideBar> {
         curve: !canChangeHeigth ? Curves.easeInOut : Curves.easeIn,
         child: Drawer(
           backgroundColor: isDark ? PColors.primary : PColors.primary,
-          width: canChangeHeigth ? 80 : 300,
+          width: canChangeHeigth ? 80 :responsive.isMobile? 250: 300,
           shape: const BeveledRectangleBorder(),
           child: TRoundedContainer(
               width: canChangeHeigth ? 80 : 300,

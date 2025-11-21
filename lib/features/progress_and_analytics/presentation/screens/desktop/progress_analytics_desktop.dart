@@ -56,14 +56,22 @@ class ProgressAnalyticsDesktop extends StatelessWidget {
                       backgroundColor: PColors.grey,
                       child: Row(
                         spacing: 8,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                         children: [
-                          const Icon(Iconsax.calendar_2),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                        spacing: 8,
+
                             children: [
-                              const ResponsiveText('Date').withSize(9),
-                              const ResponsiveText("01 Sept - 30 Sept 2025")
-                                  .withSize(9)
+                              const Icon(Iconsax.calendar_2),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const ResponsiveText('Date').withSize(9),
+                                  const ResponsiveText("01 Sept - 30 Sept 2025")
+                                      .withSize(9)
+                                ],
+                              ),
                             ],
                           ),
                           const Icon(Icons.arrow_drop_down_outlined)

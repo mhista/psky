@@ -1,6 +1,7 @@
 
 import 'package:ahiaa_web/features/subscriptions/presentation/screens/widgets/subscription_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class SubscriptionRow extends StatelessWidget {
   const SubscriptionRow({
@@ -12,9 +13,13 @@ class SubscriptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final responsive = ResponsiveBreakpoints.of(context);
+
+    return Wrap(
       // mainAxisAlignment: MainAxisAlignment.spaceAround,
-      mainAxisAlignment: MainAxisAlignment.center,
+      // mainAxisAlignment: MainAxisAlignment.center,
+      alignment: WrapAlignment.center,
+      runSpacing: 20,
       spacing: 20,
       children: [
         SubscriptionWidget(

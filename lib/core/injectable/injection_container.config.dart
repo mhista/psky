@@ -83,6 +83,7 @@ import '../services/streak_service.dart' as _i519;
 import '../services/subject_helper.dart' as _i172;
 import '../services/subject_service.dart' as _i477;
 import '../utils/helpers/responsive_utils.dart' as _i730;
+import '../utils/local_storage/storage_utility.dart' as _i369;
 import 'firebase_injection_module.dart' as _i786;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -126,24 +127,22 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i239.GeminiChatService>(() => _i239.GeminiChatService());
     gh.lazySingleton<_i172.SubjectDataHelper>(() => _i172.SubjectDataHelper());
     gh.lazySingleton<_i477.SubjectRepository>(() => _i477.SubjectRepository());
+    gh.lazySingleton<_i369.LocalStorageService>(
+        () => _i369.LocalStorageService());
     gh.lazySingleton<_i218.ChatCubit>(() => _i218.ChatCubit());
     gh.lazySingleton<_i564.UserCubit>(() => _i564.UserCubit());
     gh.lazySingleton<_i626.ExamControllerCubit>(
         () => _i626.ExamControllerCubit());
     gh.lazySingleton<_i926.ExamCubit>(() => _i926.ExamCubit(
           gh<_i974.FirebaseFirestore>(),
-          gh<_i460.SharedPreferences>(),
-        ));
-    gh.lazySingleton<_i519.StreakService>(() => _i519.StreakService(
-          gh<_i974.FirebaseFirestore>(),
-          gh<_i460.SharedPreferences>(),
+          gh<_i369.LocalStorageService>(),
         ));
     gh.lazySingleton<_i696.ExamNotificationService>(
         () => _i696.ExamNotificationService(
               gh<_i974.FirebaseFirestore>(),
               gh<_i892.FirebaseMessaging>(),
               gh<_i163.FlutterLocalNotificationsPlugin>(),
-              gh<_i460.SharedPreferences>(),
+              gh<_i369.LocalStorageService>(),
             ));
     gh.lazySingleton<_i478.AchievementService>(() => _i478.AchievementService(
           gh<_i974.FirebaseFirestore>(),
@@ -152,18 +151,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i116.FirebaseExamDataSource>(
         () => _i116.FirebaseExamDataSource(
               gh<_i974.FirebaseFirestore>(),
-              gh<_i460.SharedPreferences>(),
+              gh<_i369.LocalStorageService>(),
               gh<_i802.ExamCacheManager>(),
             ));
     gh.lazySingleton<_i403.OfflineQueueManager>(() => _i403.OfflineQueueManager(
-          gh<_i460.SharedPreferences>(),
+          gh<_i369.LocalStorageService>(),
           gh<_i116.FirebaseExamDataSource>(),
           gh<_i895.Connectivity>(),
         ));
-    gh.lazySingleton<_i413.ExamRepository>(() => _i413.ExamRepository(
-          gh<_i116.FirebaseExamDataSource>(),
-          gh<_i802.ExamCacheManager>(),
-          gh<_i460.SharedPreferences>(),
+    gh.lazySingleton<_i519.StreakService>(() => _i519.StreakService(
+          gh<_i974.FirebaseFirestore>(),
+          gh<_i369.LocalStorageService>(),
         ));
     gh.lazySingleton<_i739.AuthRemoteDataSource>(
         () => _i739.AuthRemoteDataSourceFirebaseImp(
@@ -174,10 +172,6 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i739.AuthRemoteDataSource>()));
     gh.lazySingleton<_i1065.ExamSessionCubit>(
         () => _i1065.ExamSessionCubit(gh<_i926.ExamCubit>()));
-    gh.lazySingleton<_i367.SyncCubit>(() => _i367.SyncCubit(
-          gh<_i413.ExamRepository>(),
-          gh<_i116.FirebaseExamDataSource>(),
-        ));
     gh.lazySingleton<_i455.GetCurrentUserUseCase>(() =>
         _i455.GetCurrentUserUseCase(repository: gh<_i80.AuthRepository>()));
     gh.lazySingleton<_i995.LoginUseCase>(
@@ -191,6 +185,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i712.SignUpUseCase(repository: gh<_i80.AuthRepository>()));
     gh.lazySingleton<_i185.SignInWithGoogleUseCase>(() =>
         _i185.SignInWithGoogleUseCase(repository: gh<_i80.AuthRepository>()));
+    gh.lazySingleton<_i413.ExamRepository>(() => _i413.ExamRepository(
+          gh<_i116.FirebaseExamDataSource>(),
+          gh<_i802.ExamCacheManager>(),
+          gh<_i369.LocalStorageService>(),
+        ));
     gh.lazySingleton<_i458.LeaderboardCalculator>(
         () => _i458.LeaderboardCalculator(
               gh<_i116.FirebaseExamDataSource>(),
@@ -202,15 +201,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i403.AnalyticsExportService>(
         () => _i403.AnalyticsExportService(gh<_i413.ExamRepository>()));
-    gh.lazySingleton<_i464.AppInitializationService>(
-        () => _i464.AppInitializationService(
-              gh<_i413.ExamRepository>(),
-              gh<_i696.ExamNotificationService>(),
-              gh<_i116.FirebaseExamDataSource>(),
-              gh<_i926.ExamCubit>(),
-              gh<_i367.SyncCubit>(),
-              gh<_i895.Connectivity>(),
-            ));
+    gh.lazySingleton<_i367.SyncCubit>(() => _i367.SyncCubit(
+          gh<_i413.ExamRepository>(),
+          gh<_i116.FirebaseExamDataSource>(),
+        ));
     gh.lazySingleton<_i959.AuthCubit>(() => _i959.AuthCubit(
           signUpUseCase: gh<_i712.SignUpUseCase>(),
           loginUseCase: gh<_i995.LoginUseCase>(),
@@ -220,7 +214,19 @@ extension GetItInjectableX on _i174.GetIt {
           sendPasswordResetEmailUseCase:
               gh<_i416.SendPasswordResetEmailUseCase>(),
           firebaseAuth: gh<_i59.FirebaseAuth>(),
+          localStorageService: gh<_i369.LocalStorageService>(),
         ));
+    gh.lazySingleton<_i464.AppInitializationService>(
+        () => _i464.AppInitializationService(
+              gh<_i413.ExamRepository>(),
+              gh<_i696.ExamNotificationService>(),
+              gh<_i116.FirebaseExamDataSource>(),
+              gh<_i926.ExamCubit>(),
+              gh<_i367.SyncCubit>(),
+              gh<_i895.Connectivity>(),
+              gh<_i369.LocalStorageService>(),
+              gh<_i460.SharedPreferences>(),
+            ));
     gh.lazySingleton<_i653.InitializationCubit>(
         () => _i653.InitializationCubit(gh<_i464.AppInitializationService>()));
     return this;

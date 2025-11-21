@@ -6,6 +6,7 @@ import 'package:ahiaa_web/features/dashboard/presentation/screens/desktop/dashbo
 import 'package:ahiaa_web/features/onboarding/presentation/screens/desktop/desktop_screen.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:ahiaa_web/features/test/presentation/screens/desktop/desktop_test_screen.dart';
+import 'package:ahiaa_web/features/test/presentation/screens/mobile/mobile_test_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -27,7 +28,7 @@ class TestScreenScreen extends StatelessWidget {
             return (loaderState: LoaderState.loading,);
           },
           hasData: (_, __, ___, ____) => (loaderState: LoaderState.done,),
-          initial: () => (loaderState: LoaderState.loading,),
+          initial: () => (loaderState: LoaderState.done,),
           loading: () => (loaderState: LoaderState.loading,),
         );
 
@@ -43,6 +44,11 @@ class TestScreenScreen extends StatelessWidget {
             isLoading: isLoading,
             hasError: hasError,
           ),
+          mobile: MobileTestScreen(
+             hasData: hasData,
+            isLoading: isLoading,
+            hasError: hasError,
+          )
         );
       },
     );

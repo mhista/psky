@@ -1,9 +1,14 @@
-// core/routes/app_router.dart
+
+// ============================================================================
+// 2. UPDATED APP_ROUTER.DART - With First-Timer Logic
+// ============================================================================
+
 import 'dart:async';
 import 'package:ahiaa_web/core/cubits/cubit/initialization_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/features/authentication/presentation/business/cubit/auth_cubit.dart';
@@ -23,9 +28,13 @@ import 'package:ahiaa_web/features/subscriptions/presentation/screens/subscripti
 import 'package:ahiaa_web/features/test/presentation/screens/test_screen.dart';
 import 'package:ahiaa_web/features/help_and_support/presentation/screens/help_and_support.dart';
 
-@lazySingleton  // Changed from @singleton to @lazySingleton
+@lazySingleton
 class AppRouter {
   late final GoRouter router;
+  
+  // Storage key for first-timer tracking
+  static const String _firstTimerKey = 'is_first_timer';
+  static const String _hasSeenLandingKey = 'has_seen_landing';
 
   AppRouter() {
     router = _buildRouter();
@@ -35,7 +44,7 @@ class AppRouter {
     return GoRouter(
       initialLocation: '/',
       routes: [
-        // Landing
+        // Landing - Only for first-timers
         GoRoute(
           path: '/',
           name: KRoutes.landing,
@@ -112,10 +121,9 @@ class AppRouter {
           builder: (context, state) => const Center(child: CircularProgressIndicator()),
         ),
       ],
-      redirect: (context, state) {
+      redirect: (context, state) async {
         // Check if AuthCubit is registered before trying to access it
         if (!getIt.isRegistered<AuthCubit>()) {
-          // Allow navigation during initialization
           return null;
         }
 
@@ -131,17 +139,46 @@ class AppRouter {
         final isGoingToOnboarding = state.matchedLocation == '/${KRoutes.onboarding}';
         final isGoingToLanding = state.matchedLocation == '/';
 
-        // Allow public routes
-        if (isGoingToLanding || isGoingToOnboarding || isGoingToAuth) {
-          if (isAuthenticated && !isGoingToAuth) {
-            
+        // ✅ NEW: Check if user is first-timer
+        final isFirstTimer = await _isFirstTimer();
+        final hasSeenLanding = await _hasSeenLanding();
+
+        // ✅ LOGIC: First-timer flow
+        if (isGoingToLanding) {
+          if (isAuthenticated) {
+            // Already authenticated - skip landing
+            await _markLandingSeen();
+            return '/${KRoutes.dashboard}';
+          } else if (!isFirstTimer || hasSeenLanding) {
+            // Not a first-timer or already seen landing - go to auth
+            return '/${KRoutes.auth}';
+          }
+          // First-timer who hasn't seen landing - show landing page
+          return null;
+        }
+
+        // Allow onboarding route
+        if (isGoingToOnboarding) {
+          if (isAuthenticated) {
+            return '/${KRoutes.dashboard}';
+          }
+          return null;
+        }
+
+        // Allow auth route
+        if (isGoingToAuth) {
+          if (isAuthenticated) {
             return '/${KRoutes.dashboard}';
           }
           return null;
         }
 
         // Protect private routes
-        if (!isAuthenticated && !isGoingToAuth) {
+        if (!isAuthenticated) {
+          // Not authenticated - check if should show landing or auth
+          if (isFirstTimer && !hasSeenLanding) {
+            return '/';
+          }
           return '/${KRoutes.auth}';
         }
 
@@ -167,6 +204,38 @@ class AppRouter {
       ),
     );
   }
+
+  // ✅ NEW: Helper methods for first-timer tracking
+  Future<bool> _isFirstTimer() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstTimer = prefs.getBool(_firstTimerKey) ?? true;
+    return isFirstTimer;
+  }
+
+  Future<bool> _hasSeenLanding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasSeenLandingKey) ?? false;
+  }
+
+  Future<void> _markLandingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenLandingKey, true);
+    await prefs.setBool(_firstTimerKey, false);
+  }
+
+  // ✅ NEW: Call this when user completes landing page actions
+  static Future<void> markLandingPageCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenLandingKey, true);
+    await prefs.setBool(_firstTimerKey, false);
+  }
+
+  // ✅ NEW: Reset first-timer status (useful for testing)
+  static Future<void> resetFirstTimerStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_hasSeenLandingKey);
+    await prefs.remove(_firstTimerKey);
+  }
 }
 
 // Safe refresh notifier that only listens if AuthCubit is registered
@@ -174,7 +243,6 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   StreamSubscription? _sub;
   
   _AuthRefreshNotifier() {
-    // Delay the subscription to ensure AuthCubit is registered
     Future.microtask(() {
       if (getIt.isRegistered<AuthCubit>()) {
         _sub = getIt<AuthCubit>().stream.listen((_) => notifyListeners());
@@ -185,19 +253,6 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   @override
   void dispose() {
     _sub?.cancel();
-    super.dispose();
-  }
-}
-
-// Keep this class for backward compatibility if needed elsewhere
-class GoRouterRefreshStream extends ChangeNotifier {
-  late final StreamSubscription _sub;
-  GoRouterRefreshStream(Stream stream) {
-    _sub = stream.listen((_) => notifyListeners());
-  }
-  @override
-  void dispose() {
-    _sub.cancel();
     super.dispose();
   }
 }

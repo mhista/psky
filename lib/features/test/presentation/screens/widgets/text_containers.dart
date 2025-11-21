@@ -13,15 +13,19 @@ import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_se
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class TestContainers extends StatelessWidget {
   const TestContainers({super.key, required this.session});
   final ExamSession session;
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     final name = getIt<SubjectRepository>().getSubjectById(session.subjectId);
     return Container(
-      constraints: const BoxConstraints(maxWidth: 285),
+      constraints:
+          BoxConstraints(maxWidth: responsive.isMobile ? double.infinity : 285),
       padding: const EdgeInsets.all(9),
       decoration: BoxDecoration(
         color: PColors.light,
@@ -45,7 +49,8 @@ class TestContainers extends StatelessWidget {
               ),
               // Different colors
               RoundedGradeProgress(
-                currentGrade: session.progress?.currentQuestionIndex.toDouble() ?? 0,
+                currentGrade:
+                    session.progress?.currentQuestionIndex.toDouble() ?? 0,
                 animationDuration: 1500.milliseconds,
                 // animate: false,
                 totalGrade: session.progress?.totalQuestions.toDouble() ?? 0,

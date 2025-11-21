@@ -31,7 +31,7 @@ class DashboardScreen extends StatelessWidget {
             return (loaderState: LoaderState.loading,);
           },
           hasData: (_, __, ___, ____) => (loaderState: LoaderState.done,),
-          initial: () => (loaderState: LoaderState.loading,),
+          initial: () => (loaderState: LoaderState.done,),
           loading: () => (loaderState: LoaderState.loading,),
         );
 

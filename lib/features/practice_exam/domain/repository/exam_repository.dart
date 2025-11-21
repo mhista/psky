@@ -4,6 +4,7 @@
 
 import 'package:ahiaa_web/core/services/cache_manager.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
@@ -15,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ExamRepository {
   final FirebaseExamDataSource _dataSource;
   final ExamCacheManager _cacheManager;
-  final SharedPreferences _prefs;
+  final LocalStorageService _prefs;
 
   ExamRepository(
     this._dataSource,

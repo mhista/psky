@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
+import 'package:ahiaa_web/core/routes/app_router2.dart';
+import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/core/services/exam_result_calculator.dart';
 import 'package:ahiaa_web/core/utils/constants/text_strings.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
@@ -55,10 +58,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
     //   // startTimer();
     // }
     if (session.status == ExamSessionStatus.completed) {
-      ExamSessionState.completed(
-        session: session,
-        currentQuestionIndex: 0
-      );
+      ExamSessionState.completed(session: session, currentQuestionIndex: 0);
     }
 
     final hasReachedLimit = session.questions.length >= PTexts.examTotalCounts;
@@ -78,7 +78,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
   /// Navigate to next question
   Future<void> nextQuestion() async {
     final currentState = state;
-    if (currentState is! _Active ) return;
+    if (currentState is! _Active) return;
 
     final nextIndex = currentState.currentQuestionIndex + 1;
     if (nextIndex >= currentState.session.questions.length) return;
@@ -86,11 +86,10 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
     await _updateCurrentQuestionIndex(nextIndex);
   }
 
-  
   /// Navigate to next question for completed session
   Future<void> nextAnsweredQuestion() async {
     final currentState = state;
-    if (currentState is! _Completed ) return;
+    if (currentState is! _Completed) return;
 
     final nextIndex = currentState.currentQuestionIndex + 1;
     if (nextIndex >= currentState.session.questions.length) return;
@@ -98,7 +97,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
     await updateCompletedCurrentQuestionIndex(nextIndex);
   }
 
-   /// Navigate to previous question for completed session
+  /// Navigate to previous question for completed session
   Future<void> previousAnswereedQuestion() async {
     final currentState = state;
     if (currentState is! _Completed) return;
@@ -108,6 +107,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
 
     await updateCompletedCurrentQuestionIndex(prevIndex);
   }
+
   /// Navigate to previous question
   Future<void> previousQuestion() async {
     final currentState = state;
@@ -129,7 +129,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
     await _updateCurrentQuestionIndex(index);
   }
 
-   Future<void> updateCompletedCurrentQuestionIndex(int index) async {
+  Future<void> updateCompletedCurrentQuestionIndex(int index) async {
     final currentState = state;
     if (currentState is! _Completed) return;
 
@@ -137,7 +137,6 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
       session: currentState.session,
       currentQuestionIndex: index,
     ));
-
   }
 
   Future<void> _updateCurrentQuestionIndex(int index) async {
@@ -560,9 +559,10 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
       status: ExamSessionStatus.completed,
       progress: session.progress,
     );
-
-    emit(ExamSessionState.completed(session: completedSession, currentQuestionIndex: 0));
     await _examCubit.endAndSave();
+
+    emit(ExamSessionState.completed(
+        session: completedSession, currentQuestionIndex: 0));
   }
 
   /// Abandon the exam
@@ -595,7 +595,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
     await _syncWithExamCubit(abandonedSession);
   }
 
-  void clear(){
+  void clear() {
     emit(const ExamSessionState.initial());
   }
   // ============================================================================
@@ -604,7 +604,7 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
 
   void startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) { 
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final currentState = state;
       if (currentState is _Active) {
         final newTimeRemaining = currentState.timeRemainingSeconds - 1;
@@ -613,6 +613,10 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
           // Time's up - auto submit
           timer.cancel();
           submitExam();
+          calculateSessionResult();
+          _examCubit.calculateAggregateResults();
+          // No more subjects, actually submit the exam
+          getIt<AppRouter>().router.goNamed(KRoutes.result);
           return;
         }
 
@@ -766,7 +770,8 @@ class ExamSessionCubit extends Cubit<ExamSessionState> {
 
   void _handleSessionCompletion(ExamSession completedSession) {
     _timer?.cancel();
-    emit(ExamSessionState.completed(session: completedSession, currentQuestionIndex: 0));
+    emit(ExamSessionState.completed(
+        session: completedSession, currentQuestionIndex: 0));
   }
 
   @override

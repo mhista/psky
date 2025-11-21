@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
@@ -13,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 @lazySingleton
 class StreakService {
   final FirebaseFirestore _firestore;
-  final SharedPreferences _prefs;
+  final LocalStorageService _prefs;
 
   static const String _streakKey = 'user_streak_data';
   static const String _streakCollection = 'user_streaks';
@@ -382,7 +383,7 @@ class StreakService {
           .set(data.toJson());
 
       // Save to local cache
-      await _prefs.setString(_streakKey, jsonEncode(data.toJson()));
+      await _prefs.saveUserData(_streakKey, jsonEncode(data.toJson()));
     } catch (e) {
       print('Error saving streak data: $e');
     }
@@ -401,7 +402,7 @@ class StreakService {
       }
 
       // Try local cache
-      final cached = _prefs.getString(_streakKey);
+      final cached = _prefs.getUserData(_streakKey);
       if (cached != null) {
         return StreakData.fromJson(jsonDecode(cached));
       }

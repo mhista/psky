@@ -70,7 +70,7 @@ class _TestTrackerState extends State<TestTracker> {
                       valueColor: AlwaysStoppedAnimation(PColors.darkGrey),
                     ),
                   )
-                : ResponsiveText(_isLoading == true
+                : ResponsiveText(_isLoading == true || aggregate == null || aggregate?.averageCompletionRate == null
                         ? '0%'
                         : '${aggregate?.averageCompletionRate.toStringAsFixed(2)}%')
                     .withSize(28)

@@ -57,6 +57,7 @@ class KHeader extends StatelessWidget implements PreferredSizeWidget {
         actions: [
           !responsive.isMobile?
           ElevatedButton(onPressed: (){
+            AppRouter.markLandingPageCompleted();
             route.goNamed(KRoutes.auth);
           }, style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(

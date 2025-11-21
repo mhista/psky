@@ -11,6 +11,7 @@ import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class ExamInstructionsScreen extends StatelessWidget {
   const ExamInstructionsScreen({
@@ -25,22 +26,23 @@ class ExamInstructionsScreen extends StatelessWidget {
   final bool isLoading, hasError, hasData, expand, isFirstTime;
   @override
   Widget build(BuildContext context) {
-  final examCubit = getIt<ExamCubit>();
+    final examCubit = getIt<ExamCubit>();
+    final responsive = ResponsiveBreakpoints.of(context);
 
-  String formatSubjectList(List<String> subjects) {
-  if (subjects.isEmpty) return 'No subjects selected';
-  if (subjects.length == 1) return subjects.first;
-  if (subjects.length == 2) return '${subjects[0]} and ${subjects[1]}';
-  
-  final allButLast = subjects.sublist(0, subjects.length - 1).join(', ');
-  final last = subjects.last;
-  return '$allButLast, and $last';
-}
+    String formatSubjectList(List<String> subjects) {
+      if (subjects.isEmpty) return 'No subjects selected';
+      if (subjects.length == 1) return subjects.first;
+      if (subjects.length == 2) return '${subjects[0]} and ${subjects[1]}';
+
+      final allButLast = subjects.sublist(0, subjects.length - 1).join(', ');
+      final last = subjects.last;
+      return '$allButLast, and $last';
+    }
 
     return SiteTemplate2(
       useLayout: true,
       desktop: TRoundedContainer(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: responsive.isMobile? 16:0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 12,
@@ -67,8 +69,8 @@ class ExamInstructionsScreen extends StatelessWidget {
                     builder: (context, state) {
                       final hasData = state.maybeWhen(
                         orElse: () {},
-                        hasData: (mode,  subjects,sessions, currenntSession) =>
-                            (mode, sessions, subjects, currenntSession) ,
+                        hasData: (mode, subjects, sessions, currenntSession) =>
+                            (mode, sessions, subjects, currenntSession),
                       );
                       return GptMarkdown(
                         """In this examination, you will be tested on the following subjects: ${formatSubjectList(hasData?.$3 ?? [])}.
@@ -89,7 +91,7 @@ class ExamInstructionsScreen extends StatelessWidget {
                   If you have read and understood the instructions above, kindly click on "Proceed to Exam" below to begin your test.
                   
                   Best of luck — stay calm, focus, and give it your best effort.""",
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: responsive.isMobile ? 10 :14),
                       );
                     },
                   ),

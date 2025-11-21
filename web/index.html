@@ -390,6 +390,27 @@
             }
         }, 1000);
     </script> 
+    <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+   <script src="js/notifications.js"></script>
+
+  <!-- Firebase Config -->
+  <script>
+    // Replace with your actual Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD56CO2l1nBBGJgeeL_cuto7x00e-UuSrU",
+      authDomain: "psky-40ba3.firebaseapp.com",
+      projectId: "psky-40ba3",
+      storageBucket: "psky-40ba3.firebasestorage.app",
+      messagingSenderId: "34018864068",
+      appId: "1:34018864068:web:ad4689645c1d8c390c5291",
+      measurementId: "G-91747X0BJW"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

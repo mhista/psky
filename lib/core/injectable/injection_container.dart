@@ -20,29 +20,52 @@ final getIt = GetIt.instance;
   asExtension: true,
 )
 Future<void> configureDependencies() async {
-  // CRITICAL: Initialize Firebase FIRST before any other dependencies
-  await _initFirebase();
+  debugPrint('🚀 ===== STARTING DEPENDENCY CONFIGURATION =====');
   
-  // Then initialize injectable dependencies (which now can safely use FirebaseAuth.instance)
-  // IMPORTANT: Must await this!
-  await getIt.init();
-  
-  // Finally, initialize Gemini and AI models
-  await _initAIModels();
+  try {
+    // STEP 1: Initialize Firebase FIRST before any other dependencies
+    debugPrint('📍 Step 1/3: Initializing Firebase...');
+    await _initFirebase();
+    debugPrint('✅ Step 1/3: Firebase initialization completed');
+    
+    // STEP 2: Initialize injectable dependencies (which now can safely use FirebaseAuth.instance)
+    debugPrint('📍 Step 2/3: Initializing Injectable dependencies...');
+    await getIt.init();
+    debugPrint('✅ Step 2/3: Injectable dependencies registered');
+    
+    // STEP 3: Initialize Gemini and AI models
+    debugPrint('📍 Step 3/3: Initializing AI Models...');
+    await _initAIModels();
+    debugPrint('✅ Step 3/3: AI Models initialization completed');
+    
+    debugPrint('🎉 ===== DEPENDENCY CONFIGURATION COMPLETE =====');
+  } catch (e, stackTrace) {
+    debugPrint('❌ ===== DEPENDENCY CONFIGURATION FAILED =====');
+    debugPrint('Error: $e');
+    debugPrint('Stack trace: $stackTrace');
+    rethrow;
+  }
 }
 
 // ============================================================================
 // Firebase Initialization (Must happen FIRST)
 // ============================================================================
 Future<void> _initFirebase() async {
+  debugPrint('  🔧 Initializing Firebase with platform options...');
+  
   try {
     final firebase = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    
+    debugPrint('  📦 Registering Firebase instance in GetIt...');
     getIt.registerLazySingleton(() => firebase);
-    debugPrint('✅ Firebase initialized successfully');
+    
+    debugPrint('  ✅ Firebase initialized successfully');
+    debugPrint('     - App name: ${firebase.name}');
+    debugPrint('     - Platform: ${DefaultFirebaseOptions.currentPlatform.projectId}');
   } catch (e) {
-    debugPrint('❌ Firebase initialization error: $e');
+    debugPrint('  ❌ Firebase initialization error: $e');
     rethrow;
   }
 }
@@ -52,16 +75,24 @@ Future<void> _initFirebase() async {
 // ============================================================================
 Future<void> _initAIModels() async {
   try {
-    // Initialize Gemini Tools first
+    // Sub-step 3.1: Initialize Gemini Tools
+    debugPrint('  📍 Step 3.1: Initializing Gemini Tools...');
     _initGeminiTool();
+    debugPrint('  ✅ Step 3.1: Gemini Tools initialized');
     
-    // Then initialize models
+    // Sub-step 3.2: Initialize Chat Model
+    debugPrint('  📍 Step 3.2: Initializing Chat Model...');
     await _initChatModel();
-    await _initImageModel();
+    debugPrint('  ✅ Step 3.2: Chat Model initialized');
     
-    debugPrint('✅ AI Models initialized successfully');
+    // Sub-step 3.3: Initialize Image Model
+    debugPrint('  📍 Step 3.3: Initializing Image Model...');
+    await _initImageModel();
+    debugPrint('  ✅ Step 3.3: Image Model initialized');
+    
+    debugPrint('  ✅ All AI Models initialized successfully');
   } catch (e) {
-    debugPrint('❌ AI Models initialization error: $e');
+    debugPrint('  ❌ AI Models initialization error: $e');
     rethrow;
   }
 }
@@ -69,29 +100,64 @@ Future<void> _initAIModels() async {
 // Initialize Gemini tools
 void _initGeminiTool() {
   if (!getIt.isRegistered<GeminiTools>()) {
+    debugPrint('     - Registering GeminiTools...');
     getIt.registerLazySingleton<GeminiTools>(() => GeminiTools());
+    debugPrint('     - GeminiTools registered');
+  } else {
+    debugPrint('     ⚠️  GeminiTools already registered, skipping');
   }
 }
 
 // Initialize chat model
 Future<void> _initChatModel() async {
   if (!getIt.isRegistered<ChatSession>()) {
-    final systemPrompt = await rootBundle.loadString('assets/system_prompt.md');
-    final model = FirebaseAI.googleAI(auth: getIt<FirebaseAuth>()).generativeModel(
-      model: 'gemini-2.5-flash',
-      systemInstruction: Content.system(systemPrompt),
-      tools: getIt<GeminiTools>().tools,
-    );
-    getIt.registerLazySingleton<ChatSession>(() => model.startChat());
+    try {
+      debugPrint('     - Loading system prompt from assets...');
+      final systemPrompt = await rootBundle.loadString('assets/system_prompt.md');
+      debugPrint('     - System prompt loaded (${systemPrompt.length} characters)');
+      
+      debugPrint('     - Getting FirebaseAuth instance...');
+      final firebaseAuth = getIt<FirebaseAuth>();
+      debugPrint('     - FirebaseAuth instance retrieved');
+      
+      debugPrint('     - Creating generative model (gemini-2.5-flash)...');
+      final model = FirebaseAI.googleAI(auth: firebaseAuth).generativeModel(
+        model: 'gemini-2.5-flash',
+        systemInstruction: Content.system(systemPrompt),
+        tools: getIt<GeminiTools>().tools,
+      );
+      debugPrint('     - Generative model created');
+      
+      debugPrint('     - Starting chat session...');
+      getIt.registerLazySingleton<ChatSession>(() => model.startChat());
+      debugPrint('     - ChatSession registered');
+    } catch (e) {
+      debugPrint('     ❌ Error initializing chat model: $e');
+      rethrow;
+    }
+  } else {
+    debugPrint('     ⚠️  ChatSession already registered, skipping');
   }
 }
 
 // Initialize image model
 Future<void> _initImageModel() async {
   if (!getIt.isRegistered<ImagenModel>()) {
-    final model = FirebaseAI.googleAI().imagenModel(
-      model: 'imagen-3.0-generate-002',
-    );
-    getIt.registerLazySingleton<ImagenModel>(() => model);
+    try {
+      debugPrint('     - Creating Imagen model (imagen-3.0-generate-002)...');
+      final model = FirebaseAI.googleAI().imagenModel(
+        model: 'imagen-3.0-generate-002',
+      );
+      debugPrint('     - Imagen model created');
+      
+      debugPrint('     - Registering ImagenModel...');
+      getIt.registerLazySingleton<ImagenModel>(() => model);
+      debugPrint('     - ImagenModel registered');
+    } catch (e) {
+      debugPrint('     ❌ Error initializing image model: $e');
+      rethrow;
+    }
+  } else {
+    debugPrint('     ⚠️  ImagenModel already registered, skipping');
   }
 }

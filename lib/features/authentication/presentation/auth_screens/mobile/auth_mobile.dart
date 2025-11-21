@@ -70,15 +70,15 @@ class AuthMobile extends StatelessWidget {
               ),
               if (shouldUseKai) const Gap(40),
               if (shouldUseKai)
-              const  PRoundedImage(
-                                  imageType: ImagesType.asset,
-                                  image: PImages.kaiHappy,
-                                  width: 200,
-                                  height: 139,
-                                  fit: BoxFit.fill,
-                                  borderRadius: 0,
-                                  backgroundColor: PColors.transparent,
-                                )
+                 PRoundedImage(
+                  imageType: ImagesType.asset,
+                  image: PImages.kaiHappy,
+                  width: responsive.isMobile? 94: 200,
+                  height: 139,
+                  fit: BoxFit.fill,
+                  borderRadius: 0,
+                  backgroundColor: PColors.transparent,
+                )
             ],
           ),
         ),

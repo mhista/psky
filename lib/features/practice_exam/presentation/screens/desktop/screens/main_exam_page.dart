@@ -23,6 +23,7 @@ import 'package:ahiaa_web/features/practice_exam/presentation/screens/component_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class MainExamScreenDesktop extends StatefulWidget {
   const MainExamScreenDesktop({
@@ -42,6 +43,7 @@ class _MainExamScreenDesktopState extends State<MainExamScreenDesktop> {
   final examCubit = getIt<ExamCubit>();
   bool _isNavigating = false;
 
+
   @override
   void initState() {
     session.state.maybeWhen(
@@ -58,6 +60,8 @@ class _MainExamScreenDesktopState extends State<MainExamScreenDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveBreakpoints.of(context);
+
     return BlocConsumer<ExamSessionCubit, ExamSessionState>(
       bloc: session,
       listener: (context, sessionState) {
@@ -106,7 +110,7 @@ class _MainExamScreenDesktopState extends State<MainExamScreenDesktop> {
         final selectedAnswer = currentQuestion?.selectedAnswer;
     
         return TRoundedContainer(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
+          padding:  EdgeInsets.symmetric(horizontal: responsive.isMobile ? 16 :0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 12,
