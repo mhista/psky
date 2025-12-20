@@ -10,12 +10,12 @@ class KToasters {
       ToastLocation location = ToastLocation.topRight}) {
     return SurfaceCard(
       child: Basic(
-        title:  Text(title),
-        subtitle:subtitle.isNotEmpty?  Text(subtitle):null,
+        title: Text(title),
+        subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
         trailing: PrimaryButton(
             size: ButtonSize.small,
-            onPressed:onpressed,
-            child:  Text(functionText??'')),
+            onPressed: onpressed,
+            child: Text(functionText ?? '')),
         trailingAlignment: Alignment.center,
       ),
     );

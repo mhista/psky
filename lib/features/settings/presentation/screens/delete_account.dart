@@ -1,8 +1,11 @@
 import 'package:ahiaa_web/core/common/widgets/buttons/elevated_r_button.dart';
 import 'package:ahiaa_web/core/common/widgets/buttons/outlined_r_button.dart';
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
+import 'package:ahiaa_web/core/common/widgets/taosts/dialog_helper.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
+import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
+import 'package:ahiaa_web/features/authentication/presentation/business/cubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -22,7 +25,7 @@ class DeleteAccount extends StatelessWidget {
         TRoundedContainer(
           padding: const EdgeInsets.all(24),
           width: 488,
-          height: responsive.isMobile? 350: 384,
+          height: responsive.isMobile ? 350 : 384,
           backgroundColor: PColors.tertiary.withValues(alpha: 0.3),
           child: Column(
             spacing: 16,
@@ -53,7 +56,14 @@ Are you sure you want to continue?""",
                       text: 'Yes, Delete My Account',
                       bgColor: PColors.bg2,
                       color: PColors.white,
-                      onTap: () {},
+                      onTap: () {
+                        DialogHelper.confirm(
+                            context: context,
+                            confirmText: 'Delete Account',
+                            onPrimaryPressed: () =>
+                                getIt<AuthCubit>().deleteAccount(),
+                            title: 'Are you sure you want to continue');
+                      },
                       verticalPadding: 2,
                     ),
                     if (!responsive.isMobile)

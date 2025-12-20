@@ -6,6 +6,7 @@ import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:ahiaa_web/core/services/subject_service.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/cubits/cubit/exam_cubit.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/screens/desktop/practice_screen.dart';
@@ -21,12 +22,14 @@ class PracticeExamSecondSection extends StatelessWidget {
     required this.subjectRepo,
     required this.isCustom,
     required this.isFirstTime,
+    required this.isSingle,
+    required this.isQuick,
   });
 
   final ExamCubit examCubit;
   final (ExamMode, List<String>, List<ExamSession>, ExamSession)? stateData;
   final SubjectRepository subjectRepo;
-  final bool isCustom;
+  final bool isCustom, isSingle, isQuick;
   final bool isFirstTime;
 
   @override
@@ -53,15 +56,18 @@ class PracticeExamSecondSection extends StatelessWidget {
                           width: double.infinity,
                           backgroundColor: PColors.white,
                           // showBorder: true,
-                          padding: EdgeInsets.all(0.0),
+                          padding: const EdgeInsets.all(0.0),
 
                           radius: 28,
                           child: KCustomDropdown(
-                            items: ExamModeExtension.allDisplayNames,
+                            items: [
+                              'Select exam mode to start',
+                              ...ExamModeExtension.allDisplayNames
+                            ],
                             onChanged: (v) {
                               debugPrint(v);
                               examCubit.selectMode(
-                                  ExamModeExtension.fromDisplayName(v ?? '') ??
+                                  ExamModeExtension.fromDisplayName(v!) ??
                                       ExamMode.custom);
                               debugPrint(stateData?.$1.name);
                               subjectRepo.getAllSubjects();
@@ -71,7 +77,7 @@ class PracticeExamSecondSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (isCustom)
+                  if (isCustom || isSingle)
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
@@ -89,11 +95,17 @@ class PracticeExamSecondSection extends StatelessWidget {
 
                             radius: 28,
                             child: KCustomDropdownWithSearch(
-                              items: subjectRepo
-                                  .getAllSubjects()
-                                  .map((s) => s.name)
-                                  .toList(),
+                              items: [
+                                'Select ${isSingle ? 'subject' : 'subjects'} to write',
+                                ...subjectRepo
+                                    .getAllSubjects()
+                                    .map((s) => s.name)
+                              ],
                               onChanged: (value) {
+                                if (isSingle) {
+                                  examCubit.clear();
+                                  examCubit.selectMode(ExamMode.singleSubject);
+                                }
                                 examCubit.addSubject(value ?? '');
                                 examCubit.selectSubject(value ?? '');
                                 examCubit.getAllTopicsForSelected(value ?? '');
@@ -125,7 +137,10 @@ class PracticeExamSecondSection extends StatelessWidget {
 
                           radius: 28,
                           child: KCustomDropdown(
-                            items: ExamModeExtension.allDisplayNames,
+                            items: [
+                              'Select exam mode to start',
+                              ...ExamModeExtension.allDisplayNames
+                            ],
                             onChanged: (v) {
                               debugPrint(v);
                               examCubit.selectMode(
@@ -139,7 +154,7 @@ class PracticeExamSecondSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (isCustom)
+                  if (isCustom || isSingle)
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
@@ -154,15 +169,23 @@ class PracticeExamSecondSection extends StatelessWidget {
                               // width: 312,
                               backgroundColor: PColors.white,
                               // showBorder: true,
-                              padding: EdgeInsets.all(0.0),
+                              padding: const EdgeInsets.all(0.0),
 
                               radius: 28,
                               child: KCustomDropdownWithSearch(
-                                items: subjectRepo
-                                    .getAllSubjects()
-                                    .map((s) => s.name)
-                                    .toList(),
+                                items: [
+                                  'Select ${isSingle ? 'subject' : 'subjects'} to write',
+                                  ...subjectRepo
+                                      .getAllSubjects()
+                                      .map((s) => s.name)
+                                ],
                                 onChanged: (value) {
+                                  pskyLog(stateData?.$1.name);
+                                  if (isSingle) {
+                                    examCubit.clear();
+                                    examCubit
+                                        .selectMode(ExamMode.singleSubject);
+                                  }
                                   examCubit.addSubject(value ?? '');
                                   examCubit.selectSubject(value ?? '');
                                   examCubit

@@ -358,3 +358,48 @@ Let's break down what these function handlers do:
         Returns an error response to the LLM
 
 The handleSetColor function is particularly important as it bridges the gap between the LLM's natural language understanding and concrete UI changes
+
+
+
+
+
+alright, from this you should know what I'm doing then. so this is the thing, as you can see I've implemented most of the functionalities, classes and services. except one thing, which is the core of the system. and you will know that at the hear of this system is modularity, composability, adaptability. I wanted to design an architecture that is built to last. so with that in mind, I was going to use gemin for the agent part of things. thats function calling and so forth. but on a secomd thought, and following my project architecture, I want to opt to build it in a way that one can easily switch between services, claude, chatgpt, gemini, grok etc. and also preserve the function calling capalities. so we are goin to build our system for that agentic tasks. you will see that the services have been built with this in mind. you send message, the server receives and sends to the botendpoint to process using ai messaging, and then the ai determines the intent and what to do based on the message, what kind of function or task needs to be performed. you will see it in the botEndpoint
+ final aiResponse = await _processWithAI(
+        session,
+        user: user,
+        conversation: conversation,
+        message: message,
+      );
+      // Send response using the factory
+      if (aiResponse['success'] == true && aiResponse['response'] != null) {
+        Log.info(aiResponse['response']);
+        final messagingService = MessagingServiceFactory.getService(platform);
+        
+        final sendResult = await messagingService.sendText(
+          recipient: platformUserId,
+          text: aiResponse['response'],
+        );
+p.s I updated the server.docx to add it there too.
+now also, the bot should be able to recognize commands, and determin if to send flow,template, etc(whatsapp), or inline keyboard message, image, callback url message etc(telegram), and also what needs to be sent at anytime. commands like /products, /analytics, /start, /capabilities, etc. I will leave it to you, to create commands based on everything I have shared to, and this commands will also be restricted based on the kind of user(vendor, admin(not yet created), customer). and this command is just there for quick replies, but the natural the processing of the messages by AI will still be there. commands are for when a user chooses to use commands insted of normal messaging. also, AI messages will be filtered to avoid a customer posing as vendor to still vendor data. so when a message is sent the AI will check to know if there is hidden intention by a customer or user to do something fraudulant and warn the user. I also want you, at your own discretion to add what needs to be added to make this a robust system. I will attach a system prompt i was created and an example function tooling that is implemented by firbase. now I don't want you to limit yourself to that, know. the thing i will share is already limited because it uses one service. i just want you to look at how it is. and the system prompt should not limit you. its just something I worked on earlier. and like I said, I will leav you to determine how to go about things. remember the architecture and other things i mentioned earlier. I'm even think of turning it into a package and making such that, if i deside to build an app for it, as a user asks something, a ui corresponding to that will be flowing into view with the response(imagine I ask for analytics, and instead of just showing texts, the AI determines if it requires to use the analytics widget, and then parses the response as aa json or anyformat that will now be parsed and the analytics widget is return into view instead of just markdowns) this is where I'm thinking to. but we will see to that later. for now focus on this. so get to work
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

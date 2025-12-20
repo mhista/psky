@@ -42,6 +42,7 @@ class GeminiChatService {
       }
     } catch (e) {
       print(e);
+      
     }
   }
 

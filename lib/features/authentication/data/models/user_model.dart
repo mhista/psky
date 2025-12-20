@@ -19,10 +19,18 @@ class UserModel extends UserEntity {
     super.updatedAt,
     required super.school,
     super.examBody,
+    super.gender = '',
+    super.bio = '',
+    super.hasOnboarded = false,
+    super.subjects
+
   });
 
-  UserEntity copyWith({
+
+
+  UserModel copyWith({
     String? id,
+    String? gender,
     String? firstName,
     String? lastName,
     String? email,
@@ -33,11 +41,16 @@ class UserModel extends UserEntity {
     DateTime? updatedAt,
     String? school,
     List<String>? examBody,
+    String? bio,
+    bool? hasOnboarded,
+    List<String>? subjects
+    
   }) {
-    return UserEntity(
+    return UserModel(
       id: id ?? this.id,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      gender: gender ?? this.gender,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       profilePicture: profilePicture ?? this.profilePicture,
@@ -46,6 +59,9 @@ class UserModel extends UserEntity {
       updatedAt: updatedAt ?? this.updatedAt,
       school: school ?? this.school,
       examBody: examBody ?? this.examBody,
+      bio: bio ?? this.bio,
+      hasOnboarded: hasOnboarded ?? this.hasOnboarded,
+      subjects: subjects ?? this.subjects
     );
   }
 
@@ -56,19 +72,19 @@ class UserModel extends UserEntity {
     result.addAll({'firstName': firstName});
     result.addAll({'lastName': lastName});
     result.addAll({'email': email});
+    result.addAll({'gender': gender});
     result.addAll({'phoneNumber': phoneNumber});
     result.addAll({'profilePicture': profilePicture});
-    if (dob != null) {
-      result.addAll({'dob': dob.millisecondsSinceEpoch});
-    }
-    if (createdAt != null) {
+    result.addAll({'dob': dob.millisecondsSinceEpoch});
       result.addAll({'createdAt': createdAt.millisecondsSinceEpoch});
-    }
-    if (updatedAt != null) {
+      if (updatedAt != null) {
       result.addAll({'updatedAt': updatedAt!.millisecondsSinceEpoch});
     }
-    if (school != null) result.addAll({'school': school});
+    if (subjects != null) result.addAll({'subjects': subjects});
+    result.addAll({'school': school});
     if (examBody != null) result.addAll({'examBody': examBody});
+    result.addAll({'bio': bio});
+    result.addAll({'hasOnboarded': hasOnboarded});
 
     return result;
   }
@@ -78,17 +94,23 @@ class UserModel extends UserEntity {
       id: map['id'] ?? '',
       firstName: map['firstName'] ?? '',
       lastName: map['lastName'] ?? '',
+      gender: map['gender'] ?? '',
       email: map['email'] ?? '',
       phoneNumber: map['phoneNumber'] ?? '',
       profilePicture: map['profilePicture'] ?? '',
       dob: DateTime.fromMillisecondsSinceEpoch(map['dob'] ?? 0),
+      bio: map['bio'] ?? '',
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['dob'] ?? 0),
       updatedAt: map['updatedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'])
           : null,
       school: map['school'],
+      subjects: map['subjects'] != null
+          ? List<String>.from(map['subjects'])
+          : null,
       examBody:
           map['examBody'] != null ? List<String>.from(map['examBody']) : null,
+          hasOnboarded: map['hasOnboarded'] ?? false
     );
   }
 
@@ -104,10 +126,14 @@ class UserModel extends UserEntity {
         email: '',
         phoneNumber: '',
         profilePicture: '',
+        gender: '',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         dob: DateTime.now(),
         school: '',
+        bio: '',
+        hasOnboarded: false
+
       );
 
   // factory method to create a user model from firebase document snapshot
@@ -118,6 +144,9 @@ class UserModel extends UserEntity {
       return UserModel(
         id: document.id,
         lastName: data['lastName'] ?? '',
+        phoneNumber: data['phoneNumber'] ?? '',
+        profilePicture: data['profilePicture'] ?? '',
+        gender: data['gender'] ?? '',
         email: data['email'] ?? '',
         firstName: data['firstName'] ?? '',
         dob: DateTime.fromMillisecondsSinceEpoch(data['dob'] ?? 0),
@@ -126,20 +155,23 @@ class UserModel extends UserEntity {
             ? DateTime.fromMillisecondsSinceEpoch(data['updatedAt'])
             : null,
         school: data['school'],
+        subjects: data['subjects'] != null
+            ? List<String>.from(data['subjects'])
+            : null,
         examBody: data['examBody'] != null
             ? List<String>.from(data['examBody'])
             : null,
+            bio: data['bio'] ?? '',
+            hasOnboarded: data['hasOnboarded'] ?? false 
       );
     } else {
       return UserModel.empty();
     }
   }
 
-  
-
   @override
   String toString() {
-    return 'UserModel(id: $id, firstName: $firstName, lastName: $lastName, , email: $email, phoneNumber: $phoneNumber, profilePicture: $profilePicture, createdAt: $createdAt, updatedAt: $updatedAt,)';
+    return 'UserModel(id: $id, firstName: $firstName, bio: $bio, dob: $dob, gender: $gender,lastName: $lastName, exambody: $examBody , email: $email, phoneNumber: $phoneNumber, profilePicture: $profilePicture, createdAt: $createdAt, updatedAt: $updatedAt,)';
   }
 
   @override
@@ -153,11 +185,17 @@ class UserModel extends UserEntity {
         other.email == email &&
         other.phoneNumber == phoneNumber &&
         other.profilePicture == profilePicture &&
+        other.subjects == subjects &&
         other.dob == dob &&
+        other.gender == gender &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.school == school &&
+        other.bio == bio &&
+        other.hasOnboarded == hasOnboarded &&
         other.examBody == examBody;
+        
+
   }
 
   @override
@@ -167,7 +205,11 @@ class UserModel extends UserEntity {
         lastName.hashCode ^
         email.hashCode ^
         phoneNumber.hashCode ^
+        gender.hashCode ^
         profilePicture.hashCode ^
+        bio.hashCode ^
+        subjects.hashCode ^
+        hasOnboarded.hashCode ^ 
         (dob?.hashCode ?? 0) ^
         (createdAt?.hashCode ?? 0) ^
         (updatedAt?.hashCode ?? 0) ^

@@ -13,10 +13,12 @@ import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:connectivity_plus/connectivity_plus.dart' as _i895;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:firebase_messaging/firebase_messaging.dart' as _i892;
+import 'package:firebase_storage/firebase_storage.dart' as _i457;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as _i163;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
+import 'package:image_picker/image_picker.dart' as _i183;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
@@ -40,14 +42,36 @@ import '../../features/authentication/domain/usecases/sign_in_with_google.dart'
     as _i185;
 import '../../features/authentication/domain/usecases/signup_usecase.dart'
     as _i712;
+import '../../features/authentication/domain/usecases/update_email_usecase.dart'
+    as _i853;
+import '../../features/authentication/domain/usecases/update_password_usecase.dart'
+    as _i390;
+import '../../features/authentication/domain/usecases/update_profile_pic_usecase.dart'
+    as _i567;
+import '../../features/authentication/domain/usecases/update_profile_usecase.dart'
+    as _i899;
+import '../../features/authentication/domain/usecases/upload_profile_pics_usecase.dart'
+    as _i719;
 import '../../features/authentication/presentation/business/auth_page_cubit/auth_page_controller_cubit.dart'
     as _i639;
 import '../../features/authentication/presentation/business/cubit/auth_cubit.dart'
     as _i959;
+import '../../features/authentication/presentation/business/cubit/profile_cubit.dart'
+    as _i248;
 import '../../features/coach_kai/presentation/business/cubits/chat_cubit.dart'
     as _i218;
+import '../../features/help_and_support/presentation/cubits/help_and_support_cubit.dart'
+    as _i1024;
+import '../../features/notifications/data/data_source/notification_datasource.dart'
+    as _i617;
+import '../../features/notifications/data/repository/notification_repo_impl.dart'
+    as _i876;
+import '../../features/notifications/domain/repositoy/notification_repo.dart'
+    as _i882;
 import '../../features/notifications/presentation/cubit/notification_cubit.dart'
     as _i459;
+import '../../features/notifications/presentation/cubit/notification_page_cubit.dart'
+    as _i477;
 import '../../features/onboarding/presentation/cubit/onboarding_cubit.dart'
     as _i807;
 import '../../features/personalization/presentation/cubit/cubit/user_cubit.dart'
@@ -108,8 +132,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i807.OnBoardingCubit>(() => _i807.OnBoardingCubit());
     gh.factory<_i604.EditorCubit>(() => _i604.EditorCubit());
     gh.factory<_i792.SettingsCubit>(() => _i792.SettingsCubit());
+    gh.factory<_i1024.HelpAndSupportCubit>(() => _i1024.HelpAndSupportCubit());
     gh.singleton<_i730.ResponsiveUtils>(() => _i730.ResponsiveUtils());
-    gh.singleton<_i459.NotificationCubit>(() => _i459.NotificationCubit());
+    gh.singleton<_i477.NotificationPageCubit>(
+        () => _i477.NotificationPageCubit());
     gh.lazySingleton<_i59.FirebaseAuth>(
         () => firebaseInjectableModuleSimple.firebaseAuth);
     gh.lazySingleton<_i974.FirebaseFirestore>(
@@ -118,6 +144,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => firebaseInjectableModuleSimple.googleSignIn);
     gh.lazySingleton<_i892.FirebaseMessaging>(
         () => firebaseInjectableModuleSimple.messaging);
+    gh.lazySingleton<_i457.FirebaseStorage>(
+        () => firebaseInjectableModuleSimple.storage);
+    gh.lazySingleton<_i183.ImagePicker>(
+        () => firebaseInjectableModuleSimple.imagePicker);
     gh.lazySingleton<_i163.FlutterLocalNotificationsPlugin>(
         () => firebaseInjectableModuleSimple.localNotifications);
     gh.lazySingleton<_i895.Connectivity>(
@@ -154,6 +184,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i369.LocalStorageService>(),
               gh<_i802.ExamCacheManager>(),
             ));
+    gh.lazySingleton<_i739.AuthRemoteDataSource>(
+        () => _i739.AuthRemoteDataSourceFirebaseImp(
+              firebaseAuth: gh<_i59.FirebaseAuth>(),
+              firestore: gh<_i974.FirebaseFirestore>(),
+              storage: gh<_i457.FirebaseStorage>(),
+            ));
     gh.lazySingleton<_i403.OfflineQueueManager>(() => _i403.OfflineQueueManager(
           gh<_i369.LocalStorageService>(),
           gh<_i116.FirebaseExamDataSource>(),
@@ -163,11 +199,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i974.FirebaseFirestore>(),
           gh<_i369.LocalStorageService>(),
         ));
-    gh.lazySingleton<_i739.AuthRemoteDataSource>(
-        () => _i739.AuthRemoteDataSourceFirebaseImp(
-              firebaseAuth: gh<_i59.FirebaseAuth>(),
-              firestore: gh<_i974.FirebaseFirestore>(),
-            ));
+    gh.lazySingleton<_i617.NotificationDataSource>(() =>
+        _i617.FirebaseNotificationDataSource(gh<_i974.FirebaseFirestore>()));
     gh.lazySingleton<_i80.AuthRepository>(() => _i233.AuthRepositoryImpl(
         remoteDataSource: gh<_i739.AuthRemoteDataSource>()));
     gh.lazySingleton<_i1065.ExamSessionCubit>(
@@ -195,10 +228,22 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i116.FirebaseExamDataSource>(),
               gh<_i413.ExamRepository>(),
             ));
+    gh.lazySingleton<_i853.UpdateEmailUseCase>(
+        () => _i853.UpdateEmailUseCase(gh<_i80.AuthRepository>()));
+    gh.lazySingleton<_i390.UpdatePasswordUseCase>(
+        () => _i390.UpdatePasswordUseCase(gh<_i80.AuthRepository>()));
+    gh.lazySingleton<_i899.UpdateProfileUseCase>(
+        () => _i899.UpdateProfileUseCase(gh<_i80.AuthRepository>()));
+    gh.lazySingleton<_i567.UpdateProfilePictureUseCase>(
+        () => _i567.UpdateProfilePictureUseCase(gh<_i80.AuthRepository>()));
+    gh.lazySingleton<_i719.UploadProfilePictureUseCase>(
+        () => _i719.UploadProfilePictureUseCase(gh<_i80.AuthRepository>()));
     gh.lazySingleton<_i293.AiExamCubit>(() => _i293.AiExamCubit(
           gh<_i926.ExamCubit>(),
           gh<_i1065.ExamSessionCubit>(),
         ));
+    gh.lazySingleton<_i882.NotificationRepository>(() =>
+        _i876.NotificationRepositoryImpl(gh<_i617.NotificationDataSource>()));
     gh.lazySingleton<_i403.AnalyticsExportService>(
         () => _i403.AnalyticsExportService(gh<_i413.ExamRepository>()));
     gh.lazySingleton<_i367.SyncCubit>(() => _i367.SyncCubit(
@@ -216,6 +261,16 @@ extension GetItInjectableX on _i174.GetIt {
           firebaseAuth: gh<_i59.FirebaseAuth>(),
           localStorageService: gh<_i369.LocalStorageService>(),
         ));
+    gh.lazySingleton<_i248.ProfileCubit>(() => _i248.ProfileCubit(
+          updateProfileUseCase: gh<_i899.UpdateProfileUseCase>(),
+          uploadProfilePictureUseCase: gh<_i719.UploadProfilePictureUseCase>(),
+          updateProfilePictureUseCase: gh<_i567.UpdateProfilePictureUseCase>(),
+          updatePasswordUseCase: gh<_i390.UpdatePasswordUseCase>(),
+          updateEmailUseCase: gh<_i853.UpdateEmailUseCase>(),
+          imagePicker: gh<_i183.ImagePicker>(),
+        ));
+    gh.lazySingleton<_i459.NotificationCubit>(
+        () => _i459.NotificationCubit(gh<_i882.NotificationRepository>()));
     gh.lazySingleton<_i464.AppInitializationService>(
         () => _i464.AppInitializationService(
               gh<_i413.ExamRepository>(),

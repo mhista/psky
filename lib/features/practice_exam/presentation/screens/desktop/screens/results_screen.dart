@@ -323,7 +323,7 @@ class ResultScreen extends StatelessWidget {
                               bgColor: PColors.primary,
                               color: PColors.white,
                               onTap: () {
-                                final user = getIt<UserCubit>().user ??
+                                final user = getIt<UserCubit>().currentUser ??
                                     UserEntity.empty();
                                 final session = stateData.examSessions?.first;
                                 final subjects = stateData.examSessions
@@ -363,7 +363,7 @@ class ResultScreen extends StatelessWidget {
                           color: PColors.white,
                           onTap: ()async {
                             final user =
-                                getIt<UserCubit>().user ?? UserEntity.empty();
+                                getIt<UserCubit>().currentUser ?? UserEntity.empty();
                             final session = stateData.examSessions?.first;
                             final subjects = stateData.examSessions
                                 ?.map((s) => getIt<SubjectRepository>()
@@ -394,7 +394,7 @@ class ResultScreen extends StatelessWidget {
                             final aiCubit = getIt<AiExamCubit>();
                             final _uuid = Uuid();
                             final user =
-                                getIt<UserCubit>().user ?? UserEntity.empty();
+                                getIt<UserCubit>().currentUser ?? UserEntity.empty();
                             final session = stateData.examSessions?.first;
                             final subject = getIt<SubjectRepository>()
                                 .getSubjectById(session?.subjectId ?? '');

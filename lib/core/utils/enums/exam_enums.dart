@@ -553,7 +553,7 @@ extension PerformanceTrendExtension on PerformanceTrend {
 
 
 enum ExamMode {
-  fullMock,
+  // fullMock,
   singleSubject,
   quickDrill,
   custom,
@@ -562,8 +562,8 @@ enum ExamMode {
 extension ExamModeExtension on ExamMode {
   String get displayName {
     switch (this) {
-      case ExamMode.fullMock:
-        return 'Full Mock Exam';
+      // case ExamMode.fullMock:
+      //   return 'Full Mock Exam';
       case ExamMode.singleSubject:
         return 'Single Subject Exam';
       case ExamMode.quickDrill:
@@ -575,8 +575,8 @@ extension ExamModeExtension on ExamMode {
 
   String get description {
     switch (this) {
-      case ExamMode.fullMock:
-        return 'Complete exam simulation with multiple subjects';
+      // case ExamMode.fullMock:
+      //   return 'Complete exam simulation with multiple subjects';
       case ExamMode.singleSubject:
         return 'Focus on one subject at a time';
       case ExamMode.quickDrill:
@@ -588,8 +588,8 @@ extension ExamModeExtension on ExamMode {
 
   String get icon {
     switch (this) {
-      case ExamMode.fullMock:
-        return '📝';
+      // case ExamMode.fullMock:
+      //   return '📝';
       case ExamMode.singleSubject:
         return '📖';
       case ExamMode.quickDrill:
@@ -601,8 +601,8 @@ extension ExamModeExtension on ExamMode {
 
   Duration get suggestedDuration {
     switch (this) {
-      case ExamMode.fullMock:
-        return const Duration(hours: 3);
+      // case ExamMode.fullMock:
+      //   return const Duration(hours: 3);
       case ExamMode.singleSubject:
         return const Duration(minutes: 90);
       case ExamMode.quickDrill:
@@ -614,8 +614,8 @@ extension ExamModeExtension on ExamMode {
 
   int get suggestedQuestionCount {
     switch (this) {
-      case ExamMode.fullMock:
-        return 180; // Multiple subjects
+      // case ExamMode.fullMock:
+      //   return 180; // Multiple subjects
       case ExamMode.singleSubject:
         return 50;
       case ExamMode.quickDrill:
@@ -627,8 +627,8 @@ extension ExamModeExtension on ExamMode {
 
   bool get isTimedByDefault {
     switch (this) {
-      case ExamMode.fullMock:
-        return true;
+      // case ExamMode.fullMock:
+      //   return true;
       case ExamMode.singleSubject:
         return true;
       case ExamMode.quickDrill:
@@ -639,7 +639,7 @@ extension ExamModeExtension on ExamMode {
   }
 
   bool get allowsMultipleSubjects {
-    return this == ExamMode.fullMock || this == ExamMode.custom;
+    return  this == ExamMode.custom; // this == ExamMode.fullMock ||
   }
 
   // ============================================================================

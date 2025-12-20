@@ -22,7 +22,7 @@ class PCircularIcon extends StatelessWidget {
     this.size = PSizes.lg,
     this.animate = true,
     this.usesBadge = false,
-
+    this.badgeText = '',
     this.productId, this.widget,
   });
 
@@ -34,6 +34,7 @@ class PCircularIcon extends StatelessWidget {
   final bool animate, usesBadge;
   final String? productId;
   final Widget? widget;
+  final  String badgeText;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +67,7 @@ class PCircularIcon extends StatelessWidget {
                   child: Badge(
                     backgroundColor: PColors.bg2,
                     textColor: PColors.white,
-                    label: Text('9').xSmall.bold,
+                    label: Text(badgeText).xSmall.bold,
                   ),
                 )
           ],

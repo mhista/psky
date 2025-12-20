@@ -106,6 +106,9 @@ class _SignupFormState extends State<SignupForm> {
           initial: () {
             // Do nothing on initial state
           },
+          passwordResetSent: () {
+            
+          },
           loading: () {
             // Optionally show a loading indicator
             PLoggerHelper.debug('Auth loading...');
@@ -118,7 +121,7 @@ class _SignupFormState extends State<SignupForm> {
             );
             
             // Navigate after a short delay to ensure toast is visible
-               widget.controller.nextPage(0);
+             getIt<AppRouter>().router.goNamed(KRoutes.onboarding);
           },
           unauthenticated: () {
             // Handle unauthenticated state if needed

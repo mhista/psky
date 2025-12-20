@@ -2,6 +2,7 @@
 // LEADERBOARD ENTITIES
 // ============================================================================
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/enums/notification_enums.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'exam_entities.freezed.dart';
@@ -278,34 +279,7 @@ abstract class ExamNotification with _$ExamNotification {
       _$ExamNotificationFromJson(json);
 }
 
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  urgent,
-}
 
-enum NotificationType {
-  sessionStart,
-  sessionReminder,
-  sessionExpiring,
-  sessionPause,
-  sessionResume,
-  sessionComplete,
-  achievementUnlocked,
-  leaderboardUpdate,
-  streakReminder,
-  dailyGoal,
-  weeklyReport,
-  aiInsight,
-  examTip,
-  appUpdate,
-  settingsChange,
-  featureAnnouncement,
-  motivational,
-  communityUpdate,
-  emergencyAlert,
-}
 
 /// Notification preferences
 @freezed

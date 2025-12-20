@@ -89,6 +89,9 @@ class _LoginFormState extends State<LoginForm> {
           initial: () {
             // Do nothing on initial state
           },
+          passwordResetSent: () {
+            
+          },
           loading: () {
             // Optionally show a loading indicator
             PLoggerHelper.debug('Auth loading...');

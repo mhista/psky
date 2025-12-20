@@ -8,6 +8,7 @@ import 'package:ahiaa_web/core/services/leaderboard_calculator.dart';
 import 'package:ahiaa_web/core/services/streak_service.dart';
 import 'package:ahiaa_web/core/services/subject_service.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
+import 'package:ahiaa_web/core/utils/enums/notification_enums.dart';
 import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/core/utils/logging/logger.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
@@ -61,7 +62,7 @@ class ExamCubit extends Cubit<ExamState> {
       await _storage.setUser(userId);
 
       // Load user's exam sessions
-      await loadFromStorage();
+      // await loadFromStorage();
 
       // Sync with Firebase in background
       await syncFromDb(userId);
@@ -75,6 +76,7 @@ class ExamCubit extends Cubit<ExamState> {
 
   /// Select exam mode before starting
   void selectMode(ExamMode mode) {
+    pskyLog(mode);
     emit(ExamState.modeSelected(
         examMode: mode,
         selectedSubjectTopics: ['Selected subject has no topic']));
@@ -304,7 +306,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated startExam - marks data as changed
- Future<void> startExam({
+  Future<void> startExam({
     required String userId,
     required String subjectId,
     required ExamBody examBody,
@@ -353,15 +355,13 @@ class ExamCubit extends Cubit<ExamState> {
 
       // ✅ NOTIFICATION: Session started
       _sendSessionStartNotification(examSession);
-      
+
       // ✅ NOTIFICATION: Schedule expiry warning (30 mins before)
       _scheduleExpiryWarningNotification(examSession);
-
     } catch (e) {
       emit(ExamState.error(message: 'Failed to start exam: $e'));
     }
   }
-
 
   // ============================================================================
   // LOAD FROM STORAGE
@@ -664,7 +664,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated pauseAndSave - marks data as changed
- Future<void> pauseAndSave() async {
+  Future<void> pauseAndSave() async {
     final currentState = state;
     if (currentState is! _HasData) return;
 
@@ -710,7 +710,6 @@ class ExamCubit extends Cubit<ExamState> {
 
       // ✅ NOTIFICATION: Session paused
       _sendSessionPauseNotification(updatedSession);
-
     } catch (e) {
       emit(ExamState.error(message: 'Failed to pause exam: $e'));
     }
@@ -721,7 +720,7 @@ class ExamCubit extends Cubit<ExamState> {
   // ============================================================================
 
   /// Updated endAndSave - stops auto-sync since session is no longer active
- Future<void> endAndSave() async {
+  Future<void> endAndSave() async {
     final currentState = state;
     if (currentState is! _HasData) return;
 
@@ -765,10 +764,10 @@ class ExamCubit extends Cubit<ExamState> {
       _updateLeaderboard(updatedSession.userId);
       await _checkAchievements(updatedSession.userId, updatedSessions);
       await _updateStreakAfterCompletion(updatedSession);
-      
+
       // ✅ NOTIFICATION: Check for leaderboard update
       await _checkAndNotifyLeaderboardUpdate(updatedSession.userId);
-      
+
       // ✅ NOTIFICATION: Check for daily goal achievement
       await _checkAndNotifyDailyGoal(updatedSession.userId, updatedSessions);
 
@@ -779,7 +778,6 @@ class ExamCubit extends Cubit<ExamState> {
     }
   }
 
-
   // ============================================================================
   // NOTIFICATION HELPER METHODS - ADD THESE TO YOUR EXAMCUBIT
   // ============================================================================
@@ -788,8 +786,9 @@ class ExamCubit extends Cubit<ExamState> {
   void _sendSessionStartNotification(ExamSession session) {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
-      
+      final subject =
+          getIt<SubjectRepository>().getSubjectById(session.subjectId);
+
       notificationService.sendSessionStartNotification(
         userId: session.userId,
         sessionId: session.examSessionId,
@@ -804,8 +803,9 @@ class ExamCubit extends Cubit<ExamState> {
   void _sendSessionPauseNotification(ExamSession session) {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
-      
+      final subject =
+          getIt<SubjectRepository>().getSubjectById(session.subjectId);
+
       notificationService.sendSessionPauseNotification(
         userId: session.userId,
         sessionId: session.examSessionId,
@@ -820,9 +820,10 @@ class ExamCubit extends Cubit<ExamState> {
   Future<void> _sendSessionCompletionNotification(ExamSession session) async {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
+      final subject =
+          getIt<SubjectRepository>().getSubjectById(session.subjectId);
       final result = ExamCalculator.calculateResult(session);
-      
+
       await notificationService.sendSessionCompletionNotification(
         userId: session.userId,
         sessionId: session.examSessionId,
@@ -839,15 +840,16 @@ class ExamCubit extends Cubit<ExamState> {
   void _scheduleExpiryWarningNotification(ExamSession session) {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      final subject = getIt<SubjectRepository>().getSubjectById(session.subjectId);
-      
+      final subject =
+          getIt<SubjectRepository>().getSubjectById(session.subjectId);
+
       if (session.timeLimitMinutes > 30) {
         final expiryTime = session.startedAt!.add(
           Duration(minutes: session.timeLimitMinutes),
         );
-        
+
         final warningTime = expiryTime.subtract(const Duration(minutes: 30));
-        
+
         if (warningTime.isAfter(DateTime.now())) {
           notificationService.scheduleNotification(
             id: 'expiry_${session.examSessionId}',
@@ -870,7 +872,8 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Check and notify achievements after completion
-  Future<void> _checkAchievements(String userId, List<ExamSession> sessions) async {
+  Future<void> _checkAchievements(
+      String userId, List<ExamSession> sessions) async {
     try {
       final achievementService = getIt<AchievementService>();
       final notificationService = getIt<ExamNotificationService>();
@@ -925,10 +928,11 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Check and notify daily goal progress
-  Future<void> _checkAndNotifyDailyGoal(String userId, List<ExamSession> sessions) async {
+  Future<void> _checkAndNotifyDailyGoal(
+      String userId, List<ExamSession> sessions) async {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      
+
       // Get sessions completed today
       final today = DateTime.now();
       final todaySessions = sessions.where((s) {
@@ -963,7 +967,7 @@ class ExamCubit extends Cubit<ExamState> {
 
       final streakService = getIt<StreakService>();
       final notificationService = getIt<ExamNotificationService>();
-      
+
       await streakService.updateStreakOnSessionComplete(
         userId: session.userId,
         session: session,
@@ -991,7 +995,8 @@ class ExamCubit extends Cubit<ExamState> {
 
       // ✅ NOTIFICATION: Streak reminder for tomorrow
       if (streakData.currentStreak > 0) {
-        _scheduleStreakReminderForTomorrow(session.userId, streakData.currentStreak);
+        _scheduleStreakReminderForTomorrow(
+            session.userId, streakData.currentStreak);
       }
     } catch (e) {
       pskyLog('Error updating streak: $e');
@@ -1002,7 +1007,7 @@ class ExamCubit extends Cubit<ExamState> {
   void _scheduleStreakReminderForTomorrow(String userId, int currentStreak) {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      
+
       // Schedule for tomorrow at 9 AM
       final tomorrow = DateTime.now().add(const Duration(days: 1));
       final reminderTime = DateTime(
@@ -1030,7 +1035,6 @@ class ExamCubit extends Cubit<ExamState> {
     }
   }
 
-  
   // ============================================================================
   // PERIODIC NOTIFICATION TRIGGERS
   // ============================================================================
@@ -1042,7 +1046,7 @@ class ExamCubit extends Cubit<ExamState> {
   }) async {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      
+
       // Calculate next occurrence of the preferred time
       final now = DateTime.now();
       var scheduledTime = DateTime(
@@ -1075,14 +1079,15 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Check if user should receive motivation (after poor performance)
-  Future<void> _checkAndSendMotivation(String userId, ExamSession session) async {
+  Future<void> _checkAndSendMotivation(
+      String userId, ExamSession session) async {
     try {
       final result = ExamCalculator.calculateResult(session);
-      
+
       // If performance is below 50%, send motivation
       if (result.score.percentage < 50) {
         final notificationService = getIt<ExamNotificationService>();
-        
+
         final motivationalMessages = [
           'Don\'t give up! Every expert was once a beginner.',
           'Mistakes are proof that you\'re trying. Keep going!',
@@ -1091,8 +1096,7 @@ class ExamCubit extends Cubit<ExamState> {
         ];
 
         final message = motivationalMessages[
-          DateTime.now().millisecond % motivationalMessages.length
-        ];
+            DateTime.now().millisecond % motivationalMessages.length];
 
         // Wait 10 minutes before sending motivation
         await Future.delayed(const Duration(minutes: 10));
@@ -1116,7 +1120,7 @@ class ExamCubit extends Cubit<ExamState> {
   void _cancelSessionNotifications(String sessionId) {
     try {
       final notificationService = getIt<ExamNotificationService>();
-      
+
       // Cancel expiry warning
       notificationService.cancelNotification('expiry_$sessionId');
     } catch (e) {
@@ -1125,7 +1129,8 @@ class ExamCubit extends Cubit<ExamState> {
   }
 
   /// Send performance insight after multiple completions
-  Future<void> _sendPerformanceInsights(String userId, List<ExamSession> sessions) async {
+  Future<void> _sendPerformanceInsights(
+      String userId, List<ExamSession> sessions) async {
     try {
       final completedSessions = sessions
           .where((s) => s.status == ExamSessionStatus.completed)
@@ -1134,7 +1139,8 @@ class ExamCubit extends Cubit<ExamState> {
       if (completedSessions.length < 3) return; // Need at least 3 sessions
 
       final notificationService = getIt<ExamNotificationService>();
-      final aggregate = ExamCalculator.calculateAggregateResult(completedSessions);
+      final aggregate =
+          ExamCalculator.calculateAggregateResult(completedSessions);
 
       // Check for improvements
       if (aggregate.progressTrend.isImproving) {
@@ -1149,7 +1155,7 @@ class ExamCubit extends Cubit<ExamState> {
       if (aggregate.weakestSubject != null) {
         final weakSubject = getIt<SubjectRepository>()
             .getSubjectById(aggregate.weakestSubject!.subjectId);
-        
+
         if (weakSubject != null) {
           await notificationService.sendImprovementSuggestion(
             userId: userId,
@@ -1168,10 +1174,12 @@ class ExamCubit extends Cubit<ExamState> {
     try {
       final leaderboardCalculator = getIt<LeaderboardCalculator>();
 
-      leaderboardCalculator.calculateLeaderboardEntry(
+      leaderboardCalculator
+          .calculateLeaderboardEntry(
         userId: userId,
         displayName: 'User', // Get from UserCubit
-      ).then((_) {
+      )
+          .then((_) {
         // After leaderboard update, check for rank changes
         _checkAndNotifyLeaderboardUpdate(userId);
       });
@@ -1179,7 +1187,6 @@ class ExamCubit extends Cubit<ExamState> {
       pskyLog('Failed to update leaderboard: $e');
     }
   }
-
 
   /// Send exam completion notification
   void _sendCompletionNotification(ExamSession session) {
@@ -1234,7 +1241,9 @@ class ExamCubit extends Cubit<ExamState> {
         (s) =>
             s.status == ExamSessionStatus.inProgress ||
             s.status == ExamSessionStatus.paused,
-        orElse: () => mergedSessions.isNotEmpty ? mergedSessions.last : throw Exception('No active or completed sessions found'),
+        orElse: () => mergedSessions.isNotEmpty
+            ? mergedSessions.last
+            : throw Exception('No active or completed sessions found'),
       );
 
       if (currentSession == null) {
@@ -1494,17 +1503,18 @@ class ExamCubit extends Cubit<ExamState> {
       sessionMap[session.examSessionId] = session;
     }
 
- 
     // Override with remote sessions (they're more authoritative)
     // But keep local if it's newer (last updated)
     for (final remoteSession in remote) {
       final localSession = sessionMap[remoteSession.examSessionId];
-      
+
       if (localSession != null) {
         // Compare timestamps and keep the newer one
-        final localUpdated = localSession.progress?.lastUpdated ?? localSession.startedAt;
-        final remoteUpdated = remoteSession.progress?.lastUpdated ?? remoteSession.startedAt;
-        
+        final localUpdated =
+            localSession.progress?.lastUpdated ?? localSession.startedAt;
+        final remoteUpdated =
+            remoteSession.progress?.lastUpdated ?? remoteSession.startedAt;
+
         if (localUpdated != null && remoteUpdated != null) {
           if (remoteUpdated.isAfter(localUpdated)) {
             sessionMap[remoteSession.examSessionId] = remoteSession;

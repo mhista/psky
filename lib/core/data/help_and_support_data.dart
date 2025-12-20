@@ -1,0 +1,1599 @@
+import 'package:ahiaa_web/features/help_and_support/data/model/help_and_support_model.dart';
+import 'package:injectable/injectable.dart';
+
+class HelpData {
+  static final List<HelpCategory> categories = [
+    HelpCategory(
+      id: 'account_login',
+      title: 'Account & Login',
+      articles: [
+        HelpArticle(
+          id: 'create_psky_account',
+          title: 'How do I create a PSKY account?',
+          content: '''
+Creating your PSKY account is quick and easy. Follow these steps to get started:
+
+1. Search for "pslybusinessschools.com" and open the PSKY website from your device
+2. Tap on the "Sign Up" or "Create Account" button on the welcome screen
+3. Enter your personal information including your full name, email address, and phone number
+4. Create a strong password that contains at least 8 characters, including uppercase letters, lowercase letters, numbers, and special characters
+5. Read and accept the Terms of Service and Privacy Policy
+6. Verify your email address by clicking the link sent to your inbox
+7. Complete your profile by adding additional information such as your school, exam type, and target scores
+
+Once verified, you'll have full access to all PSKY features including practice exams, study materials, and AI-powered insights to help you prepare for your WAEC examinations.
+
+If you encounter any issues during registration, please contact our support team for assistance.
+''',
+        ),
+        HelpArticle(
+          id: 'reset_password',
+          title: 'I forgot my password — how do I reset it?',
+          content: '''
+Don't worry! Resetting your password is a straightforward process:
+
+1. Open the PSKY app and tap on "Login"
+2. Below the password field, tap on "Forgot Password?"
+3. Enter the email address associated with your PSKY account
+4. Check your email inbox for a password reset link (also check your spam folder)
+5. Click on the reset link within 30 minutes of receiving it
+6. Create a new strong password that meets our security requirements
+7. Confirm your new password by entering it again
+8. Tap "Reset Password" to complete the process
+
+You'll be automatically logged in with your new password. For security reasons, you'll be logged out of all other devices and will need to log in again with your new credentials.
+
+If you don't receive the reset email within 5 minutes, try requesting it again or contact support if the issue persists.
+''',
+        ),
+        HelpArticle(
+          id: 'update_email_profile',
+          title: 'How do I update my email or profile picture?',
+          content: '''
+Keeping your profile information up to date is important. Here's how to make changes:
+
+To Update Your Email:
+1. Log into your PSKY account
+2. Navigate to Settings (usually found in the menu or profile section)
+3. Tap on "Account Settings" or "Profile"
+4. Select "Email Address"
+5. Enter your new email address
+6. Verify the change by clicking the confirmation link sent to your new email
+7. Your email will be updated once verified
+
+To Update Your Profile Picture:
+1. Go to your Profile section in the app
+2. Tap on your current profile picture or the camera icon
+3. Choose to either take a new photo or select one from your gallery
+4. Crop and adjust the image as needed
+5. Tap "Save" or "Update" to confirm the change
+
+Your profile picture will be visible across the platform and helps personalize your learning experience. We recommend using a clear, appropriate image that represents you.
+
+Note: Email changes may require re-verification of your account for security purposes.
+''',
+        ),
+        HelpArticle(
+          id: 'multiple_devices',
+          title: 'Can I use my account on multiple devices?',
+          content: '''
+Yes! Your PSKY account can be accessed across multiple devices, allowing you to study anywhere, anytime.
+
+Supported Devices:
+- Smartphones (iOS and Android)
+- Tablets (iPad and Android tablets)
+- Desktop computers (via web browser)
+- Laptops
+
+How to Use on Multiple Devices:
+1. Download the PSKY app on your desired device or visit our web platform
+2. Log in using the same email and password you created during registration
+3. Your progress, bookmarks, and study data will automatically sync across all devices
+4. You can switch between devices seamlessly without losing your progress
+
+Important Notes:
+- You can be actively logged in on up to 3 devices simultaneously
+- Your subscription is tied to your account, not your device
+- Always log out from shared or public devices to protect your account security
+- If you notice unauthorized access, immediately change your password and contact support
+
+Syncing happens automatically when you're connected to the internet, ensuring your study progress is always up to date regardless of which device you're using.
+''',
+        ),
+      ],
+    ),
+    HelpCategory(
+      id: 'exam_practice',
+      title: 'Exam & Practice',
+      articles: [
+        HelpArticle(
+          id: 'start_first_practice',
+          title: 'How do I start my first practice exam?',
+          content: '''
+Starting your first practice exam is easy and helps you familiarize yourself with the WAEC exam format:
+
+Step-by-Step Guide:
+1. Log into your PSKY account
+2. Navigate to the "Practice Exams" section from the main menu
+3. Select your subject from the available options (Mathematics, English, Sciences, etc.)
+4. Choose your practice mode:
+   - Mock Exam: Full-length timed exam simulation
+   - Quick Drill: Short practice sessions on specific topics
+   - Topic Review: Focus on individual subject areas
+5. Review the exam instructions and time limits
+6. Tap "Start Exam" when you're ready to begin
+7. Answer questions at your own pace (or within the time limit for timed exams)
+8. Submit your exam when complete to receive instant feedback
+
+Tips for Your First Practice:
+- Start with a Quick Drill to get comfortable with the interface
+- Read all instructions carefully before beginning
+- Use the bookmark feature to mark questions you want to review
+- Don't worry about your first score—it's a baseline for improvement
+- Review the explanations for all questions, not just the ones you got wrong
+
+Your performance data will be saved and used to create personalized study recommendations through our AI insights feature.
+''',
+        ),
+        HelpArticle(
+          id: 'mock_vs_quick_drills',
+          title: "What's the difference between Mock Exams and Quick Drills?",
+          content: '''
+PSKY offers two main practice modes designed to suit different study needs and schedules:
+
+Mock Exams:
+- Full-length practice tests that simulate the actual WAEC examination
+- Timed to match real exam conditions (typically 2-3 hours depending on subject)
+- Comprehensive coverage of all topics in a subject
+- Includes the same number of questions as the real exam
+- Best used for assessing overall readiness and building exam stamina
+- Provides detailed performance analytics after completion
+- Recommended frequency: Once per week or before major milestones
+
+Quick Drills:
+- Short, focused practice sessions (10-20 questions)
+- Can be completed in 10-15 minutes
+- Target specific topics or weak areas
+- No strict time limits (though time tracking is available)
+- Perfect for daily practice and reinforcing specific concepts
+- Immediate feedback after each question or at the end
+- Recommended frequency: Daily or multiple times per week
+
+When to Use Each:
+- Use Mock Exams when you want to assess your complete understanding and practice time management
+- Use Quick Drills for daily practice, reviewing specific topics, or when you have limited study time
+- Combine both approaches for optimal preparation: daily Quick Drills supplemented by weekly Mock Exams
+
+Both modes contribute to your overall progress tracking and AI-powered insights, helping you identify strengths and areas for improvement.
+''',
+        ),
+        HelpArticle(
+          id: 'score_calculation',
+          title: 'How is my score calculated?',
+          content: '''
+Understanding how your scores are calculated helps you track your progress effectively:
+
+Scoring System:
+- Each question is worth 2-3 point
+- Your raw score is the total number of correct answers
+- Percentage score = (Correct Answers / Total Questions) × 100
+- No negative marking—incorrect answers don't deduct points
+- Unanswered questions are counted as incorrect
+
+Score Breakdown Includes:
+1. Overall Score: Your total percentage across all questions
+2. Subject Score: Performance in specific subjects
+3. Topic Scores: Performance in individual topics within subjects
+4. Time Efficiency: How quickly you answered questions correctly
+5. Difficulty Rating: Performance on easy, medium, and hard questions
+
+Performance Grades:
+- 75-100%: Excellent (A1-B2)
+- 60-74%: Good (B3-C4)
+- 50-59%: Average (C5-C6)
+- 45-49%: Below Average (D7-E8)
+- Below 45%: Needs Improvement (F9)
+
+Additional Metrics:
+- Accuracy Rate: Percentage of attempted questions answered correctly
+- Completion Rate: Percentage of questions you attempted
+- Consistency Score: How steadily you perform across practice sessions
+- Improvement Trend: Your score progression over time
+
+Your scores are compared to:
+- Your previous attempts (personal progress)
+- Average scores of other PSKY users (peer comparison)
+- WAEC passing standards (readiness assessment)
+
+All scoring data is used by our AI system to provide personalized recommendations for improving your performance.
+''',
+        ),
+        HelpArticle(
+          id: 'retake_test',
+          title: "Can I retake a test I've already completed?",
+          content: '''
+Yes! You can retake any practice exam or Quick Drill as many times as you want. Here's what you need to know:
+
+How to Retake a Test:
+1. Navigate to your "My Tests" and scroll to the "Completed Tests" section
+2. Find the test you want to retake
+3. Tap on the test to view your previous results
+4. Select "Retake Test" or "Practice Again"
+5. Choose whether to retry the same questions or get new ones from the question bank
+
+Retake Options:
+- Same Questions: Practice the exact same test to see if you've improved
+- New Questions: Get different questions on the same topics for varied practice
+- Timed Mode: Add time pressure to simulate real exam conditions
+- Practice Mode: No time limit, with immediate feedback after each question
+
+Benefits of Retaking Tests:
+- Reinforces learning and improves retention
+- Helps you master difficult concepts through repetition
+- Tracks improvement over time
+- Builds confidence before the actual exam
+- Identifies persistent weak areas that need more attention
+
+Score Tracking:
+- All attempts are saved in your history
+- Your highest score for each test is highlighted
+- Progress graphs show improvement across multiple attempts
+- The system tracks your average score and improvement rate
+
+Best Practices:
+- Review explanations before retaking a test
+- Space out retakes (wait 2-3 days) to measure true retention
+- Focus on understanding concepts, not memorizing specific questions
+- Use retakes as a tool to master weak areas identified in your AI insights
+
+There's no limit to how many times you can retake a test, so practice as much as you need to feel confident and prepared.
+''',
+        ),
+      ],
+    ),
+    HelpCategory(
+      id: 'subscriptions_payments',
+      title: 'Subscriptions & Payments',
+      articles: [
+        HelpArticle(
+          id: 'subscription_plans',
+          title: 'What subscription plans are available?',
+          content: '''
+PSKY offers flexible subscription plans to match your study needs and budget:
+
+Launchpad(basic access, starter level):
+- Access to limited practice questions
+- Basic performance tracking
+- 3 Mock Exams per week
+- Standard question explanations
+- Community support
+
+Elevate(enhanced tools, progress boosters):
+- Full access to all practice questions and Mock Exams
+- Unlimited Quick Drills
+- AI-powered insights and recommendations
+- Detailed performance analytics
+- Priority customer support
+- 15% discount on yearly billing
+- Extended progress tracking
+- Access to premium study guides
+- Early access to new features
+- Ad-free experience
+
+Apex (complete access, top-tier intelligence tools):
+- All Elevate Plan features
+- 15% discount compared to monthly billing
+- Extended progress tracking
+- Access to premium study guides
+- Early access to new features
+- 20% discount on yearly billing
+- Best value for long-term preparation
+- Dedicated success coach
+- Exclusive webinars and study sessions
+- Certificate of completion
+
+Payment Options:
+- Credit/Debit Card
+- Opay
+- Bank Transfer
+
+All plans include:
+- Secure payment processing
+- 7-day money-back guarantee
+- Access across all devices
+
+Choose the plan that works best for your preparation timeline and budget. You can upgrade or downgrade at any time.
+''',
+        ),
+        HelpArticle(
+          id: 'upgrade_plan',
+          title: 'How can I upgrade my plan?',
+          content: '''
+Managing your subscription is simple and can be done directly from your account:
+
+To Upgrade Your Plan:
+1. Log into your PSKY account
+2. Go to Settings > Subscriptions
+3. Tap "Upgrade Plan"
+4. Select your desired plan (Monthly, Quarterly, or Annual)
+5. Review the pricing and features
+6. Complete payment using your preferred method
+7. Your upgrade takes effect immediately
+
+Upgrade Benefits:
+- Instant access to premium features
+- Pro-rated credit for any unused time on your current plan
+- No interruption to your study progress
+- All your data and history are preserved
+
+Need Help?
+If you have trouble upgrading, contact our support team through the app or email support@psky.com. We're here to assist you with any subscription changes.
+''',
+        ),
+        HelpArticle(
+          id: 'download_receipt',
+          title: 'Where can I download my payment receipt?',
+          content: '''
+Accessing your payment receipts is easy and important for record-keeping:
+
+How to Download Receipts:
+1. Log into your PSKY account
+2. Navigate to Subscriptions or Billing
+3. Tap on "Payment History" or "Invoices"
+4. Find the payment you need a receipt for
+5. Tap on the transaction to view details
+6. Select "Download Receipt" or "Email Receipt"
+7. Choose your preferred format (PDF or Email)
+
+Receipt Information Includes:
+- Transaction ID and reference number
+- Payment date and time
+- Subscription plan purchased
+- Amount paid and currency
+- Payment method used
+- PSKY company details and tax information
+- Your billing information
+- Valid for accounting and reimbursement purposes
+
+Receipt Delivery Options:
+- Download directly to your device
+- Email to your registered email address
+- Email to a different address (for school/parent reimbursement)
+- Print directly from the app (if supported by your device)
+
+Accessing Historical Receipts:
+- All receipts are stored in your Payment History
+- Access receipts for the past 2 years
+- Receipts for older transactions can be requested from support
+
+Automatic Receipt Delivery:
+- Receipts are automatically emailed after each successful payment
+- Check your spam/junk folder if you don't receive it
+- Update your email preferences in Settings to ensure delivery
+
+For Schools and Organizations:
+- Request consolidated invoices for multiple student subscriptions
+- Custom billing information can be added for institutional payments
+- Contact support for bulk receipt generation
+
+If You Can't Find Your Receipt:
+- Check your email inbox (including spam folder)
+- Verify the payment was successful in your Payment History
+- Contact support with your transaction details
+- We can resend receipts within 24 hours
+
+Receipts are important for:
+- Personal financial records
+- School or employer reimbursement
+- Tax purposes (if applicable)
+- Proof of purchase for subscription disputes
+''',
+        ),
+        HelpArticle(
+          id: 'payment_failed',
+          title: 'My payment failed — what should I do?',
+          content: '''
+Payment failures can happen for various reasons. Here's how to resolve them:
+
+Common Reasons for Payment Failure:
+- Insufficient funds in your account
+- Incorrect card details or expired card
+- Bank declining international transactions
+- Network connectivity issues
+- Payment method not supported in your region
+- Daily transaction limits exceeded
+- Card security verification failed
+
+Immediate Steps to Take:
+1. Check the error message displayed on screen
+2. Verify your payment details are correct
+3. Ensure you have sufficient funds
+4. Check your internet connection
+5. Try again after a few minutes
+
+How to Retry Payment:
+1. Go to Settings > Subscriptions
+2. Tap "Retry Payment" or "Update Payment Method"
+3. Re-enter your payment information carefully
+4. Ensure card number, expiry date, and CVV are correct
+5. Complete any additional verification (OTP, 3D Secure)
+6. Confirm the transaction
+
+Alternative Payment Methods:
+If your primary method fails, try:
+- Different credit/debit card
+- Mobile Money (MTN, Airtel, Vodafone, Glo)
+- Bank transfer (manual verification required)
+- PayPal
+- Alternative payment platforms available in your country
+
+Bank-Specific Issues:
+- Contact your bank to enable online/international transactions
+- Some banks require activation of e-commerce features
+- Verify your card is enabled for online payments
+- Check if your bank has fraud protection blocking the transaction
+
+What Happens to Failed Payments:
+- No charges are processed if payment fails
+- Your access continues during the grace period
+- We'll send notifications before any service interruption
+- All your data and progress remain safe
+
+If Problems Persist:
+- Screenshot the error message
+- Contact PSKY support with:
+  * Your account email
+  * Payment method attempted
+  * Error message received
+  * Transaction reference (if any)
+- We'll investigate and help resolve within 24 hours
+- Alternative payment arrangements may be available
+
+Contact Support:
+- Email: payments@psky.com
+- In-app chat support
+- WhatsApp: [Support Number]
+- Available Monday-Saturday, 8am-8pm WAT
+
+Remember: Never share your full card details via email or chat. Our support team will never ask for your PIN or CVV.
+''',
+        ),
+      ],
+    ),
+    HelpCategory(
+      id: 'ai_feedback',
+      title: 'AI Feedback & Insights',
+      articles: [
+        HelpArticle(
+          id: 'ai_review_answers',
+          title: "How does PSKY's AI review my answers?",
+          content: '''
+PSKY's advanced AI system analyzes your performance to provide personalized learning insights:
+
+How AI Review Works:
+1. Performance Analysis: The AI examines every answer you submit across all practice sessions
+2. Pattern Recognition: Identifies recurring mistakes and knowledge gaps
+3. Learning Style Detection: Understands how you process and retain information
+4. Progress Tracking: Monitors your improvement over time
+5. Comparative Analysis: Compares your performance to peer benchmarks and exam standards
+
+What the AI Analyzes:
+- Correctness of your answers
+- Time taken per question
+- Question difficulty levels you struggle with
+- Topics where you consistently excel or struggle
+- Your error patterns (conceptual vs. careless mistakes)
+- Performance trends across multiple attempts
+- Study habits and consistency
+
+AI-Generated Feedback Includes:
+- Detailed explanations for each question
+- Why your answer was incorrect (if applicable)
+- Common misconceptions that led to the error
+- Step-by-step solutions for complex problems
+- Tips for avoiding similar mistakes
+- Related concepts you should review
+
+Personalized Insights:
+- Strength and weakness analysis by subject and topic
+- Recommended study focus areas
+- Optimal study schedule based on your patterns
+- Question types you need more practice with
+- Predicted readiness score for the actual exam
+
+Real-Time Feedback:
+- Instant feedback after each question (in practice mode)
+- Comprehensive report after completing full exams
+- Weekly progress summaries
+- Monthly performance reviews
+
+The AI adapts to your learning pace and continuously refines its recommendations as you practice more. This ensures you get the most relevant and effective guidance throughout your preparation journey.
+
+Privacy Note: All AI analysis is secure and confidential. Your data is used solely to improve your learning experience.
+''',
+        ),
+        HelpArticle(
+          id: 'weak_areas',
+          title: 'What are "weak areas," and how are they identified?',
+          content: '''
+Weak areas are specific topics or concepts where you need additional practice and study. Understanding them is key to improving your performance:
+
+How Weak Areas Are Identified:
+The AI system analyzes multiple factors:
+- Questions answered incorrectly consistently (50% or lower accuracy)
+- Topics where you score below the average benchmark
+- Subjects where improvement has plateaued
+- Areas where you spend excessive time without correct answers
+- Concepts you frequently skip or struggle to complete
+- Topics with declining performance trends
+
+Types of Weak Areas:
+1. Critical Weaknesses: Topics with less than 40% accuracy - urgent attention needed
+2. Moderate Weaknesses: 40-60% accuracy - requires focused practice
+3. Minor Weaknesses: 60-70% accuracy - needs reinforcement
+4. Emerging Weaknesses: Declining performance in previously strong areas
+
+How Weak Areas Are Displayed:
+- Visual dashboard showing subject-wise weakness breakdown
+- Color-coded indicators (red for critical, yellow for moderate, orange for minor)
+- Percentage scores for each topic
+- Comparison to your strongest areas
+- Trend graphs showing improvement or decline
+- Recommended practice questions per weak area
+
+AI Recommendations for Weak Areas:
+- Customized study plan targeting your weaknesses
+- Suggested number of practice questions per topic
+- Video explanations and study materials
+- Similar questions for targeted practice
+- Estimated time needed to improve each area
+- Priority ranking (which weaknesses to tackle first)
+
+How to Improve Weak Areas:
+1. Review the AI-recommended study materials
+2. Focus on understanding underlying concepts, not memorization
+3. Practice targeted Quick Drills on specific weak topics
+4. Review detailed explanations for mistakes
+5. Retake topic-specific tests to measure improvement
+6. Track progress through the weakness dashboard
+
+Dynamic Updates:
+- Weak areas are recalculated after each practice session
+- As you improve, topics are removed from the weak areas list
+- New weak areas may emerge as you encounter more advanced topics
+- The system adapts recommendations based on your progress
+
+Benefits of Focusing on Weak Areas:
+- Efficient use of study time
+- Targeted improvement where it matters most
+- Balanced knowledge across all topics
+- Higher overall scores
+- Increased confidence in previously challenging areas
+- Better exam readiness
+
+Weak Area Categories:
+- Conceptual Understanding: Fundamental concept misunderstandings
+- Application Skills: Difficulty applying concepts to problems
+- Speed and Accuracy: Taking too long or making careless errors
+- Exam Strategy: Issues with question interpretation or time management
+
+Remember: Everyone has weak areas—identifying and addressing them is what separates good performance from excellent performance. The AI makes this process systematic and effective.
+''',
+        ),
+        HelpArticle(
+          id: 'use_ai_insights',
+          title: 'How do I use AI insights to improve my scores?',
+          content: '''
+AI insights are powerful tools that transform raw performance data into actionable study strategies:
+
+Accessing Your AI Insights:
+1. Navigate to the "Insights" or "Dashboard" section
+2. View your comprehensive performance overview
+3. Explore detailed analytics for each subject
+4. Check personalized recommendations
+5. Track progress over time with visual graphs
+
+Key AI Insights Components:
+
+1. Performance Dashboard:
+- Overall readiness score (0-100%)
+- Subject-wise performance breakdown
+- Strengths and weaknesses visualization
+- Comparison to previous performance
+- Progress toward your target score
+
+2. Personalized Study Plan:
+- AI-generated daily/weekly study schedule
+- Recommended topics to focus on each day
+- Suggested practice question count
+- Optimal study duration based on your patterns
+- Rest and review day recommendations
+
+3. Question-Level Insights:
+- Most commonly missed question types
+- Topics requiring more practice
+- Time management analysis
+- Accuracy vs. speed metrics
+- Difficulty progression recommendations
+
+4. Learning Pattern Analysis:
+- Best study times based on your performance
+- Most effective practice modes for you
+- Optimal session lengths
+- Learning retention rates
+- Recommended break intervals
+
+How to Act on AI Insights:
+
+Step 1: Review Your Current Standing
+- Check your overall readiness score
+- Identify your top 3 weak areas
+- Note subjects where you're excelling
+- Review recent performance trends
+
+Step 2: Follow the Personalized Study Plan
+- Dedicate focused time to recommended topics
+- Complete suggested daily practice questions
+- Follow the priority order for weak areas
+- Balance study time across all subjects
+
+Step 3: Practice Strategically
+- Use Quick Drills for targeted weak area practice
+- Take Mock Exams to assess overall progress
+- Focus on quality over quantity
+- Review explanations for every incorrect answer
+
+Step 4: Track and Adjust
+- Monitor your weak areas dashboard weekly
+- Celebrate topics that move from weak to strong
+- Adjust study intensity based on progress
+- Request updated recommendations regularly
+
+Step 5: Leverage Specific Recommendations
+- Watch suggested video explanations
+- Review AI-recommended study materials
+- Practice similar questions to ones you missed
+- Focus on understanding patterns in your mistakes
+
+Advanced AI Features:
+
+Predictive Analytics:
+- Estimated exam readiness date
+- Projected WAEC score based on current performance
+- Topics likely to appear on your exam
+- Areas needing urgent attention before exam day
+
+Smart Question Selection:
+- AI curates practice questions based on your level
+- Gradually increases difficulty as you improve
+- Focuses on your specific weak areas
+- Avoids repetition while ensuring thorough coverage
+
+Progress Milestones:
+- Achievements unlocked as you improve
+- Motivation boosters when progress slows
+- Celebration of consistency and dedication
+- Warnings if study patterns become irregular
+
+Comparative Insights:
+- How you rank among peers
+- Average improvement rates
+- Benchmarking against WAEC standards
+- Inspiration from top performers' study patterns
+
+Best Practices:
+
+Daily Routine:
+- Check insights dashboard every morning
+- Review yesterday's performance
+- Follow today's AI recommendations
+- Track completion of suggested tasks
+
+Weekly Review:
+- Analyze weekly progress report
+- Adjust study plan based on new insights
+- Celebrate improvements
+- Identify persistent challenges
+
+Monthly Assessment:
+- Take a comprehensive Mock Exam
+- Review month-over-month improvement
+- Update study goals based on progress
+- Request AI recalibration if needed
+
+Common Mistakes to Avoid:
+- Ignoring AI recommendations and following your own random pattern
+- Focusing only on strong areas instead of weak ones
+- Skipping the review of incorrect answers
+- Not updating your study plan as you improve
+- Practicing without checking insights regularly
+
+Success Metrics to Monitor:
+- Steady increase in readiness score
+- Reduction in number of weak areas
+- Improved accuracy rates
+- Faster question completion times
+- Higher Mock Exam scores
+- Consistent study streaks
+
+Remember: AI insights are most effective when you actively engage with them. Check your dashboard regularly, follow recommendations consistently, and trust the data-driven approach to guide your preparation.
+
+The more you practice and engage with the platform, the smarter the AI becomes at personalizing your learning experience!
+''',
+        ),
+//         HelpArticle(
+//           id: 'turn_off_ai',
+//           title: 'Can I turn off AI suggestions?',
+//           content: '''
+// Yes, you have full control over AI features and can customize your experience:
+
+// How to Disable AI Suggestions:
+// 1. Open the PSKY app
+// 2. Navigate to Settings > Preferences
+// 3. Find "AI & Insights" section
+// 4. Toggle off "AI Suggestions"
+// 5. Save your changes
+
+// Customization Options:
+
+// What You Can Turn Off:
+// - AI study recommendations
+// - Automatic weak area notifications
+// - Personalized study plan suggestions
+// - Performance prediction alerts
+// - Comparative analytics
+// - AI-curated question selection
+
+// What You Can Customize:
+// - Frequency of AI notifications (daily, weekly, never)
+// - Types of insights displayed on dashboard
+// - Depth of analysis reports
+// - Reminder settings for study recommendations
+// - Email summaries of AI insights
+
+// Granular Controls:
+// - Keep performance tracking but disable predictions
+// - Show weak areas but hide peer comparisons
+// - Receive insights without automatic study plans
+// - Enable AI for some subjects but not others
+
+// What Happens When AI Is Disabled:
+// - You'll still see basic performance statistics
+// - Manual question selection becomes available
+// - Standard scoring and grading continue
+// - Historical data remains accessible
+// - You can re-enable AI anytime without data loss
+
+// Alternative Modes:
+
+// Minimal AI Mode:
+// - Basic performance tracking only
+// - No predictive analytics
+// - No personalized recommendations
+// - Simple score reporting
+
+// Manual Mode:
+// - Complete control over practice selection
+// - Self-directed study path
+// - No automated suggestions
+// - Traditional learning experience
+
+// Hybrid Mode (Recommended):
+// - AI insights available but not intrusive
+// - View recommendations on-demand
+// - Receive weekly summaries instead of daily notifications
+// - Balance between automation and control
+
+// Why You Might Disable AI:
+// - Prefer self-directed learning
+// - Already have a structured study plan
+// - Find suggestions overwhelming or distracting
+// - Want to explore content freely
+// - Following a teacher's specific curriculum
+// - Preparing in a non-traditional way
+
+// Why You Might Keep AI Enabled:
+// - Data-driven approach to learning
+// - Need help identifying weak areas
+// - Want optimized study efficiency
+// - Benefit from personalized guidance
+// - Appreciate accountability and tracking
+// - Preparing independently without a tutor
+
+// Partial Disabling Strategy:
+// If AI feels overwhelming but you still want some benefits:
+// 1. Disable daily notifications
+// 2. Check insights weekly instead
+// 3. Turn off predictions but keep weak area tracking
+// 4. Use AI for analytics but not for study planning
+// 5. Enable AI only for your most challenging subjects
+
+// Re-enabling AI:
+// - Toggle the setting back on anytime
+// - All previous data and insights remain available
+// - AI resumes analysis from current performance
+// - No penalty or data loss from disabling
+
+// Impact on Subscription:
+// - AI features are included in all paid plans
+// - Disabling AI doesn't affect your subscription cost
+// - You still have access to all practice questions and exams
+// - All premium features remain available
+
+// Important Notes:
+// - Basic performance tracking cannot be disabled (shows scores, completion rates)
+// - Disabling AI doesn't delete your historical data
+// - You can export your data before disabling AI features
+// - Teachers/parents with linked accounts may still see basic analytics
+
+// Find Your Balance:
+// PSKY is designed to be flexible. Many successful students use a hybrid approach:
+// - Enable AI during intensive study periods
+// - Disable during exam week to reduce distractions
+// - Turn on for diagnostic purposes
+// - Use selectively for challenging subjects
+
+// Ultimately, you know your learning style best. Use AI as a tool when it helps, and set it aside when you need a different approach.
+// ''',
+//         ),
+      ],
+    ),
+    HelpCategory(
+      id: 'technical_issues',
+      title: 'Technical Issues',
+      articles: [
+        HelpArticle(
+          id: 'app_not_loading',
+          title: "The app isn't loading — what should I check?",
+          content: '''
+If PSKY isn't loading properly, try these troubleshooting steps:
+
+Quick Fixes (Try These First):
+
+1. Check Your Internet Connection:
+- Ensure you're connected to WiFi or mobile data
+- Try opening a web browser to confirm internet access
+- Switch between WiFi and mobile data to test
+- Move closer to your WiFi router if signal is weak
+- Restart your router if other devices also have issues
+
+2. Disable VPN or Proxy:
+- VPNs can sometimes interfere with app loading
+- Temporarily disable and try again
+- Re-enable after confirming the issue
+
+3. Check Server Status:
+- Visit PSKY's social media pages
+- Look for service announcements
+- Check if other users report similar issues
+- Widespread issues are usually resolved quickly
+
+
+Specific Error Messages:
+
+"Connection Timeout":
+- Internet is too slow or unstable
+- Try different network
+- Move to area with better signal
+
+"Unable to Connect to Server":
+- Server may be under maintenance
+- Check PSKY's official channels for updates
+- Try again in 15-30 minutes
+
+"Stuck on Loading Screen":
+- Force close and reopen
+- Check internet stability
+- Clear app cache
+
+When Loading Issues Persist:
+
+1. Check Your Account Status:
+- Ensure your subscription is active
+- Verify your account hasn't been suspended
+- Try logging in via web browser
+
+3. Contact Support:
+Provide this information:
+- Device model and operating system version
+- PSKY app version
+- Specific error messages received
+- When the problem started
+- Steps you've already tried
+- Screenshot of error (if applicable)
+
+Prevention Tips:
+- Maintain stable internet connection
+- Regularly clear cache (monthly)
+- Keep device storage above 1GB free
+
+Most loading issues are resolved within minutes using the quick fixes above. If problems persist beyond 24 hours, our support team will investigate and resolve them promptly.
+''',
+        ),
+        HelpArticle(
+          id: 'exam_froze',
+          title: 'My exam froze mid-test — how do I fix it?',
+          content: '''
+A frozen exam can be stressful, but your progress is automatically saved. Here's what to do:
+
+Immediate Actions (During the Freeze):
+
+1. Don't Panic:
+- Your answers are saved automatically every 30 seconds
+- Your progress is backed up in real-time
+- You won't lose completed questions
+
+2. Wait 30 Seconds:
+- Sometimes the app is processing
+- Give it a moment to respond
+- Don't tap repeatedly (can worsen the freeze)
+
+3. Check Internet Connection:
+- Look for WiFi/data connectivity icons
+- Poor connection often causes freezing
+- Move to area with better signal if possible
+
+If Exam Remains Frozen:
+
+4. Save Current Progress (if possible):
+- Try tapping "Save Progress" if button is responsive
+- Some freezes allow this action
+- Not always possible, but worth attempting
+
+5. Reopen PSKY:
+- Log back in if required
+- Navigate to "Continue Exam" or "Resume"
+- Your exam should load from where you left off
+
+What Gets Saved:
+- All submitted answers
+- Current question you were on
+- Time remaining (pauses during freeze)
+- Bookmarked questions
+- Any notes or flags you added
+
+What Might Be Lost:
+- Answer to question you were actively typing (if not auto-saved)
+- Last 30 seconds of activity (in rare cases)
+- Your place on the exact question (you may need to navigate back)
+
+After Resuming:
+
+1. Verify Your Progress:
+- Check the question number
+- Review that previous answers are intact
+- Confirm time remaining is accurate
+- Note any missing responses
+
+2. Report the Issue:
+- Complete your exam first
+- Then use "Report a Bug" in settings
+- Include: when freeze occurred, question number, device details
+
+3. Continue or Restart:
+- If most progress is saved: continue from where you left off
+- If significant data lost: contact support before continuing
+- You may be eligible for a free retake
+
+Preventing Future Freezes:
+
+Before Starting Exams:
+- Ensure stable internet connection (WiFi preferred)
+- Close other apps to free up device memory
+- Charge device to at least 50% battery
+- Update PSKY to the latest version
+- Restart device before major exams
+
+During Exams:
+- Don't switch to other apps mid-exam
+- Avoid locking/unlocking your screen repeatedly
+- Stay in one location (for stable WiFi)
+- Don't open browser or other apps simultaneously
+
+Device Optimization:
+- Keep at least 1GB free storage
+- Close background apps before exams
+- Disable battery saver mode (can slow app)
+- Use airplane mode if on WiFi (prevents calls from interrupting)
+
+Common Freeze Causes:
+
+1. Poor Internet:
+- Weak WiFi signal
+- Fluctuating mobile data
+- Network congestion
+- Solution: Use stable connection
+
+2. Low Memory:
+- Too many apps running
+- Insufficient device RAM
+- Low storage space
+- Solution: Close apps, free up space
+
+3. App Bugs:
+- Software glitches
+- Compatibility issues
+- Corrupted cache
+- Solution: Update app, clear cache
+
+4. Device Issues:
+- Overheating
+- Outdated OS
+- Hardware limitations
+- Solution: Update device, avoid overheating
+
+Special Circumstances:
+
+Mock Exam Freeze:
+- Progress is always saved
+- Resume anytime within 24 hours
+- Time pauses automatically
+- Full credit for completed questions
+
+Timed Quick Drill Freeze:
+- Timer pauses during freeze
+- Resume with remaining time intact
+- No penalty for technical issues
+
+Final Exam Simulation Freeze:
+- Contact support immediately
+- May be granted additional time
+- Eligible for complimentary retake
+- Priority resolution provided
+
+Getting Help:
+
+Immediate Support:
+- Email: support@psky.com
+- Include: exam type, question number, error details
+
+Follow-up:
+- Support team reviews your saved progress
+- May restore missing data
+- Provides retake if significant data lost
+- Usually resolved within 24 hours
+
+Compensation Policy:
+- Free retake if you lost >20% of progress
+- Extended time if freeze cost you >10 minutes
+- Priority support for recurring freezes
+- Full investigation of pattern freezes
+
+What Support Needs:
+- Your account email
+- Exam type and subject
+- Approximate time of freeze
+- Device model and OS version
+- Screenshot if possible
+- Description of what happened
+
+Emergency Exam Completion:
+If freeze happens near exam deadline:
+- Document the freeze (screenshot)
+- Contact support immediately
+- Explain urgency
+- Request extension or alternative arrangement
+
+Remember: Technical freezes are rare and we have robust systems to protect your progress. In the unlikely event of data loss, our support team ensures you're not penalized for technical issues beyond your control.
+''',
+        ),
+//         HelpArticle(
+//           id: 'no_audio',
+//           title: "Why can't I hear audio in a question?",
+//           content: '''
+// Audio-based questions are important for some WAEC subjects. Here's how to resolve audio issues:
+
+// Quick Troubleshooting:
+
+// 1. Check Device Volume:
+// - Ensure volume is turned up (not muted)
+// - Check both media volume and ringer volume
+// - Increase volume using physical buttons
+// - Test with other apps (music, videos)
+
+// 2. Check Audio Settings in PSKY:
+// - Navigate to Settings > Audio/Sound
+// - Ensure "Enable Audio" is toggled on
+// - Check if question audio is specifically enabled
+// - Verify volume slider is not at zero
+
+// 3. Test Your Speaker/Headphones:
+// - Try playing audio from another app
+// - If using headphones, check connection
+// - Try without headphones (use device speaker)
+// - Clean headphone jack if connection loose
+
+// 4. Restart the Question:
+// - Exit and re-enter the question
+// - Tap the audio play button again
+// - Sometimes audio loads on second attempt
+
+// Detailed Solutions:
+
+// For No Audio at All:
+
+// 1. Enable Media Permissions:
+// Android:
+// - Settings > Apps > PSKY > Permissions
+// - Ensure "Microphone" is allowed (some devices require this for audio playback)
+// - Enable storage access
+
+// iOS:
+// - Settings > Privacy > Microphone
+// - Toggle on for PSKY
+
+// 2. Check Audio File Download:
+// - Audio may still be downloading
+// - Look for loading indicator
+// - Wait for complete download
+// - Requires stable internet connection
+
+// 3. Clear App Cache:
+// Android:
+// - Settings > Apps > PSKY > Storage
+// - Clear Cache (not data)
+// iOS:
+// - Reinstall app to clear cache
+
+// 4. Update the App:
+// - Outdated versions may have audio bugs
+// - Check app store for updates
+// - Install latest version
+
+// For Distorted/Choppy Audio:
+
+// 1. Check Internet Speed:
+// - Slow connection causes buffering
+// - Switch from mobile data to WiFi
+// - Move closer to WiFi router
+// - Pause and let audio buffer completely
+
+// 2. Close Background Apps:
+// - Free up device resources
+// - Stop music/video apps
+// - Close unused applications
+
+// 3. Check Audio Format Support:
+// - Most devices support standard formats
+// - Update your device OS if old
+// - Contact support if persistent
+
+// For Low Volume Audio:
+
+// 1. Boost Device Volume:
+// - Use volume buttons to maximum
+// - Check "Volume Limit" setting isn't enabled
+// - Disable "Do Not Disturb" mode
+
+// 2. Check Audio Balance:
+// - Settings > Accessibility > Audio Balance
+// - Ensure slider is centered
+// - Some devices have separate left/right controls
+
+// 3. Clean Speaker/Port:
+// - Dust can muffle speakers
+// - Gently clean speaker grills
+// - Remove any case blocking speakers
+
+// For Bluetooth Audio Issues:
+
+// 1. Bluetooth Headphones:
+// - Ensure properly paired and connected
+// - Check battery level
+// - Try disconnecting and reconnecting
+// - Test with wired headphones
+
+// 2. Bluetooth Speaker:
+// - Verify connection
+// - Check speaker volume separately
+// - Some speakers have play/pause that may interfere
+
+// Subject-Specific Audio:
+
+// Languages (French, English Oral):
+// - Critical for listening comprehension
+// - Can replay audio multiple times
+// - Transcripts available after completion
+
+// Music:
+// - Audio quality is high (320kbps)
+// - May require more download time
+// - Requires good internet initially
+
+// Question-Specific Issues:
+
+// 1. Individual Question No Audio:
+// - Report using "Report Issue" button on question
+// - Move to next question
+// - Can return later once support fixes
+// - Won't be counted against you if reported
+
+// 2. All Questions No Audio:
+// - Likely device or app issue
+// - Follow full troubleshooting above
+// - Contact support if unresolved
+
+// 3. Audio Plays But Stops:
+// - Buffering issue
+// - Let it load completely first
+// - Download question set for offline use (premium feature)
+
+// Audio Controls in PSKY:
+
+// Available Features:
+// - Play/Pause button
+// - Replay audio (unlimited)
+// - Volume adjustment
+// - Playback speed (0.5x, 1x, 1.5x, 2x)
+// - Skip forward/backward 5 seconds
+// - Audio transcript (available after first listen)
+
+// Using Audio Controls:
+// - Tap speaker icon to play
+// - Drag progress bar to replay section
+// - Use speed controls for easier comprehension
+// - Enable subtitles if struggling to hear
+
+// Advanced Solutions:
+
+// 1. Download for Offline:
+// - Premium feature
+// - Downloads audio to device
+// - No internet needed during exam
+// - Prevents streaming issues
+
+// 2. Use Alternative Device:
+// - Try tablet if phone has issues
+// - Use computer browser version
+// - Audio syncs across all devices
+
+// 3. Audio Diagnostics:
+// - Settings > Help > Run Audio Test
+// - Tests device audio capability
+// - Identifies specific issues
+// - Provides custom recommendations
+
+// When to Contact Support:
+
+// Contact immediately if:
+// - No audio after trying all steps above
+// - Audio issue persists across multiple questions
+// - Audio plays in other apps but not PSKY
+// - Error message appears when playing audio
+// - You're taking a timed exam and audio is critical
+
+// Provide This Information:
+// - Device model and OS version
+// - PSKY app version
+// - Subject and question experiencing issue
+// - What you've already tried
+// - Whether you hear audio in other apps
+// - Wired or Bluetooth audio setup
+
+// Support Response:
+// - Troubleshooting within 2 hours
+// - Resolution or workaround provided
+// - May grant extra time for affected exams
+// - Can enable transcript immediately if critical
+
+// Accessibility Options:
+
+// For Hearing-Impaired Users:
+// - Audio transcripts available
+// - Visual indicators for audio cues
+// - Extended time for audio questions
+// - Contact support to enable these features
+
+// Audio Not Loading (Waiting Forever):
+
+// 1. Check File Size:
+// - Some audio files are large (5-10MB)
+// - May take time on slow connection
+// - Wait or switch to faster WiFi
+
+// 2. Partial Download:
+// - If interrupted, may need to restart
+// - Exit question and re-enter
+// - Forces fresh download attempt
+
+// 3. Server Issues:
+// - Rare, but audio servers may be slow
+// - Try again in 5-10 minutes
+// - Check PSKY status page
+
+// Prevention Tips:
+// - Test audio before starting timed exams
+// - Use reliable WiFi for audio-heavy subjects
+// - Keep device volume at 70%+ for testing
+// - Use quality headphones for better experience
+// - Download question sets in advance (premium)
+// - Update app before exam day
+// - Test on the device you'll use for actual exam
+
+// Audio questions are a key part of WAEC preparation. If you continue experiencing issues after these steps, our support team will prioritize your case to ensure you can properly prepare.
+// ''',
+//         ),
+        HelpArticle(
+          id: 'report_bug',
+          title: 'How can I report a bug or error?',
+          content: '''
+We appreciate users reporting bugs—it helps us improve PSKY for everyone. Here's how to report issues effectively:
+
+Quick Reporting Methods:
+
+1. In-App Bug Report:
+- Look for the "⚙️" Settings icon
+- Tap "Help & Support"
+- Select "Report a Bug"
+- Fill out the bug report form
+- Submit (we respond within 24 hours)
+
+2. During Active Use:
+- Shake your device (if shake-to-report is enabled)
+- Automatic bug report screen appears
+- Describe what happened
+- Screenshot is captured automatically
+- Submit instantly
+
+3. Question-Specific Issues:
+- While viewing the problem question
+- Tap the "⋮" menu icon
+- Select "Report Issue with This Question"
+- Explain the problem
+- Submit (flags the specific question for review)
+
+Detailed Reporting Process:
+
+Step 1: Identify the Bug Type:
+- App crash or freeze
+- Incorrect question or answer
+- Display/formatting issue
+- Audio/video problem
+- Login/account issue
+- Payment/subscription error
+- Performance issue (slow loading)
+- Data sync problem
+- Feature not working as expected
+
+Step 2: Gather Information:
+Before reporting, note:
+- What were you doing when the bug occurred?
+- Can you reproduce it consistently?
+- What device and OS version?
+- What PSKY app version?
+- What time did it happen?
+- Did you receive any error messages?
+
+Step 3: Take Screenshots (if applicable):
+- Capture the error screen
+- Screenshot any error messages
+- Show what you expected vs. what happened
+- Include multiple screenshots if helpful
+- Screen recording for complex issues (available on most devices)
+
+Step 4: Complete the Bug Report Form:
+
+Required Information:
+- Bug title (brief description)
+- Detailed explanation
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
+- Device model
+- OS version
+- App version
+- Screenshots/attachments
+
+Step 5: Submit and Track:
+- You'll receive a ticket number
+- Email confirmation sent
+- Track status in "My Reports" section
+- Receive updates as we investigate
+- Get notification when resolved
+
+Reporting Different Types of Issues:
+
+1. Content Errors (Wrong Answers, Typos):
+Select: "Report Content Error"
+Specify:
+- Subject and topic
+- Question ID (shown on question screen)
+- What's incorrect
+- What it should be (if you know)
+- Source reference (if applicable)
+
+Priority: High (affects learning accuracy)
+Response: 24-48 hours
+Resolution: Correction or explanation provided
+
+2. Technical Bugs (Crashes, Freezes):
+Select: "Report Technical Issue"
+Specify:
+- What action triggered the bug
+- Frequency (always, sometimes, once)
+- Impact (can't use app, minor annoyance)
+- Error code (if displayed)
+
+Priority: Critical if app-breaking, Medium otherwise
+Response: 2-24 hours depending on severity
+Resolution: Fix in next update or immediate hotfix
+
+3. Feature Requests:
+Select: "Suggest a Feature"
+Specify:
+- What feature you'd like
+- Why it would be helpful
+- How you envision it working
+
+Priority: Low to Medium
+Response: Acknowledged within 1 week
+Resolution: Considered for future updates
+
+4. Payment Issues:
+Select: "Payment/Billing Issue"
+Specify:
+- Transaction details
+- What went wrong
+- Receipt/transaction ID
+
+Priority: Critical
+Response: Within 2-4 hours
+Resolution: Usually within 24 hours
+
+Alternative Reporting Channels:
+
+1. Email Support:
+bugs@psky.com
+- Use for detailed reports
+- Attach multiple files
+- Good for non-urgent issues
+
+2. Live Chat:
+- Available in app
+- Real-time assistance
+- Best for urgent issues
+- Mon-Sat, 8am-8pm WAT
+
+3. Social Media:
+- Twitter: @PSKYsupport
+- Facebook: PSKY Official
+- Public posts for widespread issues
+- DM for private concerns
+
+4. Community Forum:
+- Report issues others might face
+- Community may have workarounds
+- PSKY team monitors regularly
+- Good for feature discussions
+
+What Happens After You Report:
+
+Immediate (0-2 hours):
+- Automated acknowledgment sent
+- Ticket number assigned
+- Issue categorized and prioritized
+
+Investigation (2-48 hours):
+- Team reproduces the issue
+- Identifies root cause
+- May request additional info from you
+- Develops solution
+
+Resolution (varies by severity):
+- Critical bugs: Hotfix within 24-48 hours
+- Major bugs: Fix in next app update (1-2 weeks)
+- Minor bugs: Addressed in regular updates
+- Content errors: Corrected immediately
+
+Communication:
+- Email updates at each stage
+- In-app notifications
+- Final resolution notice
+- Request for confirmation bug is fixed
+
+Bug Severity Levels:
+
+1. Critical (P0):
+- App crashes on launch
+- Cannot log in at all
+- Payment processing completely broken
+- Data loss issues
+Response: Immediate (within 2 hours)
+Fix: Emergency hotfix same day
+
+2. Major (P1):
+- Features completely non-functional
+- Widespread user impact
+- Exam interruption issues
+Response: Within 24 hours
+Fix: Priority update within 1 week
+
+3. Medium (P2):
+- Feature partially broken
+- Workaround available
+- Affects specific user groups
+Response: Within 48 hours
+Fix: Regular update cycle (2-4 weeks)
+
+4. Minor (P3):
+- Cosmetic issues
+- Minor inconveniences
+- Edge cases
+Response: Within 1 week
+Fix: Next major update
+
+5. Enhancement:
+- Feature requests
+- Improvements
+- Nice-to-haves
+Response: Acknowledged
+Consideration: For future roadmap
+
+Best Practices for Bug Reports:
+
+DO:
+- Be specific and detailed
+- Include steps to reproduce
+- Provide screenshots/videos
+- Note exact error messages
+- Mention if issue is recurring
+- Be patient while we investigate
+- Follow up if you don't hear back in 48 hours
+
+DON'T:
+- Submit duplicate reports (check "My Reports" first)
+- Use bug reports for feature requests
+- Be vague ("app doesn't work")
+- Leave out critical information
+- Expect instant fixes for minor issues
+- Report intentionally misleading bugs
+
+Effective Bug Report Example:
+
+❌ Bad Report:
+"App is broken, fix it!"
+
+✅ Good Report:
+"Title: Mock Exam Crashes at Question 15
+Device: Samsung Galaxy S21, Android 12
+App Version: 2.3.1
+Steps to Reproduce:
+1. Start Mathematics Mock Exam
+2. Answer questions 1-14
+3. Reach question 15 (always a geometry question)
+4. App freezes for 5 seconds then crashes
+5. Happens every time I try
+
+Expected: Should move to question 15 normally
+Actual: App crashes and closes
+
+Screenshot attached showing question 14
+Time: November 24, 2025, 2:30 PM WAT
+Impact: Cannot complete any mock exam"
+
+Bug Bounty Program:
+- Report critical security bugs
+- Eligible for rewards
+- Details at psky.com/bug-bounty
+- Responsible disclosure required
+
+Privacy & Security:
+- All bug reports are confidential
+- Personal data protected
+- Only necessary team members access reports
+- Data deleted after resolution
+
+Follow-Up:
+- We may email for clarification
+- Respond promptly to help us help you
+- Test the fix when notified
+- Confirm if issue is resolved
+- Reopen ticket if problem persists
+
+Thank you for helping us make PSKY better! Every bug report improves the experience for all users. We take every report seriously and appreciate your patience as we work to resolve issues.
+''',
+        ),
+      ],
+    ),
+  ];
+}

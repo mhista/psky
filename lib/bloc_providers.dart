@@ -2,7 +2,9 @@ import 'package:ahiaa_web/core/cubits/cubit/initialization_cubit.dart';
 import 'package:ahiaa_web/features/authentication/presentation/business/auth_page_cubit/auth_page_controller_cubit.dart';
 import 'package:ahiaa_web/features/authentication/blocs/signup/cubit/signup_cubit.dart';
 import 'package:ahiaa_web/features/authentication/presentation/business/cubit/auth_cubit.dart';
-import 'package:ahiaa_web/features/notifications/presentation/cubit/Notification_cubit.dart';
+import 'package:ahiaa_web/features/help_and_support/presentation/cubits/help_and_support_cubit.dart';
+import 'package:ahiaa_web/features/notifications/presentation/cubit/notification_cubit.dart';
+import 'package:ahiaa_web/features/notifications/presentation/cubit/notification_page_cubit.dart';
 import 'package:ahiaa_web/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:ahiaa_web/features/personalization/presentation/cubit/cubit/user_cubit.dart';
 import 'package:ahiaa_web/features/practice_exam/presentation/bloc/bloc/editor_bloc.dart';
@@ -27,7 +29,10 @@ class AppBlocProviders {
     BlocProvider<ExamControllerCubit>(
         create: (_) => getIt<ExamControllerCubit>()),
     BlocProvider<EditorCubit>(create: (_) => getIt<EditorCubit>()),
+    BlocProvider<NotificationPageCubit>(create: (_) => getIt<NotificationPageCubit>()),
     BlocProvider<NotificationCubit>(create: (_) => getIt<NotificationCubit>()),
+    BlocProvider<HelpAndSupportCubit>(create: (_) => getIt<HelpAndSupportCubit>()),
+
     BlocProvider<SettingsCubit>(create: (_) => getIt<SettingsCubit>()),
     BlocProvider<UserCubit>(create: (_) => getIt<UserCubit>()),
     BlocProvider<ExamCubit>(create: (_) => getIt<ExamCubit>()),

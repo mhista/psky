@@ -1,10 +1,10 @@
-
 // ============================================================================
 // 2. UPDATED APP_ROUTER.DART - With First-Timer Logic
 // ============================================================================
 
 import 'dart:async';
 import 'package:ahiaa_web/core/cubits/cubit/initialization_cubit.dart';
+import 'package:ahiaa_web/features/authentication/domain/entities/user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
@@ -31,7 +31,7 @@ import 'package:ahiaa_web/features/help_and_support/presentation/screens/help_an
 @lazySingleton
 class AppRouter {
   late final GoRouter router;
-  
+
   // Storage key for first-timer tracking
   static const String _firstTimerKey = 'is_first_timer';
   static const String _hasSeenLandingKey = 'has_seen_landing';
@@ -118,7 +118,8 @@ class AppRouter {
         GoRoute(
           path: '/loading',
           name: 'loading',
-          builder: (context, state) => const Center(child: CircularProgressIndicator()),
+          builder: (context, state) =>
+              const Center(child: CircularProgressIndicator()),
         ),
       ],
       redirect: (context, state) async {
@@ -130,13 +131,16 @@ class AppRouter {
         final authCubit = getIt<AuthCubit>();
         final authState = authCubit.state;
 
-        final isAuthenticated = authState.maybeWhen(
-          authenticated: (_) => true,
-          orElse: () => false,
+        final autenticated = authState.maybeWhen(
+          authenticated: (user) => (true, user),
+          orElse: () => (false, UserEntity.empty()),
         );
 
+        final isAuthenticated = autenticated.$1;
+
         final isGoingToAuth = state.matchedLocation == '/${KRoutes.auth}';
-        final isGoingToOnboarding = state.matchedLocation == '/${KRoutes.onboarding}';
+        final isGoingToOnboarding =
+            state.matchedLocation == '/${KRoutes.onboarding}';
         final isGoingToLanding = state.matchedLocation == '/';
 
         // ✅ NEW: Check if user is first-timer
@@ -160,6 +164,7 @@ class AppRouter {
         // Allow onboarding route
         if (isGoingToOnboarding) {
           if (isAuthenticated) {
+            if (!autenticated.$2.hasOnboarded) return '/${KRoutes.onboarding}';
             return '/${KRoutes.dashboard}';
           }
           return null;
@@ -241,7 +246,7 @@ class AppRouter {
 // Safe refresh notifier that only listens if AuthCubit is registered
 class _AuthRefreshNotifier extends ChangeNotifier {
   StreamSubscription? _sub;
-  
+
   _AuthRefreshNotifier() {
     Future.microtask(() {
       if (getIt.isRegistered<AuthCubit>()) {
@@ -249,7 +254,7 @@ class _AuthRefreshNotifier extends ChangeNotifier {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _sub?.cancel();

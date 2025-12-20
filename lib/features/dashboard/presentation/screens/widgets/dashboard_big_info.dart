@@ -270,7 +270,7 @@ class DashBoardInfo extends StatelessWidget {
                                   return;
                                 }
                                 if (isNotEmptyState) {
-                                  final user = getIt<UserCubit>().user ??
+                                  final user = getIt<UserCubit>().currentUser ??
                                       UserEntity.empty();
 
                                   final subjects = hasData?.$4
@@ -369,7 +369,17 @@ class DashBoardInfo extends StatelessWidget {
                   if (responsive.isTablet && isEmpty)
                     const Stack(
                       children: [
-                        Expanded(
+                        PRoundedImage(
+                          imageType: ImagesType.asset,
+                          image: PImages.flash,
+                          height: 166,
+                          width: 150,
+                          fit: BoxFit.cover,
+                          padding: 0,
+                          borderRadius: 12,
+                        ),
+                        Positioned(
+                          left: -15,
                           child: PRoundedImage(
                             imageType: ImagesType.asset,
                             image: PImages.flash,
@@ -378,20 +388,6 @@ class DashBoardInfo extends StatelessWidget {
                             fit: BoxFit.cover,
                             padding: 0,
                             borderRadius: 12,
-                          ),
-                        ),
-                        Positioned(
-                          left: -15,
-                          child: Expanded(
-                            child: PRoundedImage(
-                              imageType: ImagesType.asset,
-                              image: PImages.flash,
-                              height: 166,
-                              width: 150,
-                              fit: BoxFit.cover,
-                              padding: 0,
-                              borderRadius: 12,
-                            ),
                           ),
                         ),
                       ],
@@ -413,7 +409,17 @@ class DashBoardInfo extends StatelessWidget {
                   if (responsive.isDesktop && isEmpty)
                     const Stack(
                       children: [
-                        Expanded(
+                        PRoundedImage(
+                          imageType: ImagesType.asset,
+                          image: PImages.flash,
+                          height: 166,
+                          width: 150,
+                          fit: BoxFit.cover,
+                          padding: 0,
+                          borderRadius: 12,
+                        ),
+                        Positioned(
+                          left: -30,
                           child: PRoundedImage(
                             imageType: ImagesType.asset,
                             image: PImages.flash,
@@ -422,20 +428,6 @@ class DashBoardInfo extends StatelessWidget {
                             fit: BoxFit.cover,
                             padding: 0,
                             borderRadius: 12,
-                          ),
-                        ),
-                        Positioned(
-                          left: -30,
-                          child: Expanded(
-                            child: PRoundedImage(
-                              imageType: ImagesType.asset,
-                              image: PImages.flash,
-                              height: 166,
-                              width: 150,
-                              fit: BoxFit.cover,
-                              padding: 0,
-                              borderRadius: 12,
-                            ),
                           ),
                         ),
                       ],

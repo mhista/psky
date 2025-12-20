@@ -97,15 +97,19 @@ class OnboardingDesktopScreen extends StatelessWidget {
                 onPageChanged: controller.changePage,
                 allowImplicitScrolling: true,
                 children: [
-                   SingleChildScrollView(
+                  SingleChildScrollView(
                       child: AboutYou(
-                        shouldUseKai: shouldUseKai,
-                      )),
-                  const SingleChildScrollView(child: FavSubject()),
-
-                 
-                  const SingleChildScrollView(child: ExamType()),
-
+                          shouldUseKai: shouldUseKai, controller: controller)),
+                  SingleChildScrollView(
+                    child: ExamType(
+                      controller: controller,
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    child: FavSubject(
+                      controller: controller,
+                    ),
+                  ),
                 ],
               ),
             ),

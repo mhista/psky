@@ -18,10 +18,11 @@ class QuestionPageView extends StatelessWidget {
       return PageView.builder(
         controller: cubit.pageController,
         onPageChanged: cubit.updateQuestionIndex,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: state.totalQuestions,
         itemBuilder: (context, index) {
           // return const QuillEditorScreen();
-         return const OptionedQuestionWidget();
+          return const OptionedQuestionWidget();
         },
       );
     });

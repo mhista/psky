@@ -10,6 +10,7 @@ import 'package:ahiaa_web/core/services/subject_helper.dart';
 import 'package:ahiaa_web/core/utils/enums/exam_enums.dart';
 import 'package:ahiaa_web/core/utils/local_storage/storage_utility.dart';
 import 'package:ahiaa_web/core/utils/logging/logger.dart';
+import 'package:ahiaa_web/features/notifications/presentation/cubit/notification_cubit.dart';
 import 'package:ahiaa_web/features/practice_exam/data/datasources/firebase_exam_satasource.dart';
 import 'package:ahiaa_web/features/practice_exam/data/models/exam_models/esam_session.dart';
 import 'package:ahiaa_web/features/practice_exam/domain/entities/exam_entities.dart';
@@ -226,7 +227,7 @@ class AppInitializationService {
       pskyLog('🔄 Background initialization started');
 
       // Step 1: Check connectivity
-      final connectivityStep = await _checkConnectivity();
+      final connectivityStep = await checkConnectivity();
       steps.add(connectivityStep);
       _logStep(connectivityStep);
 
@@ -287,7 +288,7 @@ class AppInitializationService {
   // INITIALIZATION STEPS
   // ============================================================================
 
-  Future<InitializationStep> _checkConnectivity() async {
+  Future<InitializationStep> checkConnectivity() async {
     try {
       pskyLog('📡 Checking connectivity...');
       final results = await _connectivity.checkConnectivity();
@@ -314,6 +315,7 @@ class AppInitializationService {
       
       // Initialize notification service
       await _notificationService.initialize();
+      getIt<NotificationCubit>().initialize(userId);
 
       // Subscribe to user-specific topics
       await _notificationService.subscribeToTopic('user_$userId');
@@ -389,7 +391,7 @@ class AppInitializationService {
 
       if (shouldPull) {
         pskyLog('🔽 Pulling from Firebase...');
-        await _examCubit.syncFromDb(userId, forcePull: false);
+        await _examCubit.syncFromDb(userId, forcePull: true);
       } else {
         pskyLog('⏭️  Skipping Firebase pull (not needed)');
       }

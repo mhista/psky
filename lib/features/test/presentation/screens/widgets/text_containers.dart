@@ -69,7 +69,7 @@ class TestContainers extends StatelessWidget {
                 color: PColors.white,
                 verticalPadding: 0,
                 onTap: () async {
-                  final user = getIt<UserCubit>().user ?? UserEntity.empty();
+                  final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
 
                   final subjects = getIt<ExamCubit>()
                       .getAllSessions()

@@ -331,6 +331,7 @@ class AiExamCubit extends Cubit<AiExamState> {
                 metadata["currentNumberOfQuestionsGenerated"],
             lastFetchThreshold:
                 currentState.lastFetchThreshold,
+                didFetchAnyExam: false
           ));
         }
         return false;
@@ -350,6 +351,7 @@ class AiExamCubit extends Cubit<AiExamState> {
                 metadata["currentNumberOfQuestionsGenerated"],
             lastFetchThreshold:
                 currentState.lastFetchThreshold,
+                didFetchAnyExam: false
           ));
         }
         return false;
@@ -371,11 +373,12 @@ class AiExamCubit extends Cubit<AiExamState> {
           currentNumberOfQuestionsGenerated:
               metadata["currentNumberOfQuestionsGenerated"],
           lastFetchThreshold: currentState.lastFetchThreshold,
+          didFetchAnyExam: true
         ));
         return false;
       }
 
-      final user = getIt<UserCubit>().user ?? UserEntity.empty();
+      final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
 
       final totalQuestion = currentState.activeExam.totalNumberOfQuestions;
       final totalTime = QuestionTimeEstimator.calculateEstimatedMinutes(
@@ -401,6 +404,7 @@ class AiExamCubit extends Cubit<AiExamState> {
         currentNumberOfQuestionsGenerated:
             metadata["currentNumberOfQuestionsGenerated"],
         lastFetchThreshold: currentState.lastFetchThreshold,
+        didFetchAnyExam: true
       ));
       print('Successfully initialized exam with ${questions.length} questions');
 

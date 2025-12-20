@@ -17,7 +17,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = getIt<UserCubit>().user ?? UserEntity.empty();
+    final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
     final hasData = user != UserEntity.empty();
     final examCubit = getIt<ExamCubit>();
     return BlocBuilder<ExamCubit, ExamState>(

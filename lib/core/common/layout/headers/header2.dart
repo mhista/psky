@@ -9,6 +9,7 @@ import 'package:ahiaa_web/core/routes/app_router2.dart';
 import 'package:ahiaa_web/core/routes/routes.dart';
 import 'package:ahiaa_web/features/authentication/domain/entities/user.dart';
 import 'package:ahiaa_web/features/authentication/presentation/business/cubit/auth_cubit.dart';
+import 'package:ahiaa_web/features/notifications/presentation/cubit/notification_cubit.dart';
 import 'package:ahiaa_web/features/personalization/presentation/cubit/cubit/user_cubit.dart';
 import 'package:ahiaa_web/features/personalization/presentation/screens/widgets/user_avater.dart';
 import 'package:ahiaa_web/core/utils/constants/colors.dart';
@@ -16,6 +17,7 @@ import 'package:ahiaa_web/core/utils/enums/enums.dart';
 import 'package:ahiaa_web/core/utils/constants/image_strings.dart';
 import 'package:ahiaa_web/core/utils/device/device_utility.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -37,7 +39,7 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final appRouter = getIt<AppRouter>();
-    final user = getIt<UserCubit>().user?? UserEntity.empty();
+    final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
     final filterItems = [
       DropdownFeedsItem(
         alignRight: true,
@@ -48,7 +50,6 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
           spacing: 16,
           children: [
             Column(
-
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 ResponsiveText(
@@ -84,7 +85,7 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
         ),
         textSize: 8,
       ),
-       DropdownFeedsItem(
+      DropdownFeedsItem(
         alignRight: true,
         label: 'Help',
         onTap: () {
@@ -92,7 +93,10 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
         },
         textSize: 10,
         useIcon: true,
-        iconWidget: const Icon(Icons.help_outline, color: PColors.black,),
+        iconWidget: const Icon(
+          Icons.help_outline,
+          color: PColors.black,
+        ),
       ),
       DropdownFeedsItem(
         alignRight: true,
@@ -103,9 +107,11 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
         },
         textSize: 10,
         useIcon: true,
-        iconWidget: const Icon(Icons.logout, color: PColors.bg2,),
+        iconWidget: const Icon(
+          Icons.logout,
+          color: PColors.bg2,
+        ),
       ),
-     
     ];
 
     final responsive = ResponsiveBreakpoints.of(context);
@@ -155,14 +161,25 @@ class KHeader2 extends StatelessWidget implements PreferredSizeWidget {
                         borderRadius: 100,
                       )),
                 if (!responsive.isMobile)
-                  PCircularIcon(
-                    icon: Iconsax.notification,
-                    onPressed: () {
-                      appRouter.router.goNamed(KRoutes.notifications);
+                  BlocBuilder<NotificationCubit, NotificationState>(
+                    builder: (context, state) {
+                      final hasData = state.maybeWhen(
+                        orElse: () => 0,
+                        loaded: (notifications, unreadCount, hasMore,
+                                lastDocument) =>
+                            notifications.isNotEmpty ? unreadCount : 0,
+                      );
+                      return PCircularIcon(
+                        icon: Iconsax.notification,
+                        onPressed: () {
+                          appRouter.router.goNamed(KRoutes.notifications);
+                        },
+                        height: responsive.isMobile ? 40 : 45,
+                        width: responsive.isMobile ? 40 : 45,
+                        usesBadge: hasData > 0 ? true : false,
+                        badgeText: hasData.toString(),
+                      );
                     },
-                    height: responsive.isMobile ? 40 : 45,
-                    width: responsive.isMobile ? 40 : 45,
-                    usesBadge: true,
                   ),
                 PCircularIcon(
                   icon: responsive.isMobile

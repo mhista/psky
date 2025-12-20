@@ -72,6 +72,7 @@ class PSearchContainer extends StatelessWidget implements PreferredSizeWidget {
       this.hasColor = false,
       this.inverse = false,
       this.isSmall = false,
+      this.enabled = true,
       this.radius = 28,
       this.textFieldWidget,
       this.textController,
@@ -84,7 +85,7 @@ class PSearchContainer extends StatelessWidget implements PreferredSizeWidget {
   // to add the background color to tabs, wrap with material widget.
   final Color? color;
   final String text;
-  final bool useSuffix, useBorder, hasColor, usePrefixSuffix, inverse, isSmall;
+  final bool useSuffix, useBorder, hasColor, usePrefixSuffix, inverse, isSmall, enabled;
   final double? radius;
   final Widget? textFieldWidget, prefixWidget;
   final TextEditingController? textController;
@@ -96,6 +97,7 @@ class PSearchContainer extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final isDark = PHelperFunctions.isDarkMode(context);
     return TextField(
+      enabled: enabled,
       onTap: onTap,
       focusNode: focusNode,
       onChanged: onChanged,

@@ -9,10 +9,15 @@ class UserEntity {
   final String phoneNumber;
   final String profilePicture;
   final String school;
+  final String gender;
   final DateTime dob;
   final DateTime createdAt;
-  final DateTime? updatedAt;  
+  final DateTime? updatedAt;
   final List<String>? examBody;
+  final String bio;
+  final bool hasOnboarded;
+  final List<String>? subjects;
+  // final String 
 
   // List addresses;
   UserEntity({
@@ -20,6 +25,7 @@ class UserEntity {
     required this.firstName,
     required this.lastName,
     required this.email,
+    required this.gender,
     required this.phoneNumber,
     required this.profilePicture,
     required this.school,
@@ -27,23 +33,30 @@ class UserEntity {
     required this.createdAt,
     required this.updatedAt,
     required this.examBody,
+    required this.bio,
+    required this.hasOnboarded,
+    required this.subjects,
+
   });
 
-   static UserEntity empty() => UserEntity(
-        id: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        profilePicture: '',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        dob: DateTime.now(),
-        school: '',
-        examBody: []
-      );
+  static UserEntity empty() => UserEntity(
+      id: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      profilePicture: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      dob: DateTime.now(),
+      school: '',
+      gender: '',
+      bio: '',
+      hasOnboarded: false,
+      subjects: [],
+      examBody: []);
 
-      /// HELPER FUNCTIONS
+  /// HELPER FUNCTIONS
 
   /// gets the fullname
   String get fullName => '$firstName $lastName';

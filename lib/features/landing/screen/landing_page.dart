@@ -1,20 +1,25 @@
 import 'package:ahiaa_web/core/common/layout/screen_layouts/desktop/desktop_layout.dart';
 import 'package:ahiaa_web/core/common/layout/screen_layouts/desktop/desktop_layout2.dart';
 import 'package:ahiaa_web/core/common/layout/templates/app_layout.dart';
+import 'package:ahiaa_web/features/landing/cubit/scroll_cubit.dart';
 import 'package:ahiaa_web/features/landing/screen/desktop/desktop_landing_page.dart';
 import 'package:ahiaa_web/features/landing/screen/mobile/mobile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return  const SiteTemplate(
-      useLayout: true,
-      desktop: DesktopLandingPage(),
-      mobile:  MobileLandingPage(),
-      tablet: DesktopLandingPage(),
+    return BlocProvider(
+      create: (context) => ScrollCubit(),
+      child: const SiteTemplate(
+        useLayout: true,
+        desktop: DesktopLandingPage(),
+        mobile: MobileLandingPage(),
+        tablet: DesktopLandingPage(),
+      ),
     );
   }
 }

@@ -11,7 +11,10 @@ class DatePickerContainerScreen extends StatefulWidget {
   const DatePickerContainerScreen({
     super.key,
     this.onDateSelected, // Make it optional
+    this.initialDate,
   });
+
+  final DateTime? initialDate;
 
   @override
   State<DatePickerContainerScreen> createState() =>
@@ -48,7 +51,9 @@ class _DatePickerContainerScreenState extends State<DatePickerContainerScreen> {
 
     // 4. Format the date for display
     final String dateDisplay = _selectedDate == null
-        ? 'dd/mm/yyyy'
+        ? widget.initialDate != null
+            ? DateFormat('dd/MM/yyyy').format(widget.initialDate!)
+            : 'dd/mm/yyyy'
         : DateFormat('dd/MM/yyyy').format(_selectedDate!);
 
     return TRoundedContainer(

@@ -1,9 +1,11 @@
+import 'package:ahiaa_web/core/common/loaders/loading_button.dart';
 import 'package:ahiaa_web/core/common/widgets/buttons/elevated_r_button.dart';
 import 'package:ahiaa_web/core/common/widgets/custom_shapes/containers/rounded_container.dart';
 import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:ahiaa_web/core/injectable/injection_container.dart';
 import 'package:ahiaa_web/core/routes/app_router2.dart';
 import 'package:ahiaa_web/core/routes/routes.dart';
+import 'package:ahiaa_web/core/services/app_init.dart';
 import 'package:ahiaa_web/core/services/exam_timer.dart';
 import 'package:ahiaa_web/core/services/subject_service.dart';
 import 'package:ahiaa_web/core/services/time_calculator.dart';
@@ -26,9 +28,16 @@ import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:uuid/uuid.dart';
 
-class CustomExamDuration extends StatelessWidget {
+class CustomExamDuration extends StatefulWidget {
   const CustomExamDuration({super.key, required this.examCubit});
   final ExamCubit examCubit;
+
+  @override
+  State<CustomExamDuration> createState() => _CustomExamDurationState();
+}
+
+class _CustomExamDurationState extends State<CustomExamDuration> {
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +45,7 @@ class CustomExamDuration extends StatelessWidget {
     final responsive = ResponsiveBreakpoints.of(context);
 
     return BlocListener<ExamCubit, ExamState>(
-      bloc: examCubit,
+      bloc: widget.examCubit,
       // listenWhen: (previous, current) {
       //   // Only listen when we're in modeSelected state and subject/topics change
       //   final prevData = previous.maybeWhen(
@@ -67,7 +76,12 @@ class CustomExamDuration extends StatelessWidget {
               return;
             }
 
-            if (examCubit.subjects.isEmpty) {
+            // if (examMode == ExamMode.singleSubject) {
+            //   examCubit.addTopicToSelectedSubject(selectedSubject);
+            //   return;
+            // }
+
+            if (widget.examCubit.subjects.isEmpty) {
               aiCubit.reset();
               debugPrint('❌ All exams reseted');
 
@@ -82,7 +96,7 @@ class CustomExamDuration extends StatelessWidget {
 
             debugPrint('✅ ExamCubit - Subject: $selectedSubject');
             debugPrint(
-                '✅ ExamCubit - Topics: ${examCubit.selectedSubjectTopics}');
+                '✅ ExamCubit - Topics: ${widget.examCubit.selectedSubjectTopics}');
 
             // Check if this subject already exists in AiExamCubit
             final aiState = aiCubit.state;
@@ -91,8 +105,8 @@ class CustomExamDuration extends StatelessWidget {
               orElse: () {
                 // No existing data, initialize new exam
                 debugPrint('🆕 Initializing new AI exam for: $selectedSubject');
-                _initializeNewExam(
-                    aiCubit, selectedSubject, examCubit.selectedSubjectTopics);
+                _initializeNewExam(aiCubit, selectedSubject,
+                    widget.examCubit.selectedSubjectTopics);
                 debugPrint(aiCubit.state.toString());
               },
               hasData: (activeExam,
@@ -111,16 +125,16 @@ class CustomExamDuration extends StatelessWidget {
                   debugPrint('🔄 Updating existing exam for: $selectedSubject');
                   debugPrint('   Old topics: ${existingExam.topics}');
                   debugPrint(
-                      '   New topics: ${examCubit.selectedSubjectTopics}');
+                      '   New topics: ${widget.examCubit.selectedSubjectTopics}');
 
-                  aiCubit.updateTopics(examCubit.selectedSubjectTopics);
+                  aiCubit.updateTopics(widget.examCubit.selectedSubjectTopics);
 
                   debugPrint('   ✅ Topics updated');
                 } else {
                   // Subject doesn't exist, create new exam
                   debugPrint('🆕 Adding new exam for: $selectedSubject');
                   _initializeNewExam(aiCubit, selectedSubject,
-                      examCubit.selectedSubjectTopics);
+                      widget.examCubit.selectedSubjectTopics);
                 }
               },
             );
@@ -135,7 +149,7 @@ class CustomExamDuration extends StatelessWidget {
             hasData: (activeExam, allExams, currentIndex,
                 currentNumberOfQuestionsGenerated, thrshold, didFetchAnyExam) {
               // Check if we have an exam for the currently selected subject
-              final currentSubject = examCubit.selectedSubject;
+              final currentSubject = widget.examCubit.selectedSubject;
               // if (currentSubject == null) return const SizedBox.shrink();
 
               final relevantExam = allExams.isNotEmpty;
@@ -156,12 +170,12 @@ class CustomExamDuration extends StatelessWidget {
     String subject,
     List<String> topics,
   ) {
-    final user = getIt<UserCubit>().user ?? UserEntity.empty();
-    final _uuid = Uuid();
+    final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
+    final uuid = Uuid();
 
     debugPrint(user.email);
     aiCubit.initializeExam(
-      id: _uuid.v4(),
+      id: uuid.v4(),
       studentName: user.fullName,
       subject: subject,
       totalNumberOfQuestions: PTexts.examTotalCounts,
@@ -189,8 +203,8 @@ class CustomExamDuration extends StatelessWidget {
         didFetchAnyExam
       ),
     );
-    final aiList = hasData!.$2.where(
-        (data) => examCubit.getTopicsForSubject(data.subject).isNotEmpty);
+    final aiList = hasData!.$2.where((data) =>
+        widget.examCubit.getTopicsForSubject(data.subject).isNotEmpty);
     final totalQuestion =
         aiList.fold(0, (prev, next) => next.totalNumberOfQuestions + prev);
     List<Subject?> subjects = aiList
@@ -408,7 +422,7 @@ class CustomExamDuration extends StatelessWidget {
                             child: Padding(
                               padding: EdgeInsets.only(
                                   top: responsive.isMobile ? 8.0 : 12.0),
-                              child: Icon(Icons.add, size: 20),
+                              child: const Icon(Icons.add, size: 20),
                             ),
                           )
                         ],
@@ -419,16 +433,29 @@ class CustomExamDuration extends StatelessWidget {
               }),
               const Gap(20),
               Align(
-                alignment: Alignment.centerRight,
-                child: TElevatedButton(
-                  text: 'Start Test',
-                  color: PColors.white,
-                  bgColor: PColors.primary,
-                  size: 8,
-                  onTap: () => _fetchAiQuestion(
-                      aiCubit, hasData, totalQuestion, context),
-                ),
-              )
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        maximumSize: responsive.isMobile
+                            ? const Size(150, 49)
+                            : const Size(100, 40),
+                        minimumSize: const Size(100, 40),
+                        backgroundColor: aiList.isEmpty
+                            ? PColors.darkGrey
+                            : PColors.primary),
+                    onPressed: aiList.isEmpty || isLoading
+                        ? () {}
+                        : () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            _fetchAiQuestion(
+                                aiCubit, hasData, totalQuestion, context);
+                          },
+                    child: isLoading
+                        ? const LoadingAnimator()
+                        : const Center(child: ResponsiveText('Start Test')),
+                  ))
             ],
           )
         ],
@@ -450,13 +477,24 @@ class CustomExamDuration extends StatelessWidget {
       );
       return;
     }
+
+    final isConnected =
+        await getIt<AppInitializationService>().checkConnectivity();
+    if (isConnected.success == false && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please check your internet connection'),
+        ),
+      );
+      return;
+    }
+
     await aiCubit.fetchAiQuestion();
-    getIt<ExamSessionCubit>().state.maybeWhen(
+    getIt<AiExamCubit>().state.maybeWhen(
           orElse: () {},
-          active: (session, currentQuestionIndex, timeRemainingSeconds,
-              hssReachedLimit) {
-            if (session.questions.isEmpty) {
-              pskyLog('retrying');
+          hasData: (_, __, ___, ____, _____, fetched) {
+            if (!fetched) {
+              pskyLog('retrying ${fetched}');
               _fetchAiQuestion(
                 aiCubit,
                 hasData,
@@ -464,6 +502,9 @@ class CustomExamDuration extends StatelessWidget {
                 context,
               );
             } else {
+              setState(() {
+                isLoading = false;
+              });
               getIt<AppRouter>().router.goNamed(KRoutes.examInstruct);
             }
           },
@@ -479,7 +520,7 @@ class CustomExamDuration extends StatelessWidget {
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select exam duration:'),
+            Text('Select exam duration:'),
             // Add slider or time picker here
           ],
         ),

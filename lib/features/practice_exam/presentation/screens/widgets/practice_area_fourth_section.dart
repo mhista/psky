@@ -21,12 +21,13 @@ class PracticeAreaFourthSection extends StatelessWidget {
     required this.hashCode,
     required this.isCustom,
     required this.isFirstTime,
+    required this.isSingle,
   });
 
   final ExamCubit examCubit;
   final Type runtimeType;
   final int hashCode;
-  final bool isCustom;
+  final bool isCustom, isSingle;
   final bool isFirstTime;
 
   @override
@@ -254,7 +255,7 @@ class PracticeAreaFourthSection extends StatelessWidget {
             );
           },
         ),
-        if (isCustom)
+        if (isCustom || isSingle)
           // QUESTION CHIP AREA
           TRoundedContainer(
             width: double.infinity,

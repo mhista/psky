@@ -4,11 +4,17 @@ import 'package:ahiaa_web/core/common/widgets/texts/fitted_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
-class PracticeExamThirdSection extends StatelessWidget {
+class PracticeExamThirdSection extends StatefulWidget {
   const PracticeExamThirdSection({
     super.key,
   });
 
+  @override
+  State<PracticeExamThirdSection> createState() => _PracticeExamThirdSectionState();
+}
+
+class _PracticeExamThirdSectionState extends State<PracticeExamThirdSection> {
+  bool mix = true;
   @override
   Widget build(BuildContext context) {
     return TRoundedContainer(
@@ -30,7 +36,11 @@ class PracticeExamThirdSection extends StatelessWidget {
                     .withSize(9),
               ],
             ),
-            Switch(value: true, onChanged: (v) {})
+            Switch(value: mix, onChanged: (v) {
+              setState(() {
+                mix = v;
+              });
+            })
           ],
         ),
       ),

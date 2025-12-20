@@ -59,6 +59,8 @@ class MobilePracticeScreen extends StatelessWidget {
           ),
         );
         final isCustom = modeSelected?.$1 == ExamMode.custom;
+        final isSingle = modeSelected?.$1 == ExamMode.singleSubject;
+        final isQuick = modeSelected?.$1 == ExamMode.quickDrill;
         return TRoundedContainer(
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: SingleChildScrollView(
@@ -69,7 +71,9 @@ class MobilePracticeScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: PracticeExamFirstSection(
-                      isLoading: isLoading, hasData: hasData, hasError: hasError),
+                      isLoading: isLoading,
+                      hasData: hasData,
+                      hasError: hasError),
                 ),
 
                 // SECOND SECTION
@@ -78,20 +82,23 @@ class MobilePracticeScreen extends StatelessWidget {
                     stateData: stateData,
                     subjectRepo: subjectRepo,
                     isCustom: isCustom,
+                    isSingle: isSingle,
+                    isQuick: isQuick,
                     isFirstTime: isFirstTime),
                 // FOCUS AREA SECTION
                 if (stateData?.$1 != ExamMode.quickDrill)
                   const PracticeExamThirdSection(),
                 // THIRD SECTION
-                if (isCustom && examCubit.subjects.isNotEmpty)
+                if ((isCustom || isSingle) && examCubit.subjects.isNotEmpty)
                   PracticeAreaFourthSection(
                       examCubit: examCubit,
                       runtimeType: runtimeType,
                       hashCode: hashCode,
                       isCustom: isCustom,
+                      isSingle: isSingle,
                       isFirstTime: isFirstTime),
                 // CUSTOM DURATION SETTING
-                if (isCustom)
+                if (isCustom || isSingle )
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: CustomExamDuration(examCubit: examCubit),

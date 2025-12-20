@@ -55,67 +55,61 @@ class TestScreenFirstSection extends StatelessWidget {
             autoPlay: false,
             sliderWidthDesktop: 50,
             items: [
-              Expanded(
-                child: ThreeToOneShimmer(
-                    isLoading: isLoading,
-                    hasData: hasData,
-                    hasError: hasError,
-                    width: double.infinity,
-                    shouldUseLoadedData: true,
-                    radius: 16,
-                    height: 72,
-                    errorColor: PColors.primary.withValues(alpha: 0.4),
-                    loadedWidget: const QuickStartWidget(
-                        bgColor: PColors.primary5,
-                        text: 'Start full mock exam',
-                        subtitle:
-                            'Take a timed, WAEC-style mock to test your stamina and track your score across subjects.',
-                        isAlreadyExpanded: true,
-                        addEndSpacing: true,
-                        buttonText: 'Start mock',
-                        icon: Iconsax.note_2)),
-              ),
-              Expanded(
-                child: ThreeToOneShimmer(
-                    isLoading: isLoading,
-                    hasData: hasData,
-                    hasError: hasError,
-                    width: double.infinity,
-                    shouldUseLoadedData: true,
-                    radius: 16,
-                    height: 72,
-                    errorColor: PColors.tertiary.withValues(alpha: 0.5),
-                    loadedWidget: const QuickStartWidget(
-                        bgColor: PColors.bg2,
-                        text: 'Quick 10-Q/A drill',
-                        subtitle:
-                            'Short, focused drills to target weak topics — perfect for study breaks and fast progress.',
-                        buttonText: 'Start drill',
-                        isAlreadyExpanded: true,
-                        addEndSpacing: true,
-                        icon: Iconsax.flash)),
-              ),
-              Expanded(
-                child: ThreeToOneShimmer(
-                    isLoading: isLoading,
-                    hasData: hasData,
-                    hasError: hasError,
-                    width: double.infinity,
-                    shouldUseLoadedData: true,
-                    radius: 16,
-                    height: 72,
-                    errorColor: PColors.primary.withValues(alpha: 0.3),
-                    loadedWidget: const QuickStartWidget(
-                        bgColor: PColors.primary3,
-                        useAi: true,
-                        text: 'Personalized AI plan',
-                        subtitle:
-                            'Choose subjects, topics, and number of questions to create a set that matches your study needs.',
-                        buttonText: 'Create test',
-                        isAlreadyExpanded: true,
-                        addEndSpacing: true,
-                        icon: Icons.arrow_drop_down_rounded)),
-              )
+              ThreeToOneShimmer(
+                  isLoading: isLoading,
+                  hasData: hasData,
+                  hasError: hasError,
+                  width: double.infinity,
+                  shouldUseLoadedData: true,
+                  radius: 16,
+                  height: 72,
+                  errorColor: PColors.primary.withValues(alpha: 0.4),
+                  loadedWidget: const QuickStartWidget(
+                      bgColor: PColors.primary5,
+                      text: 'Start full mock exam',
+                      subtitle:
+                          'Take a timed, WAEC-style mock to test your stamina and track your score across subjects.',
+                      isAlreadyExpanded: true,
+                      addEndSpacing: true,
+                      buttonText: 'Start mock',
+                      icon: Iconsax.note_2)),
+              ThreeToOneShimmer(
+                  isLoading: isLoading,
+                  hasData: hasData,
+                  hasError: hasError,
+                  width: double.infinity,
+                  shouldUseLoadedData: true,
+                  radius: 16,
+                  height: 72,
+                  errorColor: PColors.tertiary.withValues(alpha: 0.5),
+                  loadedWidget: const QuickStartWidget(
+                      bgColor: PColors.bg2,
+                      text: 'Quick 10-Q/A drill',
+                      subtitle:
+                          'Short, focused drills to target weak topics — perfect for study breaks and fast progress.',
+                      buttonText: 'Start drill',
+                      isAlreadyExpanded: true,
+                      addEndSpacing: true,
+                      icon: Iconsax.flash)),
+              ThreeToOneShimmer(
+                  isLoading: isLoading,
+                  hasData: hasData,
+                  hasError: hasError,
+                  width: double.infinity,
+                  shouldUseLoadedData: true,
+                  radius: 16,
+                  height: 72,
+                  errorColor: PColors.primary.withValues(alpha: 0.3),
+                  loadedWidget: const QuickStartWidget(
+                      bgColor: PColors.primary3,
+                      useAi: true,
+                      text: 'Personalized AI plan',
+                      subtitle:
+                          'Choose subjects, topics, and number of questions to create a set that matches your study needs.',
+                      buttonText: 'Create test',
+                      isAlreadyExpanded: true,
+                      addEndSpacing: true,
+                      icon: Icons.arrow_drop_down_rounded))
             ],
           ),
         ),

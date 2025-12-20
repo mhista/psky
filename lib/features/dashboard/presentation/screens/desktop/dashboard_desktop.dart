@@ -36,7 +36,7 @@ class DashboardDesktop extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = ResponsiveBreakpoints.of(context);
 
-    final user = getIt<UserCubit>().user ?? UserEntity.empty();
+    final user = getIt<UserCubit>().currentUser ?? UserEntity.empty();
     final subjects = [
       SubjectScore(name: 'Chemistry', score: 100, color: PColors.primary5),
       SubjectScore(name: 'Biology', score: 100, color: PColors.primary2),

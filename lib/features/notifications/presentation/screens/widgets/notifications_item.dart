@@ -12,7 +12,7 @@ class NotificationItem extends StatelessWidget {
   final String timeAgo;
   final String title;
   final String subtitle;
-  final String imageUrl;
+  final String imageUrl, buttonText;
   final ImagesType imageType;
   final VoidCallback onViewReport;
   final bool isRead;
@@ -25,6 +25,7 @@ class NotificationItem extends StatelessWidget {
     this.imageUrl = PImages.filter,
     this.imageType = ImagesType.asset,
     required this.onViewReport,
+    this.buttonText = 'View Report',
     this.isRead = false,
   }) : super(key: key);
 
@@ -81,10 +82,10 @@ class NotificationItem extends StatelessWidget {
           ),
 
           const SizedBox(width: 16),
-
+        if(buttonText.isNotEmpty)
           // Trailing Button
           TElevatedButton(
-            text: 'View Report',
+            text: buttonText,
             onTap: onViewReport,
             bgColor: PColors.primary,
             color: PColors.white,
